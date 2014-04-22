@@ -1,5 +1,5 @@
 # Strong Gravitational Lens Model & Detect
 
 ## Authors
-bhisaar Sharma  
+Abhisaar Sharma  
 Robert J. Brunner
