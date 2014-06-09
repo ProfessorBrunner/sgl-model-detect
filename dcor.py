@@ -19,8 +19,12 @@ class dcor:
 		self.dCor = 0					# class variable - Correlation between X and Y
 
 		if(len(X)!=len(Y)):				# Check for same size of X and Y
-			print "Input vectors must be of same size -"+str(len(X))+" != "+str(len(Y))
-			return		
+			print "Distance Correlation: Input vectors must be of same size -"+str(len(X))+" != "+str(len(Y))
+			return -1	
+		
+		if(len(X)==0):					# If Empty
+			print "Distance Correlation: Input vector empty"
+			return -1		
 		
 		for i in range (0,len(X)):
 			cur_Row_x = []				# Temporary variables for forming a 2D Matrix
