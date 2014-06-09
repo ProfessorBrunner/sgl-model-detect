@@ -260,7 +260,7 @@ if '__main__':
 	LC_1, LC_2, T_Segments = fit_curve(time, lc_a, lc_b, MAX_GAP)
 
 	Max_Shift  = int((max(time)-min(time))/2)	
-	Shift_Step = 1	
+	Shift_Step = 2	
 
 	# Find Distance Correlation 
 	Shift = find_shift(LC_1, LC_2, Max_Shift, Shift_Step)

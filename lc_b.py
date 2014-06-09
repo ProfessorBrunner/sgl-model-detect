@@ -187,11 +187,11 @@ if '__main__':
 
 	plt.axis([1000, 1200, 8, 10])
 	#num = input('Please enter number of points: ')
-	pts = plt.ginput(4) # it will wait for three clicks
+	pts = plt.ginput(4) 
 
 
 	LC1 = C_factory(P=pts, n=2, V_type="clamped")
-	lenPts1 = int(max(pts, key=operator.itemgetter(1))[0])- int(min(pts, key=operator.itemgetter(1))[0])
+	lenPts1 = int(max(pts, key=operator.itemgetter(0))[0])- int(min(pts, key=operator.itemgetter(0))[0])
 	time = [t for t in np.linspace(int(LC1.min), int(LC1.max), lenPts1, endpoint=int(LC1.endpoint))]
 	curvepts = [ LC1(s) for s in time ]
 	Flux1 = []
@@ -199,16 +199,16 @@ if '__main__':
 	for i in range(0,len(curvepts)):
 		Flux1.append(curvepts[i][1])
 		time1.append(curvepts[i][0])	       
-	error1 = getError(1, 1, lenPts1)
+	error1 = getError(0, 0, lenPts1)
 			   
 	plot_data_points(time1,Flux1,LC1)
 
 
 	#num = input('Please enter number of points: ')
-	pts = plt.ginput(4) # it will wait for three clicks
+	pts = plt.ginput(4) 
 
 	LC2 = C_factory(P=pts, n=2, V_type="clamped")
-	lenPts2 = int(max(pts, key=operator.itemgetter(1))[0])- int(min(pts, key=operator.itemgetter(1))[0])
+	lenPts2 = int(max(pts, key=operator.itemgetter(0))[0])- int(min(pts, key=operator.itemgetter(0))[0])
 	time = [t for t in np.linspace(int(LC2.min), int(LC2.max), lenPts2, endpoint=int(LC2.endpoint))]
 
 	curvepts = [ LC2(s) for s in time ]
@@ -218,7 +218,7 @@ if '__main__':
 		Flux2.append(curvepts[i][1])
 		time2.append(curvepts[i][0])	       
 
-	error2 = getError(2, 1, lenPts2)
+	error2 = getError(0, 0, lenPts2)
 
 	plot_data_points(time2,Flux2,LC2)
 	
@@ -227,6 +227,8 @@ if '__main__':
 	print 'Time2'
 	print time2
 	
+	print Flux1
+
 	X = trimCurve(Flux1, error1, time1, Flux2, error2, time2 )
 	generateFile('Bezier_Curve.rdb',X)
 	show_plots()
