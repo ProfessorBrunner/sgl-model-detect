@@ -1,5 +1,5 @@
 # Strong Gravitational Lens Model & Detect
 
 ## Authors
-Sean McLaughlin
+Sean McLaughlin  
 Robert J. Brunner
