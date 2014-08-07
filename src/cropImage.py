@@ -29,8 +29,8 @@ def cropImage(image, c_x, c_y, sideLength= 20):
 
     img_y, img_x = image.shape
 
-    xLims = [c_x - .5*sideLength, c_x + .5*sideLength]  
-    yLims = [c_y - .5*sideLength, c_y + .5*sideLength]  
+    xLims = [int(c_x - .5*sideLength),int( c_x + .5*sideLength)]  
+    yLims = [int(c_y - .5*sideLength), int(c_y + .5*sideLength)]  
 
     #if any of the lims are out of bounds, make them the edge instead
     for i in xrange(2):
