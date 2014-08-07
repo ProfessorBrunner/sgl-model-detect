@@ -1,5 +1,5 @@
 #makes a fits image that is a series of Gaussians on a black field.
-#I'm going to have one "main" galaxy with another Gaussian a small bit away.  
+#I'm going to have one "main" galaxy with another Gaussian a small bit away, to simulate a lens.  
 
 import pyfits
 import os
@@ -8,6 +8,7 @@ import numpy as np
 if 'lens.fits' in os.listdir(os.getcwd()):
 	os.remove('lens.fits')
 
+#gaussian function
 def gaussian(x,y):
 	return A1*np.exp(-1./(R1**2)*((x-CENTER[0])**2+(y-CENTER[1])**2)) \
 			+ A2*np.exp(-1./(R2**2)*((x-CENTER2[0])**2+(y-CENTER2[1])**2)) 

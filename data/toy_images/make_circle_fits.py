@@ -1,4 +1,5 @@
-#makes a fits image that is a white circle in a black field
+#makes 2 fits images that are a white circle in a black field and a white sphere in a black field.
+#used as test data
 
 import pyfits
 import os
