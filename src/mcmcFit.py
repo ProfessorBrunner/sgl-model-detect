@@ -167,7 +167,7 @@ if __name__ == '__main__':
     parser.add_argument('nGaussians', metavar = 'N', type = int, help = 'Number of Gaussians to use in the fit.', default = 2)
     parser.add_argument('center_x', metavar = 'cx', type = int, help = 'The center in x')
     parser.add_argument('center_y', metavar = 'cy', type = int, help = 'The center in y')
-    parser.add_argument('n_walkers', metavar = 'n_walkers', type = int, help = 'Number of walkers',nargs = '?', default = 600)
+    parser.add_argument('n_walkers', metavar = 'n_walkers', type = int, help = 'Number of walkers',nargs = '?', default = 1000)
     parser.add_argument('ddof', metavar = 'ddof', type = int, help = 'Change in the degree of freedom',nargs = '?', default = 0)
 
     args = parser.parse_args()
