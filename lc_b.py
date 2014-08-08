@@ -27,20 +27,16 @@ def C_factory(P, n=2, V_type="clamped"):
         
     # Create the knot vector
     V = make_knot_vector(n, m, V_type)
-    # TODO: check the validity of the input knot vector.
-    # TODO: create an initial Vector Point.
     
     b_n = basis_factory(n)
     
     def S(t, d):
-        """ The b-spline funtion, as defined in eq. 3. """
         out = 0.
         for i in range(m): #: Iterate over 0-indexed point indices
             out += P[i][d]*b_n(t, i, V)
         return out
     
     def C(t):
-        """ The b-spline curve, as defined in eq. 4. """
         out = [0.]*D           #: For each t we return a list of D coordinates
         for d in range(D):     #: Iterate over 0-indexed dimension indices
             out[d] = S(t,d)
@@ -177,17 +173,15 @@ def show_plots():
 
 if '__main__':
 
-	'''        
 	t1 = input('Enter curve start time: ')
 	t2 = input('Enter curve end time: ')
 
 	i1 = input('Enter curve Max Intensity: ')
 	i2 = input('Enter curve Min Intensity: ')
-	'''
 
-	plt.axis([1000, 1200, 8, 10])
-	#num = input('Please enter number of points: ')
-	pts = plt.ginput(4) 
+	plt.axis([t1, t2, i1, i2])
+	num = input('Please enter number of points: ')
+	pts = plt.ginput(num) 
 
 
 	LC1 = C_factory(P=pts, n=2, V_type="clamped")
@@ -204,8 +198,8 @@ if '__main__':
 	plot_data_points(time1,Flux1,LC1)
 
 
-	#num = input('Please enter number of points: ')
-	pts = plt.ginput(4) 
+	num = input('Please enter number of points: ')
+	pts = plt.ginput(num) 
 
 	LC2 = C_factory(P=pts, n=2, V_type="clamped")
 	lenPts2 = int(max(pts, key=operator.itemgetter(0))[0])- int(min(pts, key=operator.itemgetter(0))[0])

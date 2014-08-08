@@ -27,14 +27,9 @@ class Segment(object):
 		for x in range(0,len(self.time_data)):
 			self.time_data[x] = self.time_data[x] + days
 
-		s = 1
-		res = 100
-		while (res>0.01 and s>0):
-			s = s - 0.001
-			f = interpolate.UnivariateSpline(self.time_data, self.intensity, k=3, s = s )
-			res = f.get_residual()
-
-		self.intensity_function = f
+		z = np.polyfit(np.asarray(self.time_data), np.asarray(self.intensity), 3)
+			
+		self.intensity_function = np.poly1d(z)
 
 	'''
 	Returns the intensities corresponding to temporal overlap of light curves
@@ -89,7 +84,7 @@ class Segment(object):
 
 '''
 Returns a lists of elements having the format
-[ Time, Lightcurve A, Error in A, Lightcurve B, Error in B ]
+[ Time, Lightcurve A, Error in A, Lightcurnp.poly1dnp.poly1dnp.poly1dnp.poly1dnp.poly1dnp.poly1dnp.poly1dnp.poly1dnp.poly1dnp.poly1dnp.poly1dve B, Error in B ]
 Header of input file is ignored (first two lines) 
 '''
 def load_data():
@@ -174,7 +169,7 @@ def find_shift(LC_1, LC_2, Max_Shift, Shift_Step):
 	for s in LC_1:
 		s.shift_segment(-1 * i)
 
-	'''	
+		
 	#Shift Light Curve 2
 	i = 0
 	while (i < Max_Shift):
@@ -204,7 +199,7 @@ def find_shift(LC_1, LC_2, Max_Shift, Shift_Step):
 	#Used only for plotting correctly
 	for s in LC_2:
 		s.shift_segment(-1 * i)
-	'''
+	
 	
 	# Find Maximum correlation Correlation 
 	print Corr_Data
@@ -234,23 +229,17 @@ def fit_curve(time, lc_a, lc_b, MAX_GAP):
 
 		# s = smoothing parameter, if s = 0 curve passes through all the points.        //k = 3, s = 0.04
 		# interpolate.UnivariateSpline(TimeScale, Intensity, k {Degree of Spline}, s {Smoothning Factor} )
+			#s = 0.04
+			#f1 = interpolate.UnivariateSpline(tempt, temp1, k=3, s=s)
+			z = np.polyfit(np.asarray(tempt), np.asarray(temp1), 3)
+			LC_1.append( Segment(np.poly1d(z.tolist()) , temp1, tempt) ) 
 			
-			s = 1
-			res1 = 100
-			while (res1>0.01 and s>0):
-				s = s - 0.001
-				f1 = interpolate.UnivariateSpline(tempt, temp1, k=3, s=s)
-				res1 = f1.get_residual()
-			LC_1.append( Segment(f1 , temp1, tempt) ) 
-			
-			s = 1
-			res2 = 100
-			while (res2>0.01 and s>0):
-				s = s - 0.001
-				f2 = interpolate.UnivariateSpline(tempt, temp2, k=3, s = s )
-				res2 = f2.get_residual()
 
-			LC_2.append( Segment(f2, temp2, tempt) ) 
+			z = np.polyfit(np.asarray(tempt), np.asarray(temp2), 3)
+			LC_2.append( Segment(np.poly1d(z.tolist()) , temp2, tempt) ) 
+			
+			#f2 = interpolate.UnivariateSpline(tempt, temp2, k=3, s =0.04 )
+			#LC_2.append( Segment(f2, temp2, tempt) ) 
 		
 			T_Segments.append(tempt)
 		i = i + 1
@@ -293,16 +282,16 @@ if '__main__':
 		lc_2 = []
 	
 		for i in range (0, len(Lcurves)):
-			lc_1.append(Lcurves[i][0][0])
-			lc_2.append(Lcurves[i][1][0])
+			lc_1.append(Lcurves[i][1][0])
+			lc_2.append(Lcurves[i][2][0])
 	
 		LC_1 = []
 		LC_2 = []
 
 		# Perform Segmentation and Spline fitting
 		LC_1, LC_2, T_Segments = fit_curve(time, lc_1, lc_2, MAX_GAP)
-		'''
-		Max_Shift  = int((max(time)-min(time))/100)	
+		
+		Max_Shift  = int((max(time)-min(time))/50)	
 		Shift_Step = 1
 
 		# Find Distance Correlation 
@@ -312,7 +301,7 @@ if '__main__':
 		print Shift
 
 		print 'Shift : '+ str(Shift[0]) + ' mhjd days with correlation ' + str(Shift[1])
-		'''
+		
 
 		#Plotting
 		plot_data_points(time, lc_1, lc_2, avg[x], avg[x+1])

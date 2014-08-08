@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import math
 from scipy.optimize import curve_fit
 import sys
-
+from dcor import * 
 
 def plot_polar_image(data, origin=None):
 	#Plots an image reprojected into polar coordinates
@@ -99,22 +99,40 @@ if __name__ == '__main__':
 	z = misc.imread(sys.argv[1],True)
 	m , n = z.shape
 
+	Corr = []
+	cVal = 0
+
 	Max = 0
 	Max_x = 0
 	Max_y = 0 
 	Val_sum = 0
-	for i in range (0,m-1):
-		for j in range (0,n-1):
+	for i in range (364,365):
+		for j in range (413,n-1):
+			print 'Coordinates: ' + str( i ) + ', ' +str (j)
 			Val_sum += z[i][j]												#Find Sum to calculate Mean
-			if(z[i][j]>Max):
-				Max = z[i][j]
-				Max_x = i
-				Max_y = j 
+			try:			
+				polar_image = plot_polar_image(z, (i,j))
+				row_mean, row_median, row_index = get_statistics(polar_image)
+			
+				Model_Fit = fit_profile(row_mean,row_index)
+				cVal = dcor(np.asarray(Model_Fit),np.asarray(row_mean)).find_correlation()
+				Corr.append([cVal,i,j])				
+				print cVal
+				if(cVal>Max):
+					Max = cVal
+					Max_x = i
+					Max_y = j 
+			except(RuntimeError):
+				print 'Optimized parameters not found'				
+				pass
+				
 
 	Mean =  Val_sum / (float)( m * n )
+	print Corr
+	print 'MAX'
 	print m, n	
-	print (Max_x, Max_y)	
-	polar_image = plot_polar_image(z, (364,599))
+	print (Max_x, Max_y, cVal)	
+	polar_image = plot_polar_image(z, (Max_x,Max_y))
 	row_mean, row_median, row_index = get_statistics(polar_image)
 	Model_Fit = fit_profile(row_mean,row_index)
 

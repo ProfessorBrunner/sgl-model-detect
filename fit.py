@@ -93,11 +93,12 @@ print Mean
 
 
 # Fit the data using astropy.modeling
-#p_init = M.Gaussian2D(Max,Mean,Mean,10,10)
+p_init = M.Gaussian2D(Max,Max_x,Max_y,1,10)
 
-p_init = M.Ring2D(210,Max_x,Max_y,0,30)
 
-f = fitting.NonLinearLSQFitter()
+#p_init = M.Ring2D(210,Max_x,Max_y,0,30)
+
+f = fitting.LinearLSQFitter()
 p = f(p_init, x, y, z)
 
 # Plot the data with the best-fit model
