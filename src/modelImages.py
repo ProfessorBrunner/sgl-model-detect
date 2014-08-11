@@ -5,3 +5,7 @@ This program models the light profile of a galaxy in a fits image, subtracts out
 
 This is the "main" module, that imports and runs the other modules in this directory
 '''
+
+import argparse
+parser = argparse.ArgumentParser(description = desc)
+
