@@ -5,6 +5,12 @@ from scipy import misc
 from scipy import misc
 import math
 
+'''
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Fitting for two dimentional gaussians and one dimentional 
+sersics.
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+'''
 def twoD_Gaussian((x, y), amplitude, xo, yo, sigma_x, sigma_y, theta, offset):
     xo = float(xo)
     yo = float(yo)    

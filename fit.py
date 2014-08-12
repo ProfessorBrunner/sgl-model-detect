@@ -6,7 +6,11 @@ import matplotlib.pyplot as plt
 import scipy as sp
 import scipy.ndimage
 
-
+'''
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Fitting models using astropy framework (bad results).
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+'''
 
 
 def index_coords(data, origin=None):

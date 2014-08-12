@@ -7,6 +7,13 @@ from scipy import misc
 import sys
 from polar import *
 
+'''
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Mixture of gaussians mimicing different types of astronomical
+lensing profiles. Scipy.optimize is used for fitting.
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+'''
+
 # Generalized gaussian
 def twoD_Gaussian((x, y), amplitude, xo, yo, sigma_x, sigma_y, theta, offset):
     xo = float(xo)

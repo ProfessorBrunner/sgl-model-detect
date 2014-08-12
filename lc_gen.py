@@ -5,6 +5,14 @@ import sys
 from scipy import interpolate
 import random
 
+
+'''
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Artificial Lightcurve generation functions - parameters 
+control the curve being generated. Can be used to imprint 
+Seasonal and observational effects.
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+'''
 #--------------------------------------------------------------------
 # List of parameters
 #--------------------------------------------------------------------

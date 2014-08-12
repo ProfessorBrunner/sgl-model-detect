@@ -5,7 +5,14 @@ import random
 import operator
 import numpy as np
 from dcor import * 
-
+'''
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Has functions to load, segment, plot and estimate the shift
+between two light curves. Takes an input Light Curve file 
+and returns the time shift. It uses a cubic polynomial to 
+fit the light segments instead of splines.
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+'''
 '''
 Class for light curve segment
 '''

@@ -7,13 +7,19 @@ import math
 from scipy.optimize import curve_fit
 import sys
 
-
+'''
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Takes an image and polar transforms about its brightest po-
+-int (assumed center) and finds the row median/mean values.
+It fits a sersic profile to the values obtained.
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+'''
 def plot_polar_image(data, origin=None):
 	#Plots an image reprojected into polar coordinates
 
 	polar_grid, r, theta = reproject_image_into_polar(data, origin)
 	plt.figure()
-	plt.imshow(polar_grid,extent=(theta.min(), theta.max(), r.max(), r.min()))
+	plt.imshow(polar_grid,extent=(theta.min(), theta.max(), r.max(), r.min()),cmap='Greys')
 	plt.axis('auto')
 	plt.xlabel('Theta Coordinate (radians)')
 	plt.ylabel('R Coordinate (pixels)')
@@ -114,7 +120,7 @@ if __name__ == '__main__':
 	Mean =  Val_sum / (float)( m * n )
 	print m, n	
 	print (Max_x, Max_y)	
-	polar_image = plot_polar_image(z, (364,599))
+	polar_image = plot_polar_image(z, (471,364))
 	row_mean, row_median, row_index = get_statistics(polar_image)
 	Model_Fit = fit_profile(row_mean,row_index)
 

@@ -5,7 +5,13 @@ import random
 from dcor import * 
 import operator
 import numpy as np
-
+'''
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Has functions to load, segment, plot and estimate the shift
+between two light curves. Takes an input Light Curve file 
+and returns the time shift.
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+'''
 '''
 Class for light curve segment
 '''
@@ -65,15 +71,31 @@ class Segment(object):
 	def getIntensity(self, time):
 		return self.intensity_function(time)
 	
+	'''
+	Returns the start time
+	'''
+	
 	def getStartTime(self):
 		return self.time_start
 
+	'''
+	Returns the end time
+	'''
+	
 	def getEndTime(self):
 		return self.time_end
-
+	
+	'''
+	Returns the time across which a segment spans
+	'''
+	
 	def getSegmentLength(self):
 		return self.time_end - self.time_start
 
+	'''
+	Prints a segments parameters
+	'''
+	
 	def display(self):
 		print 'Segment start:'
 		print self.time_start
@@ -81,7 +103,7 @@ class Segment(object):
 		print self.time_end
 
 '''
-Returns a lists of elements having the format
+Reads a file and returns a lists of elements having the format
 [ Time, [[Lightcurve Ai, Error in Ai] for i curves]]
 Header of input file is ignored (first two lines) 
 '''
@@ -124,6 +146,9 @@ def plot_segment(LC, avg):
 		intensity.append(avg + LC.getIntensity(t))		
 	pylab.plot(t_range, intensity,'g')
 
+'''
+Show all the plots
+'''
 def show_plots():
 	pylab.legend(loc=4)
 	pylab.xlabel('Modified Heliocentric Julian Date (MHJD)')
@@ -131,7 +156,9 @@ def show_plots():
 	pylab.title(sys.argv[1])
 	pylab.show()
 
-
+'''
+Find shift between two Light-Curve Segments
+'''
 def find_shift(LC_1, LC_2, Max_Shift, Shift_Step):
 	
 	Corr_Data = []

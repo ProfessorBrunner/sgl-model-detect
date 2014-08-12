@@ -4,6 +4,13 @@ import matplotlib
 import random
 import operator
 
+'''
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Has functions to generate custom lightcurves and export th-
+-em to a file for analysis on correlation.
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+'''
+
 #Probability of a seasonal effect being imprinted
 Prob_Seasonal = 0.03
 

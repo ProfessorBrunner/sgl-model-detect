@@ -8,6 +8,13 @@ from scipy.optimize import curve_fit
 import sys
 from dcor import * 
 
+'''
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Experimental algorithm for finding the center of a foreground
+lensing galaxy.
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+'''
+
 def plot_polar_image(data, origin=None):
 	#Plots an image reprojected into polar coordinates
 
