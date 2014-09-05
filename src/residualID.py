@@ -10,7 +10,7 @@ residualID(image, c_x, c_y)
 image: numpy array of the residuals
 c_x, c_y: the center of the image.
 
-can be runas main for test cases. 
+Cannot currently be run as main for test cases.
 '''
 
 import numpy as np
@@ -60,7 +60,8 @@ class Residual(object):
             Ix+=x*val
             Iy+=y*val
             Ixx+=x*x*val
-            Iyy+=y*y*val Ixy+=x*y*val 
+            Iyy+=y*y*val 
+            Ixy+=x*y*val 
         xmean = Ix/I
         ymean = Iy/I
               
@@ -177,8 +178,11 @@ def checkLens(residuals):
             return (acrossOneAnother and enoughPerp) or (acrossOneAnother and closeTogether \
                                     or enoughPerp and closeTogether)#any 2
 
-       return closeTogether and enoughPerp
+        return closeTogether and enoughPerp
 
 def residualID(image, c_x, c_y):
    reiduals = makeResidualDict(image, c_x, c_y) 
    return checkLens(residuals)
+
+if __name__ == '__main__':
+    print desc

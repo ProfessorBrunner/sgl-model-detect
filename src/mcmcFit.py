@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 #@Author Sean McLaughlin
 desc ='''
-This module fits to an image using MCMC techniques, specifically emcee. 
+This module fits to an image using MCMC techniques, specifically using the package emcee. 
 This module contains the function fitImage. It can be run as main or imported.
 
 mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0)
@@ -40,6 +40,7 @@ def lnprior(theta):
     N = len(theta)/2 #save us from having to put N in the global scope
     amps = theta[:N]
     rads = theta[N:]
+    #NOTE to solve the uniqueness problem I can require the amplitdues are in order. Slower, but all will converge to separe values.
     if not all(-1<a<3 for a in amps):
         return -np.inf
     if not all(-1<r<2 for r in rads):
@@ -112,7 +113,7 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None):
     #numpy arrays of the indicies, used in the calculations
     yy, xx = np.indices(image.shape)
 
-    #error used in the liklihood. Not a lot of importance.
+    #error used in the liklihood. It's value does not seem to change the results much.
     err = .1
     inv_sigma2 = 1./(err**2)
 
@@ -182,6 +183,7 @@ if __name__ == '__main__':
         exit(-1)
 
     image = fitsImage[0].data
+    #TODO Make findcenter find the center of the images if none are passed in.
     c_y, c_x = args.center_y, args.center_x
 
     image, c_x, c_y = cropImage(image, c_x, c_y)

@@ -25,7 +25,7 @@ If none is given, it will be set to 30.
 
 import numpy as np
 
-def cropImage(image, c_x, c_y, sideLength= 20):
+def cropImage(image, c_x, c_y, sideLength= 30):
 
     img_y, img_x = image.shape
 
@@ -83,4 +83,4 @@ if __name__ == '__main__':
     im = plt.imshow(image)
     plt.colorbar(im)
     plt.scatter(c_x, c_y, color = 'k')
-    plt.savefig(savename)
+    plt.savefig(args.savename)
