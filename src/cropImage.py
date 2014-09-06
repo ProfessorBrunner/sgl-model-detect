@@ -9,6 +9,10 @@ cropImage(image, c_x, c_y)
 
 Returns a numpy array of a cropped image, and the readjusted c_x and c_y
 
+There is an optional plot functionality that saves the cropped image to file.
+
+cropImage(image, c_x, c_y, plot = True, filename = fname)
+
 This module can be run as main. In this case it takes a filename for a fits file and the center coordinates, as well
 as a filename where to save the plot.
 
@@ -24,8 +28,9 @@ If none is given, it will be set to 30.
 '''
 
 import numpy as np
+from matplotlib import pyplot as plt
 
-def cropImage(image, c_x, c_y, sideLength= 30):
+def cropImage(image, c_x, c_y, sideLength= 30, plot = False, filename = None):
 
     img_y, img_x = image.shape
 
@@ -47,12 +52,17 @@ def cropImage(image, c_x, c_y, sideLength= 30):
     #readujust the centers. They've moved now that the image has been cropped
     c_y, c_x = c_y-yLims[0], c_x - xLims[0]
 
+    if plot:
+        im = plt.imshow(image)
+        plt.colorbar(im)
+        plt.scatter(c_x, c_y, color = 'k')
+        plt.savefig(args.savename)
+
     return image, c_x, c_y
 
 if __name__ == '__main__':
     import pyfits
     import argparse
-    from matplotlib import pyplot as plt
 
     #process inputs cleanly
     parser = argparse.ArgumentParser(description = desc)
@@ -78,9 +88,4 @@ if __name__ == '__main__':
     image = fitsImage[0].data
     c_y, c_x = args.center_y, args.center_x
 
-    image, c_x, c_y = cropImage(image, c_x, c_y, args.sideLength) 
-
-    im = plt.imshow(image)
-    plt.colorbar(im)
-    plt.scatter(c_x, c_y, color = 'k')
-    plt.savefig(args.savename)
+    image, c_x, c_y = cropImage(image, c_x, c_y, args.sideLength, True, args.savename) 

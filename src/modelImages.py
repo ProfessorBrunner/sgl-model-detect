@@ -5,10 +5,6 @@ This program models the light profile of a galaxy in a fits image, subtracts out
 
 This is the "main" module, that imports and runs the other modules in this directory
 '''
-from cropImage import cropImage
-from findCenter import findCenter
-from mcmcFit import mcmcFit
-from residualID import residualID
 import argparse
 parser = argparse.ArgumentParser(description = desc)
 #the number of Gaussians to use? (I think I may want to use a chi2 test to find the best one.)
@@ -31,4 +27,80 @@ parser.add_argument('--residuals', dest = 'residuals', action = 'store_const', c
                      help = 'Save a .png of the detected residuals')
 
 args = parser.parse_args()
+import os
+filename = args.filename
+outputdir = args.outputdir
 
+useFindCenters = args.centers is None
+isCoordinates = args.centers.find(',') != -1
+
+if isCoordinates:
+    splitCenters = args.centers.split(',')
+    cx = int(splitCenters[0].strip())
+    cy = int(splitCenters[1].strip())
+
+files = [filename, outputdir]
+if not useFindCenters and not isCoordinates:
+    files.append(args.centers)
+    centers = args.centers
+
+for f in files:
+    if not os.path.exists(f):
+        print 'ERROR: Invalied path %s'%f
+        from sys import exit
+        exit(-1)
+
+inputDict = {'filename':filename, 'output': outputdir,'useFindCenters':useFindCenters, 'isCoordinates':isCoordinates, 'isDir':os.path.isdir(filename)}
+
+if isCoordinates:
+    inputDict['coords'] = (cx, cy)
+
+elif not useFindCenters:
+    galaxyDict = {}
+    with open(centers) as f:
+        for line in f:
+            splieLine = line.strip().split(' ')
+            coords = [float(x) for x in splitLine[2:]]
+            galaxyDict[splitLine[0]] = coords
+
+    inputDict['galaxyDict'] = galaxyDict
+
+inputDict['cutout'] = args.cutout
+inputDict['chain'] = args.chain
+intputDict['triangle'] = args.triangle
+intputDict['subtraction'] = args.subtraction
+inputDict['residuals']=args.residuals
+
+from cropImage import cropImage
+from findCenter import findCenter
+from mcmcFit import mcmcFit
+from residualID import residualID
+import pyfits
+
+if not inputDict['isDir']:
+#its a file, fit on one image
+    baseName = filename[:-7] 
+    fitsImage = pyfits.open(filename)
+    image = fitsImage[0].data
+    if inputDict['useFindCenters']:
+        c_x, c_y = findCenter(image)
+    elif inputDict['isCoordinates']:
+        c_x, c_y = inputDict['coords']
+    else:
+        c_x, c_y = inputDict['galaxyDict'][baseName[7:]]
+ 
+    image, c_x, c_y = cropImage(image, c_x, c_y, plot = inputDict['cutout'], filename = inputDict['output']+baseName+'_cutout.png')
+
+    name = inputDict['output']+baseName+_samples if inputDict['chain'] else None
+    mcmcFit(image,3, c_x, c_y, filename = name)
+
+#a directory is handled differenly than a single file
+else :
+    fileList = os.listdir(filename)
+    baseNames = set()
+    trackedObjs = []
+    for fnme in fileList:
+        if fname[:6] = 'CFHTLS':
+            baseNames.add(fname[:-7])
+
+   baseNames = list(baseNames)
