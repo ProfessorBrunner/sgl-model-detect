@@ -181,7 +181,7 @@ def checkLens(residuals):
         return closeTogether and enoughPerp
 
 def residualID(image, c_x, c_y):
-   reiduals = makeResidualDict(image, c_x, c_y) 
+   residuals = makeResidualDict(image, c_x, c_y) 
    return checkLens(residuals)
 
 if __name__ == '__main__':
