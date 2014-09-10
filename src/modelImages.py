@@ -25,6 +25,8 @@ parser.add_argument('--subtraction', dest = 'subtraction', action = 'store_const
                      help = 'Store a .png of the model subtraction from the original image.')
 parser.add_argument('--residuals', dest = 'residuals', action = 'store_const', const = True, default = False,\
                      help = 'Save a .png of the detected residuals')
+parser.add_argument('--bands', dest = 'bands', action = 'store_const', const = True, default = False,\
+                    help = 'For one file, assume that an image of a similar name but of a different band is in the same directory. Fits to i but subtracts from g.')
 
 args = parser.parse_args()
 import os
@@ -70,6 +72,7 @@ inputDict['chain'] = args.chain
 intputDict['triangle'] = args.triangle
 intputDict['subtraction'] = args.subtraction
 inputDict['residuals']=args.residuals
+inputDict['bands'] = args.bands
 
 from cropImage import cropImage
 from findCenter import findCenter
@@ -80,6 +83,11 @@ import pyfits
 if not inputDict['isDir']:
 #its a file, fit on one image
     baseName = filename[:-7] 
+    bandLocation = -6 #location of the band ID in the string
+    if inputDict['bands']: #do multiple bands
+        bands = ['g', 'i']
+        for band in bands:
+            
     fitsImage = pyfits.open(filename)
     image = fitsImage[0].data
     if inputDict['useFindCenters']:
@@ -92,7 +100,8 @@ if not inputDict['isDir']:
     image, c_x, c_y = cropImage(image, c_x, c_y, plot = inputDict['cutout'], filename = inputDict['output']+baseName+'_cutout.png')
 
     name = inputDict['output']+baseName+_samples if inputDict['chain'] else None
-    mcmcFit(image,3, c_x, c_y, filename = name)
+    #TODO Fix ddof so chi2stat is correct!
+    calc_img, chi2stat, p = mcmcFit(image,3, c_x, c_y, filename = name)
 
 #a directory is handled differenly than a single file
 else :
