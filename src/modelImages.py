@@ -17,6 +17,8 @@ parser.add_argument('outputdir', metavar = 'output', type = str, help = 'Locatio
 parser.add_argument('centers', metavar = 'centers', type = str, help = 'Either a filename or a comma separate pair of coordinates for x,y. Default is to use findCenter.', default = None, nargs = '?')
 parser.add_argument('--cutout', dest = 'cutout', action = 'store_const', const = True, default = False,\
                      help = 'Save a .png of the original cutout to file.')
+parser.add_argument('--cutoutData', dest = 'cutoutData', action = 'store_const', const = True, default = False,\
+                     help = 'Save the raw data of the cutout to file.')
 parser.add_argument('--chain', dest = 'chain', action = 'store_const', const = True, default = False,\
                      help = 'Store the markov chain in the output directory. OCCUPIES A LOT OF FILESPACE.')
 parser.add_argument('--triangle', dest = 'triangle', action = 'store_const', const = True, default = False,\
@@ -25,6 +27,8 @@ parser.add_argument('--subtraction', dest = 'subtraction', action = 'store_const
                      help = 'Store a .png of the model subtraction from the original image.')
 parser.add_argument('--residuals', dest = 'residuals', action = 'store_const', const = True, default = False,\
                      help = 'Save a .png of the detected residuals')
+parser.add_argument('--residualData', dest = 'residualData', action = 'store_const', const = True, default = False,\
+                            help = 'Save the raw image data to file of the residuals.')
 parser.add_argument('--bands', dest = 'bands', action = 'store_const', const = True, default = False,\
                     help = 'For one file, assume that an image of a similar name but of a different band is in the same directory. Fits to i but subtracts from g.')
 
@@ -34,7 +38,10 @@ filename = args.filename
 outputdir = args.outputdir
 
 useFindCenters = args.centers is None
-isCoordinates = args.centers.find(',') != -1
+if useFindCenters:
+    isCoordinates = False
+else:
+    isCoordinates = args.centers.find(',') != -1
 
 if isCoordinates:
     splitCenters = args.centers.split(',')
@@ -68,10 +75,12 @@ elif not useFindCenters:
     inputDict['galaxyDict'] = galaxyDict
 
 inputDict['cutout'] = args.cutout
+inputDict['cutoutData'] = args.cutoutData
 inputDict['chain'] = args.chain
-intputDict['triangle'] = args.triangle
-intputDict['subtraction'] = args.subtraction
+inputDict['triangle'] = args.triangle
+inputDict['subtraction'] = args.subtraction
 inputDict['residuals']=args.residuals
+inputDict['residualData'] = args.residualData
 inputDict['bands'] = args.bands
 
 from cropImage import cropImage
@@ -83,25 +92,57 @@ import pyfits
 if not inputDict['isDir']:
 #its a file, fit on one image
     baseName = filename[:-7] 
-    bandLocation = -6 #location of the band ID in the string
+    lineIndex = baseName.rfind('/')
+    fileDirectory, baseName = baseName[:lineIndex], baseName[lineIndex:]
+    name = inputDict['output']+baseName+'_samples' if inputDict['chain'] else None
     if inputDict['bands']: #do multiple bands
         bands = ['g', 'i']
+        images = {}
         for band in bands:
-            
-    fitsImage = pyfits.open(filename)
-    image = fitsImage[0].data
-    if inputDict['useFindCenters']:
-        c_x, c_y = findCenter(image)
-    elif inputDict['isCoordinates']:
-        c_x, c_y = inputDict['coords']
-    else:
-        c_x, c_y = inputDict['galaxyDict'][baseName[7:]]
- 
-    image, c_x, c_y = cropImage(image, c_x, c_y, plot = inputDict['cutout'], filename = inputDict['output']+baseName+'_cutout.png')
+            fitsImage = pyfits.open(fileDirectory+baseName+'_'+band+'.fits')
+            image = fitsImage[0].data
+            if inputDict['useFindCenters']:
+                c_y, c_x = findCenter(image)
+            elif inputDict['isCoordinates']:
+                c_x, c_y = inputDict['coords']
+            else:
+                c_x, c_y = inputDict['galaxyDict'][baseName[7:]]
 
-    name = inputDict['output']+baseName+_samples if inputDict['chain'] else None
-    #TODO Fix ddof so chi2stat is correct!
-    calc_img, chi2stat, p = mcmcFit(image,3, c_x, c_y, filename = name)
+            image, c_x, c_y = cropImage(image, c_x, c_y, plot = inputDict['cutout'], filename = inputDict['output'] + baseName+'_'+band+'_cutout.png')
+            if inputDict['cutoutData']:
+                import numpy as np
+                np.savetxt(inputDict['output']+baseName+'_'+band+'_cutoutData', image)
+            images[band] = image    
+        #TODO Fix ddof so chi2stat is correct!
+        i_fit, i_stat, i_p = mcmcFit(images['i'], 3, c_x, c_y, filename = name)
+        c = (int(c_y), int(c_x))
+        i_fit = i_fit*images['g'][c]/images['i'][c]
+        calc_img = images['g'] - i_fit
+    else:
+        fitsImage = pyfits.open(filename)
+        image = fitsImage[0].data
+
+        if inputDict['useFindCenters']:
+            c_y, c_x = findCenter(image)
+        elif inputDict['isCoordinates']:
+            c_x, c_y = inputDict['coords']
+        else:
+            c_x, c_y = inputDict['galaxyDict'][baseName[7:]]
+ 
+        image, c_x, c_y = cropImage(image, c_x, c_y, plot = inputDict['cutout'], filename = inputDict['output']+baseName+'_cutout.png')
+        if inputDict['cutoutData']:
+            import numpy as np
+            np.savetxt(inputDict['output']+baseName+'_cutoutData', image)
+        #TODO Fix ddof so chi2stat is correct!
+        img_fit, chi2stat, p = mcmcFit(image,3, c_x, c_y, filename = name)
+        calc_img = image-img_fit
+    if inputDict['residualData']:
+        import numpy as np
+        np.savetxt(inputDict['output']+baseName+'_residualData', calc_img)
+
+    #TODO Plotting functionality here
+    lens = residualID(image, c_x, c_y)
+    print lens
 
 #a directory is handled differenly than a single file
 else :
@@ -109,7 +150,7 @@ else :
     baseNames = set()
     trackedObjs = []
     for fnme in fileList:
-        if fname[:6] = 'CFHTLS':
+        if fname[:6] == 'CFHTLS':
             baseNames.add(fname[:-7])
 
-   baseNames = list(baseNames)
+    baseNames = list(baseNames)

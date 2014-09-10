@@ -36,7 +36,7 @@ class Residual(object):
         self.a, self.b = self.vect
 
         #slope from the object's center to the image center
-        self.slope = (self.center[1]-imageCenter[1])/(self.center[0]-self.imageCenter[1])
+        self.slope = (self.center[1]-self.imageCenter[1])/(self.center[0]-self.imageCenter[1])
 
     def __contains__(self, item):# for point in residual checks
         return item in self.pointsSet
@@ -104,7 +104,7 @@ def makeResidualDict(image, c_x, c_y): #makes a dict of Residual objects for an 
 
     #gather the clusters into the dictionary
     nClusters = len(set(labels))
-    clustRange = xrange(nCluster)
+    clustRange = xrange(nClusters)
     if -1 in labels:
     #noise cluster ID'd
         clustRange = xrange(-1, nClusters-1)

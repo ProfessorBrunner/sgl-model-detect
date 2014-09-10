@@ -84,6 +84,8 @@ def findCenter(image, plot = False, filename = None):
     if plot:
         #plt.show()
         plt.savefig(filename)
+        plt.clf()
+        plt.close()
 		
     return maxPos
 
