@@ -34,6 +34,7 @@ class Residual(object):
 
         self.center, self.dist, self.vect, self.theta = self._findMoments()
         self.a, self.b = self.vect
+        self.c_y, self.c_x = self.center
 
         #slope from the object's center to the image center
         self.slope = (self.center[1]-self.imageCenter[1])/(self.center[0]-self.imageCenter[1])

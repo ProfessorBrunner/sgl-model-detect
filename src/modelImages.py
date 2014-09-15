@@ -68,7 +68,7 @@ elif not useFindCenters:
     galaxyDict = {}
     with open(centers) as f:
         for line in f:
-            splieLine = line.strip().split(' ')
+            splitLine = line.strip().split(' ')
             coords = [float(x) for x in splitLine[2:]]
             galaxyDict[splitLine[0]] = coords
 
@@ -149,8 +149,40 @@ else :
     fileList = os.listdir(filename)
     baseNames = set()
     trackedObjs = []
-    for fnme in fileList:
+    for fname in fileList:
         if fname[:6] == 'CFHTLS':
             baseNames.add(fname[:-7])
 
     baseNames = list(baseNames)
+    for baseName in baseNames:
+        name = inputDict['output']+baseName+'_samples' if inputDict['chain'] else None
+        bands = ['g', 'i']
+        images = {}
+        for band in bands:
+            fitsImage = pyfits.open(filename+baseName+'_'+band+'.fits')
+            image = fitsImage[0].data
+            if inputDict['useFindCenters']:
+                c_y, c_x = findCenter(image)
+            elif inputDict['isCoordinates']:
+                c_x, c_y = inputDict['coords']
+            else:
+                c_x, c_y = inputDict['galaxyDict'][baseName[7:]]
+
+            image, c_x, c_y = cropImage(image, c_x, c_y, plot = inputDict['cutout'], filename = inputDict['output'] + baseName+'_'+band+'_cutout.png')
+            if inputDict['cutoutData']:
+                import numpy as np
+                np.savetxt(inputDict['output']+baseName+'_'+band+'_cutoutData', image)
+            images[band] = image    
+        #TODO Fix ddof so chi2stat is correct!
+        i_fit, i_stat, i_p = mcmcFit(images['i'], 3, c_x, c_y, filename = name)
+        c = (int(c_y), int(c_x))
+        i_fit = i_fit*images['g'][c]/images['i'][c]
+        calc_img = images['g'] - i_fit
+        if inputDict['residualData']:
+            import numpy as np
+            np.savetxt(inputDict['output']+baseName+'_residualData', calc_img)
+
+        #TODO Plotting functionality here
+        lens = residualID(image, c_x, c_y)
+        print lens
+
