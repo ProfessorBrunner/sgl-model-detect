@@ -29,34 +29,48 @@ from scipy.stats import mode,chisquare
 from multiprocessing import cpu_count
 from sklearn.cluster import KMeans
 
-def gaussian(x,y, cx, cy, a, r):
-    return a*np.exp(-1./(r**2)*((x-cx)**2+(y-cy)**2))
+def gaussian(x,y, cx, cy, a, cov):
+    pos = np.array([x,y])
+    mu = np.array([cx,cy])
+    muMPos = pos-mu
+    invCov = np.linalg.inv(cov)
+    return a*np.exp(np.dot(muMPos.T, np.dot(invCov, muMPos)))
     
 #theta contains the variables for the amplitude and width
-#theta = [A1,A2...An,R1...Rn]
+#theta = [A1,A2...An,R11, R12, R13, R14, R21,...Rn4]
 def lnprior(theta):
     #log uniform priors
     #simplified down to uniform priors, but these represent the exponents not the values themselves
-    N = len(theta)/2 #save us from having to put N in the global scope
+    N = len(theta)/5 #save us from having to put N in the global scope
     amps = theta[:N]
     rads = theta[N:]
     #NOTE to solve the uniqueness problem I can require the amplitdues are in order. Slower, but all will converge to separe values.
     if not all(-1<a<3 for a in amps):
         return -np.inf
-    if not all(-1<r<2 for r in rads):
+    #My scheme for constructing a matrix requires they be uniform
+    if not all(0<r<1 for r in rads):
         return -np.inf
     return 0
 
 def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2):
-    N = len(theta)/2
+    N = len(theta)/5
     amps = theta[:N]
     rads = theta[N:]
+    rads = np.array(rads).reshape(N, 4)
+    covs = []
+    for rad in rads:
+        #construct a positive definite matrix
+        #TODO make into a function cuz it'll be copy pasted a lot.
+        cov = 0.5 - rad.reshape((2, 2))
+        cov = np.triu(cov)
+        cov += cov.T - np.diag(cov.diagonal())
+        covs.append( np.dot(cov,cov))
 
     model = np.zeros(image.shape) 
-    for a,r in zip(amps, rads):
+    for a,r in zip(amps, covs):
         if a<0: #if a<0 makes the amplitdue 0.
             continue 
-        model+=gaussian(xx,yy,c_x, c_y, 10**a, 10**r)
+        model+=gaussian(xx,yy,c_x, c_y, 10**a, cov)
 
     diff = image-model
     #optioal punishment for overfitting vs. underfitting
@@ -75,6 +89,7 @@ def lnprob(theta, image, xx, yy, c_x, c_y, inv_sigma2):
 def calcsCluster(samples, N, decimals = 2, n_clusters = 3):
     #select the parameters with a clustering approach
 
+    #FIX for covariance matricies
     sampled_as = samples[:, :N].reshape((-1))
     sampled_rs = samples[:, N:].reshape((-1))
 
@@ -118,7 +133,7 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None):
     inv_sigma2 = 1./(err**2)
 
     #parameters for the emcee sampler.
-    ndim = N*2
+    ndim = N*5 #1 Amp and 5 Rad dimentions
     nburn = int(n_walkers*.1)
     nsteps = 200
 
@@ -128,7 +143,8 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None):
         row = np.zeros(ndim)
         for n in xrange(N):
             row[n] = 4*np.random.rand()-1
-            row[n+N] = 2*np.random.rand()-1
+            for i in xrange(4):
+                row[n+N+i] = np.random.rand()
         pos.append(row)
 
     #sometimes the center is not exactly accurate. This part finds the maximum in the region around the center.
@@ -149,6 +165,7 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None):
         np.savetxt(filename, samples, delimiter = ',')
 
     #using clustering on the samples to select the parameters from the posterior
+    #TODO fix toward covariance
     calc_as, calc_rs = calcsCluster(samples, N)
 
     calc_img = sum(gaussian(xx,yy,c_x,c_y,10**a,10**r) for a,r in zip(calc_as, calc_rs))
