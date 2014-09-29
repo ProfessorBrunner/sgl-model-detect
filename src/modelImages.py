@@ -181,6 +181,11 @@ else :
         if inputDict['residualData']:
             import numpy as np
             np.savetxt(inputDict['output']+baseName+'_residualData', calc_img)
+        if inputDict['subtraction']:
+            from matplotlib import pyplot as plt
+            plt.imshow(calc_img)
+            plt.savefig(inputDict['output']+baseName+'_subtraction.png')
+            plt.close()
 
         #TODO Plotting functionality here
         lens = residualID(image, c_x, c_y)
