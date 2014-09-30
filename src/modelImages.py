@@ -1,8 +1,6 @@
 #! /usr/bin/env python
 #@Author Sean McLaughlin
-from gooey import Gooey
 
-@Gooey
 def main():
     desc = '''
     This program models the light profile of a galaxy in a fits image, subtracts out the model and inspects the residuals for evidence of lensing.
