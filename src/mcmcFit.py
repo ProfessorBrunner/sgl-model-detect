@@ -59,9 +59,9 @@ def gaussian(x,y, cx, cy, a, cov):
     coVar = cov[0,1]
     diffX = x-cx
     diffY = y-cy
-    print cov
+    #print cov
     exponent = -1/(2*(1-corr**2))*((diffX**2)/varX+(diffY**2)/varY-2*coVar*diffX*diffY/(varX*varY)) 
-    print exponent
+    #print exponent
     return a*np.exp(exponent)
 #theta contains the variables for the amplitude and width
 #theta = [A1,A2...An,VarX1, VarX1..., VarXN, VarY1, VarY2,...VarYN,Cov1, Cov2,...CovN]
@@ -88,7 +88,7 @@ def lnprior(theta):
     for var in (varXs, varYs, covs):
         for value in var:
             returnVal*=uninformative_prior.sf(value) #get the liklihood of these parameters
-    return 0
+    return returnVal 
 
 def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2):
     N = len(theta)/4
@@ -147,7 +147,7 @@ def calcsCluster(samples, N, decimals = 2, n_clusters = 3):
     allModes = []
     for cluster in clusters:
            point, counts = mode(cluster)
-           allModes.append((point[0][0], point[0][1], counts.mean()))
+           allModes.append((point[0][0], point[0][1],point[0][2], point[0][3], counts.mean()))
 
     allModes.sort(key = lambda x:x[-1], reverse = True) #sort by highest count
     allModes = np.array(allModes)
@@ -181,8 +181,9 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None):
         row = np.zeros(ndim)
         for n in xrange(N):
             row[n] = 4*np.random.rand()-1
-            for i in xrange(1,4):
-                row[n+i*N] = np.random.rand() +1
+#TODO fix to 4 not 3
+            for i in xrange(1,3):
+                row[n+i*N] = 10**(5*np.random.rand()-1)
         pos.append(row)
 
     #sometimes the center is not exactly accurate. This part finds the maximum in the region around the center.
@@ -213,6 +214,9 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None):
 
 
     calc_img = sum(gaussian(xx,yy,c_x,c_y,10**a,cov) for a,cov in izip(calc_as, covariance_mats))
+    from matplotlib import pyplot as plot
+    plt.imshow(calc_img)
+    plt.show()
     #calcuate the chi2 test
     ddof = -2*N + ddof 
     chi2stat, p = chisquare(image, f_exp = calc_img, ddof = ddof,axis = None)

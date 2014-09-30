@@ -138,6 +138,14 @@ def main():
             #TODO Fix ddof so chi2stat is correct!
             img_fit, chi2stat, p = mcmcFit(image,3, c_x, c_y, filename = name)
             calc_img = image-img_fit
+
+        if inputDict['subtraction']:
+            from matplotlib import pyplot as plt
+            im = plt.imshow(calc_img)
+            plt.colorbar(im)
+            plt.savefig(inputDict['output']+baseName+'_subtraction.png')
+            plt.clf()
+            plt.close()
         if inputDict['residualData']:
             import numpy as np
             np.savetxt(inputDict['output']+baseName+'_residualData', calc_img)
