@@ -59,6 +59,7 @@ def gaussian(x,y, cx, cy, a, cov):
     coVar = cov[0,1]
     diffX = x-cx
     diffY = y-cy
+    print cov
     exponent = -1/(2*(1-corr**2))*((diffX**2)/varX+(diffY**2)/varY-2*coVar*diffX*diffY/(varX*varY)) 
     print exponent
     return a*np.exp(exponent)
@@ -181,7 +182,7 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None):
         for n in xrange(N):
             row[n] = 4*np.random.rand()-1
             for i in xrange(1,4):
-                row[n+i*N] = np.random.rand()
+                row[n+i*N] = np.random.rand() +1
         pos.append(row)
 
     #sometimes the center is not exactly accurate. This part finds the maximum in the region around the center.
