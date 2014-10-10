@@ -154,3 +154,12 @@ else :
             baseNames.add(fname[:-7])
 
     baseNames = list(baseNames)
+    for baseName in baseNames:
+        lineIndex = baseName.rfind('/')
+        fileDirectory, baseName = baseName[:lineIndex], baseName[lineIndex:]
+        bans = ['g', 'i']
+        for band in bands:
+            fitsImage = pyfits.open(fileDirectory + basename + '_'+ band + '.fits')
+            fullImage =fitsImage[0].data
+            image, c_x, 
+
