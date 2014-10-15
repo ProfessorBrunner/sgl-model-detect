@@ -91,6 +91,7 @@ def main():
     from residualID import residualID
     import pyfits
 
+    nGaussians = 2
     if not inputDict['isDir']:
 #its a file, fit on one image
         baseName = filename[:-7] 
@@ -116,10 +117,14 @@ def main():
                     np.savetxt(inputDict['output']+baseName+'_'+band+'_cutoutData', image)
                 images[band] = image    
             #TODO Fix ddof so chi2stat is correct!
-            i_fit, i_stat, i_p = mcmcFit(images['i'], 3, c_x, c_y, filename = name)
+            tri = None
+            if inputDict['triangle']:
+                tri = inputDict['output']+baseName+'_'+band+'_triangle.png'
+            i_fit, i_stat, i_p = mcmcFit(images['i'], nGaussians, c_x, c_y, filename = name, triangle = tri)
             c = (int(c_y), int(c_x))
             i_fit = i_fit*images['g'][c]/images['i'][c]
             calc_img = images['g'] - i_fit
+
         else:
             fitsImage = pyfits.open(filename)
             image = fitsImage[0].data
@@ -136,7 +141,7 @@ def main():
                 import numpy as np
                 np.savetxt(inputDict['output']+baseName+'_cutoutData', image)
             #TODO Fix ddof so chi2stat is correct!
-            img_fit, chi2stat, p = mcmcFit(image,3, c_x, c_y, filename = name)
+            img_fit, chi2stat, p = mcmcFit(image,nGaussians, c_x, c_y, filename = name, triangle = inputDict['triangle'])
             calc_img = image-img_fit
 
         if inputDict['subtraction']:
@@ -146,6 +151,14 @@ def main():
             plt.savefig(inputDict['output']+baseName+'_subtraction.png')
             plt.clf()
             plt.close()
+
+        if inputDict['residuals']:
+            from matplotlib import pyplot as plt
+            im = plt.imshow(calc_img)
+            plt.colorbar(im)
+            plt.savefig(inputDict['output']+baseName+'_'+band+'_residuals.png') 
+            plt.show()
+
         if inputDict['residualData']:
             import numpy as np
             np.savetxt(inputDict['output']+baseName+'_residualData', calc_img)
@@ -184,7 +197,7 @@ def main():
                     np.savetxt(inputDict['output']+baseName+'_'+band+'_cutoutData', image)
                 images[band] = image    
             #TODO Fix ddof so chi2stat is correct!
-            i_fit, i_stat, i_p = mcmcFit(images['i'], 3, c_x, c_y, filename = name)
+            i_fit, i_stat, i_p = mcmcFit(images['i'], nGaussians, c_x, c_y, filename = name)
             c = (int(c_y), int(c_x))
             i_fit = i_fit*images['g'][c]/images['i'][c]
             calc_img = images['g'] - i_fit

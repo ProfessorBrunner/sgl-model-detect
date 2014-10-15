@@ -32,74 +32,54 @@ from itertools import izip
 
 #TODO: there's a problem with the vectorization of this calculation. Doesn't work in this form.
 def gaussian(x,y, cx, cy, a, cov):
-    '''
-    import warnings
-    warnings.filterwarnings('error')
     muMPos = np.dstack([x-cx, y-cy]) 
+    #print cov
+    #print
     invCov = np.linalg.inv(cov)#perform inverse elsewhere? a 2x2 inverse can't be that expensive right?
     output = np.zeros(x.shape)
     #need a better way to vectorize this
     for i, row in enumerate(muMPos):
         for j, vec in enumerate(row):
             output[i,j] =np.dot(vec, np.dot(invCov, vec))  
-    try:
-        final = a*np.exp(-.5*output) 
-    except RuntimeWarning:
-        print output.shape
-        print output[0]
-        print
-        print invCov
-        print '_*'*20
-        raise
+        
     return a*np.exp(-.5*output) 
-    '''
-    varX = cov[0,0]
-    varY = cov[1,1]
-    corr = cov[0,1]/(np.sqrt(varX)*np.sqrt(varY))
-    coVar = cov[0,1]
-    diffX = x-cx
-    diffY = y-cy
-    #print cov
-    exponent = -1/(2*(1-corr**2))*((diffX**2)/varX+(diffY**2)/varY-2*coVar*diffX*diffY/(varX*varY)) 
-    #print exponent
-    return a*np.exp(exponent)
-#theta contains the variables for the amplitude and width
-#theta = [A1,A2...An,VarX1, VarX1..., VarXN, VarY1, VarY2,...VarYN,Cov1, Cov2,...CovN]
-a = 4 #don't know what the ideal choice for this is. 
-b = 1
-uninformative_prior = invgamma(a, scale = b)
+    #theta contains the variables for the amplitude and width
+#theta = [A1,A2...An,VarX1, VarX1..., VarXN, VarY1, VarY2,...VarYN] add covs later,Cov1, Cov2,...CovN]
 def lnprior(theta):
     #log uniform priors
     #simplified down to uniform priors, but these represent the exponents not the values themselves
-    N = len(theta)/4 #save us from having to put N in the global scope
+    N = len(theta)/3 #save us from having to put N in the global scope
     amps = theta[:N]
     varXs = theta[N:2*N]
     varYs = theta[2*N:3*N]
-    covs= theta[3*N:]
+    #covs= theta[3*N:]
     #NOTE to solve the uniqueness problem I can require the amplitdues are in order. Slower, but all will converge to separe values.
     if not all(-1<a<3 for a in amps):
         return -np.inf
     #My scheme for constructing a matrix requires they be uniform
 
-    for var in (varXs, varYs, covs):
-        if any(v<0 for v in var):
+    #upper bound?
+    for var in (varXs, varYs):#, covs):
+        if any(v<0 or v>100 for v in var):
             return -np.inf
+    '''
     returnVal = 1
     for var in (varXs, varYs, covs):
         for value in var:
             returnVal*=uninformative_prior.sf(value) #get the liklihood of these parameters
-    return returnVal 
+    '''
+    return 0 
 
 def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2):
-    N = len(theta)/4
+    N = len(theta)/3
     amps = theta[:N]
     varXs = theta[N:2*N]
     varYs = theta[2*N:3*N]
-    covs= theta[3*N:]
+    #covs= theta[3*N:]
     covariance_mats = []
-    for varX, varY, cov in izip(varXs, varYs, covs):
+    for varX, varY in izip(varXs, varYs):#, covs):
         #construct a covariance matrix
-        mat = np.array([varX, cov, cov, varY]).reshape((2,2))
+        mat = np.array([varX, 0, 0, varY]).reshape((2,2))
         covariance_mats.append(mat)
 
     model = np.zeros(image.shape) 
@@ -129,15 +109,32 @@ def calcsCluster(samples, N, decimals = 2, n_clusters = 3):
     sampled_as = samples[:, :N].reshape((-1))
     sampled_varXs = samples[:,N:2*N].reshape((-1))
     sampled_varYs = samples[:,2*N:3*N].reshape((-1))
-    sampled_covs = samples[:,3*N:].reshape((-1))
+    #sampled_covs = samples[:,3*N:].reshape((-1))
 
-    data = np.c_[sampled_as, sampled_varXs,sampled_varYs,sampled_covs]
+    data = np.c_[sampled_as, sampled_varXs,sampled_varYs]#,sampled_covs]
+    
     #reshape the data such that it's 2-D, with amps on one axis and radii on the other.
 
     n_clusters = N+1
     #fit to clusters
     k_means = KMeans(init = 'k-means++',n_clusters = n_clusters, n_init = 50)
     labels = k_means.fit_predict(data)
+
+    from itertools import cycle
+    colors = cycle(['r', 'b', 'g', 'm', 'y', 'c'])
+    fig = plt.figure()
+    nSamples = 1000
+    data = data[:nSamples]
+    print data.shape
+    for label, color in izip(labels, colors):
+        plt.subplot(311)
+        plt.scatter(data[0,label], data[1,label], color = color)
+        plt.subplot(312)
+        plt.scatter(data[0,label], data[2,label], color = color)
+        plt.subplot(313)
+        plt.scatter(data[1,label], data[2,label], color = color)
+
+    plt.show()
 
     #round the data for binning and mode selection
     roundData = np.round_(data, decimals = decimals)
@@ -147,17 +144,18 @@ def calcsCluster(samples, N, decimals = 2, n_clusters = 3):
     allModes = []
     for cluster in clusters:
            point, counts = mode(cluster)
-           allModes.append((point[0][0], point[0][1],point[0][2], point[0][3], counts.mean()))
+           #TODO don't forget to add cov here
+           allModes.append((point[0][0], point[0][1],point[0][2], counts.mean()))
 
     allModes.sort(key = lambda x:x[-1], reverse = True) #sort by highest count
     allModes = np.array(allModes)
     #select the 1st N popular points in the clusters
     modes = allModes[:N,:4]
 
-    calc_as, calc_varXs,calc_varYs, calc_covs = modes[:,0], modes[:,1], modes[:,2], modes[:,3]
-    return calc_as, calc_varXs,calc_varYs, calc_covs 
+    calc_as, calc_varXs,calc_varYs = modes[:,0], modes[:,1], modes[:,2]#, modes[:,3]
+    return calc_as, calc_varXs,calc_varYs#, calc_covs 
 
-def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None):
+def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None, triangle = None):
 
     np.random.seed(int(time()))
 
@@ -171,7 +169,8 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None):
     inv_sigma2 = 1./(err**2)
 
     #parameters for the emcee sampler.
-    ndim = N*4 #1 Amp and 3 Rad dimentions
+    #TODO add voc here
+    ndim = N*3 #1 Amp and 3 Rad dimentions
     nburn = int(n_walkers*.1)
     nsteps = 200
 
@@ -181,9 +180,9 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None):
         row = np.zeros(ndim)
         for n in xrange(N):
             row[n] = 4*np.random.rand()-1
-#TODO fix to 4 not 3
+            #Also, add logs here rather than raise to the exponent
             for i in xrange(1,3):
-                row[n+i*N] = 10**(5*np.random.rand()-1)
+                row[n+i*N] = 10**(2*np.random.rand()-1)
         pos.append(row)
 
     #sometimes the center is not exactly accurate. This part finds the maximum in the region around the center.
@@ -202,21 +201,36 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None):
     #save samples to file
     if filename is not None:
         np.savetxt(filename, samples, delimiter = ',')
+    if triangle is not None:
+        from triangle import corner
+        sampled_as = samples[:, :N].reshape((-1))
+        sampled_varXs = samples[:,N:2*N].reshape((-1))
+        sampled_varYs = samples[:,2*N:3*N].reshape((-1))
+        labels = ['Amps', 'VarX', 'VarY']
+        data = np.c_[sampled_as, sampled_varXs, sampled_varYs]
+        corner(data, labels = labels) 
+        plt.savefig(triangle)
+        plt.show()
+        #plt.clf()
+        #plt.close()
 
     #using clustering on the samples to select the parameters from the posterior
-    calc_as, calc_varXs,calc_varYs, calc_covs  = calcsCluster(samples, N)
+    #TODO add calc_covs here
+    calc_as, calc_varXs,calc_varYs  = calcsCluster(samples, N)
+    print calc_as
 
     covariance_mats = []
-    for varX, varY, cov in izip(calc_varXs, calc_varYs, calc_covs):
+    #TODO add covs here
+    for varX, varY in izip(calc_varXs, calc_varYs):
         #construct a covariance matrix
-        mat = np.array([varX, cov, cov, varY]).reshape((2,2))
+        mat = np.array([varX, 0, 0, varY]).reshape((2,2))
         covariance_mats.append(mat)
 
 
     calc_img = sum(gaussian(xx,yy,c_x,c_y,10**a,cov) for a,cov in izip(calc_as, covariance_mats))
-    from matplotlib import pyplot as plot
-    plt.imshow(calc_img)
-    plt.show()
+    #from matplotlib import pyplot as plot
+    #plt.imshow(calc_img)
+    #plt.show()
     #calcuate the chi2 test
     ddof = -2*N + ddof 
     chi2stat, p = chisquare(image, f_exp = calc_img, ddof = ddof,axis = None)
