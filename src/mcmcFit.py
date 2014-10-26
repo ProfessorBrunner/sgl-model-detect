@@ -120,6 +120,7 @@ def calcsCluster(samples, N, decimals = 2, n_clusters = 3):
     k_means = KMeans(init = 'k-means++',n_clusters = n_clusters, n_init = 50)
     labels = k_means.fit_predict(data)
 
+    '''
     from itertools import cycle
     colors = cycle(['r', 'b', 'g', 'm', 'y', 'c'])
     fig = plt.figure()
@@ -134,8 +135,8 @@ def calcsCluster(samples, N, decimals = 2, n_clusters = 3):
         plt.subplot(313)
         plt.scatter(data[1,label], data[2,label], color = color)
 
-    plt.show()
-
+    #plt.show()
+    '''
     #round the data for binning and mode selection
     roundData = np.round_(data, decimals = decimals)
     clusters = [roundData[labels == i] for i in xrange(n_clusters)]
