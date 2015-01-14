@@ -27,12 +27,10 @@ def main():
                          help = 'Save a .png of a triangle plot of the chain.')
     parser.add_argument('--subtraction', dest = 'subtraction', action = 'store_const', const = True, default = False,\
                          help = 'Store a .png of the model subtraction from the original image.')
-    parser.add_argument('--residuals', dest = 'residuals', action = 'store_const', const = True, default = False,\
-                         help = 'Save a .png of the detected residuals')
-    parser.add_argument('--residualData', dest = 'residualData', action = 'store_const', const = True, default = False,\
+    #parser.add_argument('--residuals', dest = 'residuals', action = 'store_const', const = True, default = False,\
+    #                     help = 'Save a .png of the detected residuals')
+    parser.add_argument('--subtractionData', dest = 'residualData', action = 'store_const', const = True, default = False,\
                                 help = 'Save the raw image data to file of the residuals.')
-    parser.add_argument('--bands', dest = 'bands', action = 'store_const', const = True, default = False,\
-                        help = 'For one file, assume that an image of a similar name but of a different band is in the same directory. Fits to i but subtracts from g.')
 
     args = parser.parse_args()
     import os
@@ -81,9 +79,8 @@ def main():
     inputDict['chain'] = args.chain
     inputDict['triangle'] = args.triangle
     inputDict['subtraction'] = args.subtraction
-    inputDict['residuals']=args.residuals
-    inputDict['residualData'] = args.residualData
-    inputDict['bands'] = args.bands
+    #inputDict['residuals']=args.residuals
+    inputDict['subtractionData'] = args.subtractionData
 
     from cropImage import cropImage
     from findCenter import findCenter
@@ -98,74 +95,48 @@ def main():
         lineIndex = baseName.rfind('/')
         fileDirectory, baseName = baseName[:lineIndex], baseName[lineIndex:]
         name = inputDict['output']+baseName+'_samples' if inputDict['chain'] else None
-        if inputDict['bands']: #do multiple bands
-            bands = ['g', 'i']
-            images = {}
-            for band in bands:
-                fitsImage = pyfits.open(fileDirectory+baseName+'_'+band+'.fits')
-                image = fitsImage[0].data
-                if inputDict['useFindCenters']:
-                    c_y, c_x = findCenter(image)
-                elif inputDict['isCoordinates']:
-                    c_x, c_y = inputDict['coords']
-                else:
-                    c_x, c_y = inputDict['galaxyDict'][baseName[7:]]
-
-                image, c_x, c_y = cropImage(image, c_x, c_y, plot = inputDict['cutout'], filename = inputDict['output'] + baseName+'_'+band+'_cutout.png')
-                if inputDict['cutoutData']:
-                    import numpy as np
-                    np.savetxt(inputDict['output']+baseName+'_'+band+'_cutoutData', image)
-                images[band] = image    
-            #TODO Fix ddof so chi2stat is correct!
-            tri = None
-            if inputDict['triangle']:
-                tri = inputDict['output']+baseName+'_'+band+'_triangle.png'
-            i_fit, i_stat, i_p = mcmcFit(images['i'], nGaussians, c_x, c_y, filename = name, triangle = tri)
-            c = (int(c_y), int(c_x))
-            i_fit = i_fit*images['g'][c]/images['i'][c]
-            calc_img = images['g'] - i_fit
-
-        else:
-            fitsImage = pyfits.open(filename)
+        bands = ['g', 'i']
+        images = {}
+        for band in bands:
+            fitsImage = pyfits.open(fileDirectory+baseName+'_'+band+'.fits')
             image = fitsImage[0].data
-
             if inputDict['useFindCenters']:
                 c_y, c_x = findCenter(image)
             elif inputDict['isCoordinates']:
                 c_x, c_y = inputDict['coords']
             else:
                 c_x, c_y = inputDict['galaxyDict'][baseName[7:]]
-     
-            image, c_x, c_y = cropImage(image, c_x, c_y, plot = inputDict['cutout'], filename = inputDict['output']+baseName+'_cutout.png')
+
+            image, c_x, c_y = cropImage(image, c_x, c_y, plot = inputDict['cutout'], filename = inputDict['output'] + baseName+'_'+band+'_cutout.png')
             if inputDict['cutoutData']:
                 import numpy as np
-                np.savetxt(inputDict['output']+baseName+'_cutoutData', image)
-            #TODO Fix ddof so chi2stat is correct!
-            img_fit, chi2stat, p = mcmcFit(image,nGaussians, c_x, c_y, filename = name, triangle = inputDict['triangle'])
-            calc_img = image-img_fit
+                np.savetxt(inputDict['output']+baseName+'_'+band+'_cutoutData', image)
+            images[band] = image    
+        #TODO Fix ddof so chi2stat is correct!
+        tri = None
+        if inputDict['triangle']:
+            tri = inputDict['output']+baseName+'_'+band+'_triangle.png'
+        i_fit  = mcmcFit(images['i'], nGaussians, c_x, c_y, filename = name, triangle = tri)
+        c = (int(c_y), int(c_x))
+        i_fit = i_fit*images['g'][c]/images['i'][c]
+        calc_img = images['g'] - i_fit
 
         if inputDict['subtraction']:
             from matplotlib import pyplot as plt
             im = plt.imshow(calc_img)
             plt.colorbar(im)
             plt.savefig(inputDict['output']+baseName+'_subtraction.png')
+            plt.show()
             plt.clf()
             plt.close()
 
-        if inputDict['residuals']:
-            from matplotlib import pyplot as plt
-            im = plt.imshow(calc_img)
-            plt.colorbar(im)
-            plt.savefig(inputDict['output']+baseName+'_'+band+'_residuals.png') 
-            plt.show()
-
-        if inputDict['residualData']:
+        if inputDict['subtractionData']:
             import numpy as np
             np.savetxt(inputDict['output']+baseName+'_residualData', calc_img)
 
         #TODO Plotting functionality here
         lens = residualID(image, c_x, c_y)
-        print lens
+        print 'The image %s represents a lens: %s'%(baseName, str(lens))
 
 #a directory is handled differenly than a single file
     else :
@@ -196,8 +167,8 @@ def main():
                     import numpy as np
                     np.savetxt(inputDict['output']+baseName+'_'+band+'_cutoutData', image)
                 images[band] = image    
-            #TODO Fix ddof so chi2stat is correct!
-            i_fit, i_stat, i_p = mcmcFit(images['i'], nGaussians, c_x, c_y, filename = name)
+            #TODO Calculate BIC of model
+            i_fit = mcmcFit(images['i'], nGaussians, c_x, c_y, filename = name)
             c = (int(c_y), int(c_x))
             i_fit = i_fit*images['g'][c]/images['i'][c]
             calc_img = images['g'] - i_fit
@@ -207,7 +178,7 @@ def main():
 
             #TODO Plotting functionality here
             lens = residualID(image, c_x, c_y)
-            print lens
+            print 'The image %s represents a lens: %s'%(baseName, str(lens))
 
 if __name__ == '__main__':
     main()

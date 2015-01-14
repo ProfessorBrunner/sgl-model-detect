@@ -43,32 +43,30 @@ def gaussian(x,y, cx, cy, a, cov):
             output[i,j] =np.dot(vec, np.dot(invCov, vec))  
         
     return a*np.exp(-.5*output) 
-    #theta contains the variables for the amplitude and width
+#theta contains the variables for the amplitude and width
 #theta = [A1,A2...An,VarX1, VarX1..., VarXN, VarY1, VarY2,...VarYN] add covs later,Cov1, Cov2,...CovN]
 def lnprior(theta):
     #log uniform priors
-    #simplified down to uniform priors, but these represent the exponents not the values themselves
     N = len(theta)/3 #save us from having to put N in the global scope
     amps = theta[:N]
     varXs = theta[N:2*N]
     varYs = theta[2*N:3*N]
     #covs= theta[3*N:]
-    #NOTE to solve the uniqueness problem I can require the amplitdues are in order. Slower, but all will converge to separe values.
-    if not all(-1<a<3 for a in amps):
+    if not all(1e-1<a<1e3 for a in amps):
         return -np.inf
     #My scheme for constructing a matrix requires they be uniform
 
-    #upper bound?
+    #enforcing order
+    if not all(amps[i]>amps[i+1] for i in xrange(N-1)):
+        return -np.inf
+
+    #TODO find a proper upper bound for this value
     for var in (varXs, varYs):#, covs):
-        if any(v<0 or v>100 for v in var):
+        if any(v<1e0 or v>1e3 for v in var):
             return -np.inf
-    '''
-    returnVal = 1
-    for var in (varXs, varYs, covs):
-        for value in var:
-            returnVal*=uninformative_prior.sf(value) #get the liklihood of these parameters
-    '''
-    return 0 
+
+    #log Uniform prior
+    return -1*np.sum(np.log(theta)) 
 
 def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2):
     N = len(theta)/3
@@ -86,14 +84,12 @@ def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2):
     for a,cov in izip(amps, covariance_mats):
         if a<0: #if a<0 makes the amplitdue 0.
             continue 
-        model+=gaussian(xx,yy,c_x, c_y, 10**a, cov)
+        model+=gaussian(xx,yy,c_x, c_y, a, cov)
 
     diff = image-model
-    #optioal punishment for overfitting vs. underfitting
-    #largerThanImage = diff<0
-    #diff[largerThanImage]*=10 #punish going over more than under
 
     #basic log normal liklihood
+    #assume Gaussian errors
     return -.5*(np.sum(((diff)**2)*inv_sigma2-np.log(inv_sigma2)))
 
 def lnprob(theta, image, xx, yy, c_x, c_y, inv_sigma2):
@@ -101,60 +97,6 @@ def lnprob(theta, image, xx, yy, c_x, c_y, inv_sigma2):
     if np.isfinite(lp):
         return lp+lnlike(theta, image, xx, yy, c_x, c_y, inv_sigma2)
     return -np.inf
-
-def calcsCluster(samples, N, decimals = 2, n_clusters = 3):
-    #select the parameters with a clustering approach
-
-    #FIX for covariance matricies
-    sampled_as = samples[:, :N].reshape((-1))
-    sampled_varXs = samples[:,N:2*N].reshape((-1))
-    sampled_varYs = samples[:,2*N:3*N].reshape((-1))
-    #sampled_covs = samples[:,3*N:].reshape((-1))
-
-    data = np.c_[sampled_as, sampled_varXs,sampled_varYs]#,sampled_covs]
-    
-    #reshape the data such that it's 2-D, with amps on one axis and radii on the other.
-
-    n_clusters = N+1
-    #fit to clusters
-    k_means = KMeans(init = 'k-means++',n_clusters = n_clusters, n_init = 50)
-    labels = k_means.fit_predict(data)
-
-    '''
-    from itertools import cycle
-    colors = cycle(['r', 'b', 'g', 'm', 'y', 'c'])
-    fig = plt.figure()
-    nSamples = 1000
-    data = data[:nSamples]
-    print data.shape
-    for label, color in izip(labels, colors):
-        plt.subplot(311)
-        plt.scatter(data[0,label], data[1,label], color = color)
-        plt.subplot(312)
-        plt.scatter(data[0,label], data[2,label], color = color)
-        plt.subplot(313)
-        plt.scatter(data[1,label], data[2,label], color = color)
-
-    #plt.show()
-    '''
-    #round the data for binning and mode selection
-    roundData = np.round_(data, decimals = decimals)
-    clusters = [roundData[labels == i] for i in xrange(n_clusters)]
-
-    #get a list of the highest points and their average count
-    allModes = []
-    for cluster in clusters:
-           point, counts = mode(cluster)
-           #TODO don't forget to add cov here
-           allModes.append((point[0][0], point[0][1],point[0][2], counts.mean()))
-
-    allModes.sort(key = lambda x:x[-1], reverse = True) #sort by highest count
-    allModes = np.array(allModes)
-    #select the 1st N popular points in the clusters
-    modes = allModes[:N,:4]
-
-    calc_as, calc_varXs,calc_varYs = modes[:,0], modes[:,1], modes[:,2]#, modes[:,3]
-    return calc_as, calc_varXs,calc_varYs#, calc_covs 
 
 def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None, triangle = None):
 
@@ -166,11 +108,12 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None, tria
     yy, xx = np.indices(image.shape)
 
     #error used in the liklihood. It's value does not seem to change the results much.
+    #Represents the std of the error, which is assumed Gaussian
     err = .1
     inv_sigma2 = 1./(err**2)
 
     #parameters for the emcee sampler.
-    #TODO add voc here
+    #TODO add cov here
     ndim = N*3 #1 Amp and 3 Rad dimentions
     nburn = int(n_walkers*.1)
     nsteps = 200
@@ -180,10 +123,9 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None, tria
     for walk in xrange(n_walkers):
         row = np.zeros(ndim)
         for n in xrange(N):
-            row[n] = 4*np.random.rand()-1
-            #Also, add logs here rather than raise to the exponent
+            row[n] = 10**(4*np.random.rand()-1)
             for i in xrange(1,3):
-                row[n+i*N] = 10**(2*np.random.rand()-1)
+                row[n+i*N] = 10**(3*np.random.rand())
         pos.append(row)
 
     #sometimes the center is not exactly accurate. This part finds the maximum in the region around the center.
@@ -215,10 +157,22 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None, tria
         #plt.clf()
         #plt.close()
 
-    #using clustering on the samples to select the parameters from the posterior
     #TODO add calc_covs here
-    calc_as, calc_varXs,calc_varYs  = calcsCluster(samples, N)
-    print calc_as
+
+    #the MAP is simply the mean of the chain
+    #NOTE try taking the mean over the log, see how that goes
+    #calc_vals = samples.mean(axis = 0)
+
+    n_bins = int(np.sqrt(samples.shape[0])/3)
+    calc_vals = np.zeros(ndim)
+
+    #NOTE Also try the mode over the log
+    for i in xrange(ndim):
+        hist, bin_edges = np.histogram(samples[:,i], bins = n_bins)
+        max_idx = np.argmax(hist)
+        calc_vals[i] = (bin_edges[max_idx]+bin_edges[max_idx+1])/2#center of peak
+
+    calc_as, calc_varXs, calc_varYs = [calc_vals[i*N:(1+i)*N] for i in xrange(3)]
 
     covariance_mats = []
     #TODO add covs here
@@ -228,15 +182,12 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None, tria
         covariance_mats.append(mat)
 
 
-    calc_img = sum(gaussian(xx,yy,c_x,c_y,10**a,cov) for a,cov in izip(calc_as, covariance_mats))
+    calc_img = sum(gaussian(xx,yy,c_x,c_y,a,cov) for a,cov in izip(calc_as, covariance_mats))
     #from matplotlib import pyplot as plot
     #plt.imshow(calc_img)
     #plt.show()
-    #calcuate the chi2 test
-    ddof = -2*N + ddof 
-    chi2stat, p = chisquare(image, f_exp = calc_img, ddof = ddof,axis = None)
 
-    return calc_img, chi2stat, p
+    return calc_img
 
 if __name__ == '__main__':
     import argparse
