@@ -25,65 +25,60 @@ import numpy as np
 import emcee as mc
 from time import time
 from matplotlib import pyplot as plt
-from scipy.stats import mode,chisquare,invgamma
+from scipy.stats import mode, gaussian_kde
 from multiprocessing import cpu_count
-from sklearn.cluster import KMeans
 from itertools import izip
 
-#TODO: there's a problem with the vectorization of this calculation. Doesn't work in this form.
+#TODO: there's a problem with the vectorization of this calculation. Isn't efficient in this form.
 def gaussian(x,y, cx, cy, a, cov):
     muMPos = np.dstack([x-cx, y-cy]) 
-    #print cov
-    #print
-    invCov = np.linalg.inv(cov)#perform inverse elsewhere? a 2x2 inverse can't be that expensive right?
+    invCov = np.linalg.inv(cov)
     output = np.zeros(x.shape)
-    #need a better way to vectorize this
     for i, row in enumerate(muMPos):
         for j, vec in enumerate(row):
             output[i,j] =np.dot(vec, np.dot(invCov, vec))  
         
     return a*np.exp(-.5*output) 
+
 #theta contains the variables for the amplitude and width
 #theta = [A1,A2...An,VarX1, VarX1..., VarXN, VarY1, VarY2,...VarYN] add covs later,Cov1, Cov2,...CovN]
+#TODO Put number of parameters in the global scope
 def lnprior(theta):
     #log uniform priors
-    N = len(theta)/3 #save us from having to put N in the global scope
-    amps = theta[:N]
-    varXs = theta[N:2*N]
-    varYs = theta[2*N:3*N]
-    #covs= theta[3*N:]
-    if not all(1e-1<a<1e3 for a in amps):
+    N = len(theta)/4 #save us from having to put N in the global scope
+    amps, varXs, varYs, corrs = [theta[i*N:(i+1)*N] for i in xrange(4)]
+
+    if any(1e-1>a or a>1e3 for a in amps):
         return -np.inf
-    #My scheme for constructing a matrix requires they be uniform
 
     #enforcing order
-    if not all(amps[i]>amps[i+1] for i in xrange(N-1)):
+    if any(amps[i]<amps[i+1] for i in xrange(N-1)):
         return -np.inf
 
-    #TODO find a proper upper bound for this value
-    for var in (varXs, varYs):#, covs):
-        if any(v<1e0 or v>1e3 for v in var):
+    #TODO find a proper bounds for this value
+    for var in (varXs, varYs):
+        if any(v<1e-2 or v>1e3 for v in var):
             return -np.inf
 
+    if any(corr<-1 or corr>1 for corr in corrs):
+        return -np.inf
+
     #log Uniform prior
-    return -1*np.sum(np.log(theta)) 
+    return -1*np.sum(np.log(theta[:3*N]))
 
 def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2):
-    N = len(theta)/3
-    amps = theta[:N]
-    varXs = theta[N:2*N]
-    varYs = theta[2*N:3*N]
-    #covs= theta[3*N:]
+    N = len(theta)/4
+    amps, varXs, varYs, corrs = [theta[i*N:(i+1)*N] for i in xrange(4)]
+
     covariance_mats = []
-    for varX, varY in izip(varXs, varYs):#, covs):
+    for varX, varY, corr in izip(varXs, varYs, corrs):
         #construct a covariance matrix
-        mat = np.array([varX, 0, 0, varY]).reshape((2,2))
+        cov = corr*np.sqrt(varX*varY)
+        mat = np.array([varX, corr, corr, varY]).reshape((2,2))
         covariance_mats.append(mat)
 
     model = np.zeros(image.shape) 
     for a,cov in izip(amps, covariance_mats):
-        if a<0: #if a<0 makes the amplitdue 0.
-            continue 
         model+=gaussian(xx,yy,c_x, c_y, a, cov)
 
     diff = image-model
@@ -98,7 +93,7 @@ def lnprob(theta, image, xx, yy, c_x, c_y, inv_sigma2):
         return lp+lnlike(theta, image, xx, yy, c_x, c_y, inv_sigma2)
     return -np.inf
 
-def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None, triangle = None):
+def mcmcFit(image, N, c_x, c_y, n_walkers = 600, filename = None, triangle = None):
 
     np.random.seed(int(time()))
 

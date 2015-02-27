@@ -33,7 +33,6 @@ def main():
                                 help = 'Save the raw image data to file of the residuals.')
 
     args = parser.parse_args()
-    import os
     filename = args.filename
     outputdir = args.outputdir
 
@@ -53,12 +52,14 @@ def main():
         files.append(args.centers)
         centers = args.centers
 
+    import os
     for f in files:
         if not os.path.exists(f):
             print 'ERROR: Invalied path %s'%f
             from sys import exit
             exit(-1)
 
+    #NOTE maybe expand this like it is below, clearer to read.
     inputDict = {'filename':filename, 'output': outputdir,'useFindCenters':useFindCenters, 'isCoordinates':isCoordinates, 'isDir':os.path.isdir(filename)}
 
     if isCoordinates:
