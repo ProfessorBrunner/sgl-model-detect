@@ -24,6 +24,7 @@ with optional n_walkers and ddof
 import numpy as np
 import emcee as mc
 from time import time
+
 from matplotlib import pyplot as plt
 from scipy.stats import mode, gaussian_kde
 from multiprocessing import cpu_count
