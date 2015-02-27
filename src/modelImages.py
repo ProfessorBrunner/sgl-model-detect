@@ -9,11 +9,8 @@ def main():
     '''
     import argparse
     parser = argparse.ArgumentParser(description = desc)
-#the number of Gaussians to use? (I think I may want to use a chi2 test to find the best one.)
 #an option to change the number of walkers, to increase precision?
 #I need a series of optional arguments to have save checkpoints along the process.
-#Among those I need:
-#Store the plot of the ID'd residuals
     parser.add_argument('filename', metavar = 'filename', type = str, help = 'Either a fits filename or a directory of files.')
     parser.add_argument('outputdir', metavar = 'output', type = str, help = 'Location to store the programs output')
     parser.add_argument('centers', metavar = 'centers', type = str, help = 'Either a filename or a comma separate pair of coordinates for x,y. Default is to use findCenter.', default = None, nargs = '?')
@@ -23,8 +20,6 @@ def main():
                          help = 'Save the raw data of the cutout to file.')
     parser.add_argument('--chain', dest = 'chain', action = 'store_const', const = True, default = False,\
                          help = 'Store the markov chain in the output directory. OCCUPIES A LOT OF FILESPACE.')
-    parser.add_argument('--triangle', dest = 'triangle', action = 'store_const', const = True, default = False,\
-                         help = 'Save a .png of a triangle plot of the chain.')
     parser.add_argument('--subtraction', dest = 'subtraction', action = 'store_const', const = True, default = False,\
                          help = 'Store a .png of the model subtraction from the original image.')
     #parser.add_argument('--residuals', dest = 'residuals', action = 'store_const', const = True, default = False,\
@@ -59,8 +54,12 @@ def main():
             from sys import exit
             exit(-1)
 
-    #NOTE maybe expand this like it is below, clearer to read.
-    inputDict = {'filename':filename, 'output': outputdir,'useFindCenters':useFindCenters, 'isCoordinates':isCoordinates, 'isDir':os.path.isdir(filename)}
+    inputDict = {}
+    inputDict['filename'] = filename
+    inputDict['output']= outputdir
+    inputDict['useFindCenters'] = useFindCenters
+    inputDict['isCoordinates'] = isCoordinates
+    inputDict['isDir'] = os.path.isdir(filename)
 
     if isCoordinates:
         inputDict['coords'] = (cx, cy)
@@ -89,14 +88,27 @@ def main():
     from residualID import residualID
     import pyfits
 
-    nGaussians = 2
-    if not inputDict['isDir']:
-#its a file, fit on one image
-        baseName = filename[:-7] 
+    if inputDict['isDir']:
+        fileList = os.listdir(filename)
+        baseNames = set()
+        trackedObjs = []
+        for fname in fileList:
+            if fname[:6] == 'CFHTLS':
+                baseNames.add(fname[:-7])
+
+        baseNames = list(baseNames)
+        fileDirectory = filename
+
+    else:
+        baseName = filename[:-7]
         lineIndex = baseName.rfind('/')
         fileDirectory, baseName = baseName[:lineIndex], baseName[lineIndex:]
+        baseNames = [baseName]
+
+    bands = ['g', 'i']
+    for baseName in baseNames:
         name = inputDict['output']+baseName+'_samples' if inputDict['chain'] else None
-        bands = ['g', 'i']
+
         images = {}
         for band in bands:
             fitsImage = pyfits.open(fileDirectory+baseName+'_'+band+'.fits')
@@ -112,22 +124,50 @@ def main():
             if inputDict['cutoutData']:
                 import numpy as np
                 np.savetxt(inputDict['output']+baseName+'_'+band+'_cutoutData', image)
-            images[band] = image    
-        #TODO Fix ddof so chi2stat is correct!
-        tri = None
-        if inputDict['triangle']:
-            tri = inputDict['output']+baseName+'_'+band+'_triangle.png'
-        i_fit  = mcmcFit(images['i'], nGaussians, c_x, c_y, filename = name, triangle = tri)
+            images[band] = image
+
+        BFs = []
+        i_fits = []
+
+        i_fit,theta, bf  = mcmcFit(images['i'], 1, c_x, c_y, filename = name)
+        Bfs.append(bf)
+        i_fits.append(i_fit)
+
         c = (int(c_y), int(c_x))
-        i_fit = i_fit*images['g'][c]/images['i'][c]
-        calc_img = images['g'] - i_fit
+
+        #estimate how much "signal" we have, so we don't overfit
+        #area enclosed within nSigma
+        pixelsPerParam = 10
+        nSigma = 2
+
+        varX, varY = theta[1:3]
+        #area of an ellipse
+        area = np.pi*np.power(nSigma, 2)*np.sqrt(varX*varY)
+
+        maxGaussians =  int(area/(4*pixelsPerParam))
+
+        for n in xrange(2,maxGaussians):
+            i_fit, theta, bf = mcmcFit(images['i'], n, c_x, c_y, filename = name)
+            BFs.append(bf)
+            i_fits.append(i_fit)
+            if BFs[-1]/BFs[-1] < 1: #new Model is better!
+                oldTheta = theta
+            else:
+                break
+
+        bestArg = np.argmax(np.array(BFs))
+
+        i_fit = i_fits[bestArg]
+
+        i_fit_scaled = i_fit*images['g'][c]/images['i'][c]
+        calc_img = images['g'] - i_fit_scaled
 
         if inputDict['subtraction']:
             from matplotlib import pyplot as plt
             im = plt.imshow(calc_img)
             plt.colorbar(im)
             plt.savefig(inputDict['output']+baseName+'_subtraction.png')
-            plt.show()
+            #plt.show()
             plt.clf()
             plt.close()
 
@@ -136,50 +176,8 @@ def main():
             np.savetxt(inputDict['output']+baseName+'_residualData', calc_img)
 
         #TODO Plotting functionality here
-        lens = residualID(image, c_x, c_y)
+        lens = residualID(calc_img, c_x, c_y)
         print 'The image %s represents a lens: %s'%(baseName, str(lens))
-
-#a directory is handled differenly than a single file
-    else :
-        fileList = os.listdir(filename)
-        baseNames = set()
-        trackedObjs = []
-        for fname in fileList:
-            if fname[:6] == 'CFHTLS':
-                baseNames.add(fname[:-7])
-
-        baseNames = list(baseNames)
-        for baseName in baseNames:
-            name = inputDict['output']+baseName+'_samples' if inputDict['chain'] else None
-            bands = ['g', 'i']
-            images = {}
-            for band in bands:
-                fitsImage = pyfits.open(filename+baseName+'_'+band+'.fits')
-                image = fitsImage[0].data
-                if inputDict['useFindCenters']:
-                    c_y, c_x = findCenter(image)
-                elif inputDict['isCoordinates']:
-                    c_x, c_y = inputDict['coords']
-                else:
-                    c_x, c_y = inputDict['galaxyDict'][baseName[7:]]
-
-                image, c_x, c_y = cropImage(image, c_x, c_y, plot = inputDict['cutout'], filename = inputDict['output'] + baseName+'_'+band+'_cutout.png')
-                if inputDict['cutoutData']:
-                    import numpy as np
-                    np.savetxt(inputDict['output']+baseName+'_'+band+'_cutoutData', image)
-                images[band] = image    
-            #TODO Calculate BIC of model
-            i_fit = mcmcFit(images['i'], nGaussians, c_x, c_y, filename = name)
-            c = (int(c_y), int(c_x))
-            i_fit = i_fit*images['g'][c]/images['i'][c]
-            calc_img = images['g'] - i_fit
-            if inputDict['residualData']:
-                import numpy as np
-                np.savetxt(inputDict['output']+baseName+'_residualData', calc_img)
-
-            #TODO Plotting functionality here
-            lens = residualID(image, c_x, c_y)
-            print 'The image %s represents a lens: %s'%(baseName, str(lens))
 
 if __name__ == '__main__':
     main()
