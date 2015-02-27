@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="ae9ba962-254c-4a9c-803d-873e46cbf84d" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0118_u.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0118_z.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0155_u.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0155_z.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0790_u.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0790_z.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0855_u.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0855_z.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0987_u.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0987_z.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0988_u.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0988_z.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1014_u.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1014_z.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1845_u.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1845_z.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1846_u.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1846_z.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1866_u.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1866_z.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1988_u.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1988_z.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_072_2003_u.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_072_2003_z.fits" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/mcmcFit.py" afterPath="$PROJECT_DIR$/src/mcmcFit.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/modelImages.py" afterPath="$PROJECT_DIR$/src/modelImages.py" />
+    </list>
+    <ignored path="sgl-model-detect.iws" />
+    <ignored path=".idea/workspace.xml" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
+  <component name="CreatePatchCommitExecutor">
+    <option name="PATCH_PATH" value="" />
+  </component>
+  <component name="DaemonCodeAnalyzer">
+    <disable_hints />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
+  <component name="FavoritesManager">
+    <favorites_list name="sgl-model-detect" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file leaf-file-name="mcmcFit.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/mcmcFit.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-0.13186814" vertical-offset="1260" max-vertical-offset="2565">
+              <caret line="139" column="40" selection-start-line="139" selection-start-column="40" selection-end-line="139" selection-end-column="40" />
+              <folding>
+                <element signature="e#778#796#0" expanded="true" />
+                <element signature="e#1174#1446#0" expanded="false" />
+                <element signature="e#1634#2269#0" expanded="false" />
+                <element signature="e#2328#2964#0" expanded="false" />
+                <element signature="e#3026#3157#0" expanded="false" />
+                <element signature="e#3202#3508#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="modelImages.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/modelImages.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="1925" max-vertical-offset="2925">
+              <caret line="88" column="37" selection-start-line="88" selection-start-column="37" selection-end-line="88" selection-end-column="37" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="mclaughlin6464" />
+        <option value="Sean McLaughlin" />
+        <option value="mclaughiln6464" />
+      </list>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/src/modelImages.py" />
+        <option value="$PROJECT_DIR$/src/mcmcFit.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="y" value="52" />
+    <option name="width" value="960" />
+    <option name="height" value="1028" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="false">
+    <OptionsSetting value="true" id="Add" />
+    <OptionsSetting value="true" id="Remove" />
+    <OptionsSetting value="true" id="Checkout" />
+    <OptionsSetting value="true" id="Update" />
+    <OptionsSetting value="true" id="Status" />
+    <OptionsSetting value="true" id="Edit" />
+    <ConfirmationsSetting value="0" id="Add" />
+    <ConfirmationsSetting value="0" id="Remove" />
+  </component>
+  <component name="ProjectView">
+    <navigator currentView="ProjectPane" proportions="" version="1">
+      <flattenPackages />
+      <showMembers />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource />
+      <autoscrollFromSource />
+      <sortByType />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sgl-model-detect" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sgl-model-detect" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sgl-model-detect" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sgl-model-detect" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sgl-model-detect" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="options.lastSelected" value="editor.preferences.appearance" />
+    <property name="options.splitter.main.proportions" value="0.3" />
+    <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="FullScreen" value="false" />
+  </component>
+  <component name="PyConsoleOptionsProvider">
+    <option name="myPythonConsoleState">
+      <console-settings />
+    </option>
+  </component>
+  <component name="RunManager">
+    <list size="0" />
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false" />
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ae9ba962-254c-4a9c-803d-873e46cbf84d" name="Default" comment="" />
+      <created>1424994887342</created>
+      <option name="number" value="Default" />
+      <updated>1424994887342</updated>
+    </task>
+    <task id="LOCAL-00001" summary="In the middle of updating the inclusion of covariance and a Bayes Facotr">
+      <created>1424995686809</created>
+      <option name="number" value="00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1424995686809</updated>
+    </task>
+    <task id="LOCAL-00002" summary="In the middle of updating the inclusion of covariance and a Bayes Facotr">
+      <created>1424995788535</created>
+      <option name="number" value="00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1424995788535</updated>
+    </task>
+    <task id="LOCAL-00003" summary="In the middle of updating the inclusion of covariance and a Bayes Factor">
+      <created>1424996101566</created>
+      <option name="number" value="00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1424996101566</updated>
+    </task>
+    <task id="LOCAL-00004" summary="In the middle of updating the inclusion of covariance and a Bayes Factor">
+      <created>1425004338809</created>
+      <option name="number" value="00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1425004338809</updated>
+    </task>
+    <task id="LOCAL-00005" summary="IUntested, but input covariance and BF">
+      <created>1425007935835</created>
+      <option name="number" value="00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1425007935835</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="52" width="960" height="1028" extended-state="4" />
+    <editor active="false" />
+    <layout>
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32948583" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32948583" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20208333" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+    </layout>
+  </component>
+  <component name="Vcs.Log.UiProperties">
+    <option name="RECENTLY_FILTERED_USER_GROUPS">
+      <collection />
+    </option>
+    <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+      <collection />
+    </option>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_NEW_TODO" value="false" />
+    <option name="myTodoPanelSettings">
+      <TodoPanelSettings />
+    </option>
+    <MESSAGE value="In the middle of updating the inclusion of covariance and a Bayes Facotr" />
+    <MESSAGE value="In the middle of updating the inclusion of covariance and a Bayes Factor" />
+    <MESSAGE value="IUntested, but input covariance and BF" />
+    <option name="LAST_COMMIT_MESSAGE" value="IUntested, but input covariance and BF" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager />
+    <watches-manager />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/src/modelImages.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="1925" max-vertical-offset="2925">
+          <caret line="88" column="37" selection-start-line="88" selection-start-column="37" selection-end-line="88" selection-end-column="37" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/mcmcFit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.13186814" vertical-offset="1260" max-vertical-offset="2565">
+          <caret line="139" column="40" selection-start-line="139" selection-start-column="40" selection-end-line="139" selection-end-column="40" />
+          <folding>
+            <element signature="e#778#796#0" expanded="true" />
+            <element signature="e#1174#1446#0" expanded="false" />
+            <element signature="e#1634#2269#0" expanded="false" />
+            <element signature="e#2328#2964#0" expanded="false" />
+            <element signature="e#3026#3157#0" expanded="false" />
+            <element signature="e#3202#3508#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

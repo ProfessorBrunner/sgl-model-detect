@@ -24,13 +24,14 @@ def main():
                          help = 'Store a .png of the model subtraction from the original image.')
     #parser.add_argument('--residuals', dest = 'residuals', action = 'store_const', const = True, default = False,\
     #                     help = 'Save a .png of the detected residuals')
-    parser.add_argument('--subtractionData', dest = 'residualData', action = 'store_const', const = True, default = False,\
+    parser.add_argument('--subtractionData', dest = 'subtractionData', action = 'store_const', const = True, default = False,\
                                 help = 'Save the raw image data to file of the residuals.')
 
     args = parser.parse_args()
     filename = args.filename
     outputdir = args.outputdir
 
+    #determine which center finding method to use
     useFindCenters = args.centers is None
     if useFindCenters:
         isCoordinates = False
@@ -46,14 +47,19 @@ def main():
     if not useFindCenters and not isCoordinates:
         files.append(args.centers)
         centers = args.centers
-
+    #check files for existance
     import os
+
+    if os.isdir(filename) and filename[-1] != '/':
+        filename+='/'
+    
     for f in files:
         if not os.path.exists(f):
             print 'ERROR: Invalied path %s'%f
             from sys import exit
             exit(-1)
-
+    #being setting up the input dict
+    #This is a straightforward way to carry around various options
     inputDict = {}
     inputDict['filename'] = filename
     inputDict['output']= outputdir
@@ -77,7 +83,6 @@ def main():
     inputDict['cutout'] = args.cutout
     inputDict['cutoutData'] = args.cutoutData
     inputDict['chain'] = args.chain
-    inputDict['triangle'] = args.triangle
     inputDict['subtraction'] = args.subtraction
     #inputDict['residuals']=args.residuals
     inputDict['subtractionData'] = args.subtractionData
@@ -86,8 +91,10 @@ def main():
     from findCenter import findCenter
     from mcmcFit import mcmcFit
     from residualID import residualID
+    import numpy as np
     import pyfits
 
+    #load in filenames from directory
     if inputDict['isDir']:
         fileList = os.listdir(filename)
         baseNames = set()
@@ -98,7 +105,7 @@ def main():
 
         baseNames = list(baseNames)
         fileDirectory = filename
-
+    #load in lone image
     else:
         baseName = filename[:-7]
         lineIndex = baseName.rfind('/')
@@ -107,10 +114,12 @@ def main():
 
     bands = ['g', 'i']
     for baseName in baseNames:
+        #savefile name for sample chain
         name = inputDict['output']+baseName+'_samples' if inputDict['chain'] else None
 
         images = {}
         for band in bands:
+            #load in image and find its center through designated method
             fitsImage = pyfits.open(fileDirectory+baseName+'_'+band+'.fits')
             image = fitsImage[0].data
             if inputDict['useFindCenters']:
@@ -119,18 +128,20 @@ def main():
                 c_x, c_y = inputDict['coords']
             else:
                 c_x, c_y = inputDict['galaxyDict'][baseName[7:]]
-
+            #crop down to size, and possibly save
             image, c_x, c_y = cropImage(image, c_x, c_y, plot = inputDict['cutout'], filename = inputDict['output'] + baseName+'_'+band+'_cutout.png')
             if inputDict['cutoutData']:
                 import numpy as np
                 np.savetxt(inputDict['output']+baseName+'_'+band+'_cutoutData', image)
+
             images[band] = image
 
         BFs = []
         i_fits = []
-
+        #perform first fit with 1 Gaussian
+        #Then, use to charecterize max number of parameters
         i_fit,theta, bf  = mcmcFit(images['i'], 1, c_x, c_y, filename = name)
-        Bfs.append(bf)
+        BFs.append(bf)
         i_fits.append(i_fit)
 
         c = (int(c_y), int(c_x))
@@ -146,19 +157,17 @@ def main():
 
         maxGaussians =  int(area/(4*pixelsPerParam))
 
+        #iterate until we reach our limit or BF decreases
         for n in xrange(2,maxGaussians):
             i_fit, theta, bf = mcmcFit(images['i'], n, c_x, c_y, filename = name)
             BFs.append(bf)
             i_fits.append(i_fit)
-            if BFs[-1]/BFs[-1] < 1: #new Model is better!
-                oldTheta = theta
-            else:
+            if BFs[-1]/BFs[-1] > 1: #new Model is worse!
                 break
 
         bestArg = np.argmax(np.array(BFs))
-
+        print 'Best model N = %d'%(bestArg+1)
         i_fit = i_fits[bestArg]
-
         i_fit_scaled = i_fit*images['g'][c]/images['i'][c]
         calc_img = images['g'] - i_fit_scaled
 
@@ -167,7 +176,7 @@ def main():
             im = plt.imshow(calc_img)
             plt.colorbar(im)
             plt.savefig(inputDict['output']+baseName+'_subtraction.png')
-            #plt.show()
+            plt.show()
             plt.clf()
             plt.close()
 
@@ -176,6 +185,7 @@ def main():
             np.savetxt(inputDict['output']+baseName+'_residualData', calc_img)
 
         #TODO Plotting functionality here
+        #check for lens properties
         lens = residualID(calc_img, c_x, c_y)
         print 'The image %s represents a lens: %s'%(baseName, str(lens))
 

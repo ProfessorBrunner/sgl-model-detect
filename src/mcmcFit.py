@@ -33,6 +33,7 @@ from itertools import izip
 
 #the number of parameters per Gaussian
 NPARAM = 4
+
 def gaussian(x,y, cx, cy, a, cov):
     muMPos = np.dstack([x-cx, y-cy]) 
     invCov = np.linalg.inv(cov)
@@ -45,7 +46,6 @@ def gaussian(x,y, cx, cy, a, cov):
 
 #theta contains the variables for the amplitude and width
 #theta = [A1,A2...An,VarX1, VarX1..., VarXN, VarY1, VarY2,...VarYN] add covs later,Cov1, Cov2,...CovN]
-#TODO Put number of parameters in the global scope
 def lnprior(theta):
     #log uniform priors
     N = len(theta)/NPARAM #save us from having to put N in the global scope
@@ -77,7 +77,7 @@ def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2):
     for varX, varY, corr in izip(varXs, varYs, corrs):
         #construct a covariance matrix
         cov = corr*np.sqrt(varX*varY)
-        mat = np.array([varX, corr, corr, varY]).reshape((2,2))
+        mat = np.array([varX, cov, cov, varY]).reshape((2,2))
         covariance_mats.append(mat)
 
     model = np.zeros(image.shape) 
@@ -103,7 +103,7 @@ def BayesFactor(samples, theta, args):
 
     kde = gaussian_kde(samples.T)
     logDens = kde(theta)[0]
-    logp = lnlike(theta, args)
+    logp = lnlike(theta, *args)
 
     BF = logp+np.log(N)-logDens
 
@@ -116,12 +116,12 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 1000, filename = None):
     #numpy arrays of the indicies, used in the calculations
     yy, xx = np.indices(image.shape)
 
-    #error used in the liklihood. It's value does not seem to change the results much.
+    #error used in the liklihood. Its value does not seem to change the results much.
     #Represents the std of the error, which is assumed Gaussian
     inv_sigma2 = pow(.1, -2)
 
     #parameters for the emcee sampler.
-    ndim = N*NPARAM #1 Amp and 3 Rad dimentions
+    ndim = N*NPARAM #1 Amplitude and 3 Radial dimentions
     nsteps = 200
     nburn = int(nsteps*.25)
 
@@ -137,7 +137,7 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 1000, filename = None):
             else: #corr
                 row[i] = 2*np.random.rand()-1
         pos.append(row)
-    #TODO Try removing this section and see what happens
+    #TODO Consider removing this portion
     #sometimes the center is not exactly accurate. This part finds the maximum in the region around the center.
     dy, dx = np.unravel_index(image[c_y-1:c_y+2, c_x-1:c_x+2].argmax(), (3,3))
     dy,dx = dy-1, dx-1
@@ -146,7 +146,7 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 1000, filename = None):
     args = (image, xx, yy, c_x, c_y, inv_sigma2) 
     sampler = mc.EnsembleSampler(n_walkers, ndim,\
                                  lnprob, args = args,threads = cpu_count())
-    #run the sampler. Longest line in the code
+    #run the sampler. Longest running line in the code
     sampler.run_mcmc(pos, nsteps)
 
     samples = sampler.chain[:,nburn:,:].reshape((-1, ndim))
@@ -159,6 +159,7 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 1000, filename = None):
     #the MAP is simply the mean of the chain
     #calc_vals = samples.mean(axis = 0)
 
+    #calculate the mode from a histogram
     n_bins = int(np.sqrt(samples.shape[0])/4)#arbitrary
     calc_vals = np.zeros(ndim)
 
