@@ -4,22 +4,22 @@ desc ='''
 This module fits to an image using MCMC techniques, specifically using the package emcee. 
 This module contains the function fitImage. It can be run as main or imported.
 
-mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0)
+mcmcFit(image, N, c_x, c_y, n_walkers = 600, filename = None)
 image: numpy array of the image
 N: the number of Gaussians to use in the fit
 c_x, c_y: the center of the object in the image.
 n_walkers: the number of walkers, default 600
-ddof: the change in degrees of freedom, for the chiSquare test
+filename: If not None, the location to store the sample chain
 
 return:
 calc_img: the image with the residual subtracted out
-chi2stat: the chi2 statistic
-p: the probability of the model. Usually 0.
+calc_vals: The parameter vector corresponding to the image
+BF: The Bayes Factor for this model
 
 To run as main:
 python mcmcFit.py filename 2 100 100
 
-with optional n_walkers and ddof
+with optional n_walkers and saveFile
 '''
 import numpy as np
 import emcee as mc
@@ -30,6 +30,9 @@ from multiprocessing import cpu_count
 from itertools import izip
 
 #TODO: there's a problem with the vectorization of this calculation. Isn't efficient in this form.
+
+#the number of parameters per Gaussian
+NPARAM = 4
 def gaussian(x,y, cx, cy, a, cov):
     muMPos = np.dstack([x-cx, y-cy]) 
     invCov = np.linalg.inv(cov)
@@ -45,8 +48,8 @@ def gaussian(x,y, cx, cy, a, cov):
 #TODO Put number of parameters in the global scope
 def lnprior(theta):
     #log uniform priors
-    N = len(theta)/4 #save us from having to put N in the global scope
-    amps, varXs, varYs, corrs = [theta[i*N:(i+1)*N] for i in xrange(4)]
+    N = len(theta)/NPARAM #save us from having to put N in the global scope
+    amps, varXs, varYs, corrs = [theta[i*N:(i+1)*N] for i in xrange(NPARAM)]
 
     if any(1e-1>a or a>1e3 for a in amps):
         return -np.inf
@@ -64,11 +67,11 @@ def lnprior(theta):
         return -np.inf
 
     #log Uniform prior
-    return -1*np.sum(np.log(theta[:3*N]))
+    return -1*np.sum(np.log(theta[:(NPARAM-1)*N]))
 
 def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2):
-    N = len(theta)/4
-    amps, varXs, varYs, corrs = [theta[i*N:(i+1)*N] for i in xrange(4)]
+    N = len(theta)/NPARAM
+    amps, varXs, varYs, corrs = [theta[i*N:(i+1)*N] for i in xrange(NPARAM)]
 
     covariance_mats = []
     for varX, varY, corr in izip(varXs, varYs, corrs):
@@ -106,8 +109,7 @@ def BayesFactor(samples, theta, args):
 
     return BF
 
-#TODO Remove triangle keyword, as I don't want to ship with triangle plots
-def mcmcFit(image, N, c_x, c_y, n_walkers = 1000, filename = None, triangle = None):
+def mcmcFit(image, N, c_x, c_y, n_walkers = 1000, filename = None):
 
     np.random.seed(int(time()))
 
@@ -116,85 +118,73 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 1000, filename = None, triangle = No
 
     #error used in the liklihood. It's value does not seem to change the results much.
     #Represents the std of the error, which is assumed Gaussian
-    err = .1
-    inv_sigma2 = 1./(err**2)
+    inv_sigma2 = pow(.1, -2)
 
     #parameters for the emcee sampler.
-    #TODO add cov here
-    ndim = N*3 #1 Amp and 3 Rad dimentions
-    nburn = int(n_walkers*.1)
+    ndim = N*NPARAM #1 Amp and 3 Rad dimentions
     nsteps = 200
+    nburn = int(nsteps*.25)
 
     #initial guess
     pos = []
     for walk in xrange(n_walkers):
         row = np.zeros(ndim)
-        for n in xrange(N):
-            row[n] = 10**(4*np.random.rand()-1)
-            for i in xrange(1,3):
-                row[n+i*N] = 10**(3*np.random.rand())
+        for i in xrange(ndim):
+            if i < N: #amp
+                row[i] = 10**(4*np.random.rand()-1)
+            elif i<ndim-N: #var
+                row[i] = 10**(5*np.random.rand()-2)
+            else: #corr
+                row[i] = 2*np.random.rand()-1
         pos.append(row)
-
+    #TODO Try removing this section and see what happens
     #sometimes the center is not exactly accurate. This part finds the maximum in the region around the center.
     dy, dx = np.unravel_index(image[c_y-1:c_y+2, c_x-1:c_x+2].argmax(), (3,3))
     dy,dx = dy-1, dx-1
     c_y, c_x = c_y+dy, c_x+dx
 
     args = (image, xx, yy, c_x, c_y, inv_sigma2) 
-    sampler = mc.EnsembleSampler(n_walkers, ndim, lnprob, args = args, \
-                                                    threads = cpu_count()) 
+    sampler = mc.EnsembleSampler(n_walkers, ndim,\
+                                 lnprob, args = args,threads = cpu_count())
     #run the sampler. Longest line in the code
     sampler.run_mcmc(pos, nsteps)
+
     samples = sampler.chain[:,nburn:,:].reshape((-1, ndim))
     sampler.pool.terminate()#there's a bug in emcee that creates daemon threads. This kills them.
     del(sampler)
     #save samples to file
     if filename is not None:
         np.savetxt(filename, samples, delimiter = ',')
-    if triangle is not None:
-        from triangle import corner
-        sampled_as = samples[:, :N].reshape((-1))
-        sampled_varXs = samples[:,N:2*N].reshape((-1))
-        sampled_varYs = samples[:,2*N:3*N].reshape((-1))
-        labels = ['Amps', 'VarX', 'VarY']
-        data = np.c_[sampled_as, sampled_varXs, sampled_varYs]
-        corner(data, labels = labels) 
-        plt.savefig(triangle)
-        plt.show()
-        #plt.clf()
-        #plt.close()
-
-    #TODO add calc_covs here
 
     #the MAP is simply the mean of the chain
-    #NOTE try taking the mean over the log, see how that goes
     #calc_vals = samples.mean(axis = 0)
 
-    n_bins = int(np.sqrt(samples.shape[0])/3)
+    n_bins = int(np.sqrt(samples.shape[0])/4)#arbitrary
     calc_vals = np.zeros(ndim)
 
-    #NOTE Also try the mode over the log
     for i in xrange(ndim):
-        hist, bin_edges = np.histogram(samples[:,i], bins = n_bins)
-        max_idx = np.argmax(hist)
-        calc_vals[i] = (bin_edges[max_idx]+bin_edges[max_idx+1])/2#center of peak
+        if i< ndim-N:
+            hist, bin_edges = np.histogram(np.log10(samples[:,i]), bins = n_bins)
+            max_idx = np.argmax(hist)
+            #NOTE unsure if I should take the mean over the exponents or values
+            calc_vals[i] = 10**((bin_edges[max_idx]+bin_edges[max_idx+1])/2)#center of peak
+        else:
+            hist, bin_edges = np.histogram(samples[:,i], bins = n_bins)
+            max_idx = np.argmax(hist)
+            calc_vals[i] = (bin_edges[max_idx]+bin_edges[max_idx+1])/2
 
-    calc_as, calc_varXs, calc_varYs = [calc_vals[i*N:(1+i)*N] for i in xrange(3)]
+    calc_as, calc_varXs, calc_varYs, calc_corrs = [calc_vals[i*N:(i+1)*N] for i in xrange(NPARAM)]
 
     covariance_mats = []
-    #TODO add covs here
-    for varX, varY in izip(calc_varXs, calc_varYs):
+    for varX, varY, corr in izip(calc_varXs, calc_varYs, calc_corrs):
         #construct a covariance matrix
-        mat = np.array([varX, 0, 0, varY]).reshape((2,2))
+        cov = corr*np.sqrt(varX*varY)
+        mat = np.array([varX, cov, cov, varY]).reshape((2,2))
         covariance_mats.append(mat)
 
-
     calc_img = sum(gaussian(xx,yy,c_x,c_y,a,cov) for a,cov in izip(calc_as, covariance_mats))
-    #from matplotlib import pyplot as plot
-    #plt.imshow(calc_img)
-    #plt.show()
-
-    return calc_img
+    BF = BayesFactor(samples, calc_vals, args)
+    return calc_img, calc_vals, BF
 
 if __name__ == '__main__':
     import argparse
@@ -207,7 +197,7 @@ if __name__ == '__main__':
     parser.add_argument('center_x', metavar = 'cx', type = int, help = 'The center in x')
     parser.add_argument('center_y', metavar = 'cy', type = int, help = 'The center in y')
     parser.add_argument('n_walkers', metavar = 'n_walkers', type = int, help = 'Number of walkers',nargs = '?', default = 1000)
-    parser.add_argument('ddof', metavar = 'ddof', type = int, help = 'Change in the degree of freedom',nargs = '?', default = 0)
+    parser.add_argument('saveFile', metavar = 'sfile', type = str, help = 'Where to store the sample chain.',nargs = '?', default = 0)
 
     args = parser.parse_args()
 
@@ -227,7 +217,7 @@ if __name__ == '__main__':
     image, c_x, c_y = cropImage(image, c_x, c_y)
 
     N = args.nGaussians
-    calc_img, chi2stat, p = mcmcFit(image, N, c_x, c_y, args.n_walkers, args.ddof) 
+    calc_img, theta, BF = mcmcFit(image, N, c_x, c_y, args.n_walkers, args.saveFile)
     plt.subplot(121)
     im = plt.imshow(image)
     plt.colorbar()
