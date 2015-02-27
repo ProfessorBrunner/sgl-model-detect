@@ -24,7 +24,6 @@ with optional n_walkers and ddof
 import numpy as np
 import emcee as mc
 from time import time
-
 from matplotlib import pyplot as plt
 from scipy.stats import mode, gaussian_kde
 from multiprocessing import cpu_count
@@ -94,11 +93,23 @@ def lnprob(theta, image, xx, yy, c_x, c_y, inv_sigma2):
         return lp+lnlike(theta, image, xx, yy, c_x, c_y, inv_sigma2)
     return -np.inf
 
-def mcmcFit(image, N, c_x, c_y, n_walkers = 600, filename = None, triangle = None):
+def BayesFactor(samples, theta, args):
+    #technique taken form the code in astroML to calculate Bayesian odds. Be sure to cite
+    #They use a simler method than what I employ here
+    N,D = samples.shape
+
+    kde = gaussian_kde(samples.T)
+    logDens = kde(theta)[0]
+    logp = lnlike(theta, args)
+
+    BF = logp+np.log(N)-logDens
+
+    return BF
+
+#TODO Remove triangle keyword, as I don't want to ship with triangle plots
+def mcmcFit(image, N, c_x, c_y, n_walkers = 1000, filename = None, triangle = None):
 
     np.random.seed(int(time()))
-
-    img_y, img_x = image.shape
 
     #numpy arrays of the indicies, used in the calculations
     yy, xx = np.indices(image.shape)
