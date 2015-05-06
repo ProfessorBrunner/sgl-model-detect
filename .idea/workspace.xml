@@ -1,33 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="ae9ba962-254c-4a9c-803d-873e46cbf84d" name="Default" comment="IUntested, but input covariance and BF">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/imageClass.py" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0118_u.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0118_z.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0155_u.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0155_z.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0790_u.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0790_z.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0855_u.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0855_z.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0987_u.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0987_z.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0988_u.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_0988_z.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1014_u.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1014_z.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1845_u.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1845_z.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1846_u.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1846_z.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1866_u.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1866_z.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1988_u.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_047_1988_z.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_072_2003_u.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/simulated_lenses/CFHTLS_072_2003_z.fits" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/modelImages.py" afterPath="$PROJECT_DIR$/src/modelImages.py" />
+    <list default="true" id="ae9ba962-254c-4a9c-803d-873e46cbf84d" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="sgl-model-detect.iws" />
@@ -338,19 +312,26 @@
       <option name="project" value="LOCAL" />
       <updated>1425007935835</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Added the imageClass module to include the formatting info for general images.">
+      <created>1430883964204</created>
+      <option name="number" value="00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1430883964204</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="-4" width="1920" height="1084" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32948583" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32948583" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20208333" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20208333" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
@@ -360,7 +341,6 @@
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32948583" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -386,7 +366,8 @@
     <MESSAGE value="In the middle of updating the inclusion of covariance and a Bayes Facotr" />
     <MESSAGE value="In the middle of updating the inclusion of covariance and a Bayes Factor" />
     <MESSAGE value="IUntested, but input covariance and BF" />
-    <option name="LAST_COMMIT_MESSAGE" value="IUntested, but input covariance and BF" />
+    <MESSAGE value="Added the imageClass module to include the formatting info for general images." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added the imageClass module to include the formatting info for general images." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
