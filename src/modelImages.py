@@ -14,6 +14,7 @@ def main():
     parser.add_argument('filename', metavar = 'filename', type = str, help = 'Either a fits filename or a directory of files.')
     parser.add_argument('outputdir', metavar = 'output', type = str, help = 'Location to store the programs output')
     parser.add_argument('centers', metavar = 'centers', type = str, help = 'Either a filename or a comma separate pair of coordinates for x,y. Default is to use findCenter.', default = None, nargs = '?')
+    parser.add_argument('format', metavar = 'imageFormat', type = str, help = 'Determines the format of images to use. Optiones are "C" for CFHTLS or "S" for SDSS.')
     parser.add_argument('--cutout', dest = 'cutout', action = 'store_const', const = True, default = False,\
                          help = 'Save a .png of the original cutout to file.')
     parser.add_argument('--cutoutData', dest = 'cutoutData', action = 'store_const', const = True, default = False,\
@@ -30,6 +31,11 @@ def main():
     args = parser.parse_args()
     filename = args.filename
     outputdir = args.outputdir
+
+    if args.imageFormat not in ['C', 'S']:
+        print 'Invalid format entry; please select "C" or "S"'
+        from sys import exit
+        exit(-1)
 
     #determine which center finding method to use
     useFindCenters = args.centers is None
@@ -50,7 +56,7 @@ def main():
     #check files for existance
     import os
 
-    if os.isdir(filename) and filename[-1] != '/':
+    if os.path.isdir(filename) and filename[-1] != '/':
         filename+='/'
     
     for f in files:
@@ -58,7 +64,7 @@ def main():
             print 'ERROR: Invalied path %s'%f
             from sys import exit
             exit(-1)
-    #being setting up the input dict
+    #begin setting up the input dict
     #This is a straightforward way to carry around various options
     inputDict = {}
     inputDict['filename'] = filename
@@ -70,6 +76,7 @@ def main():
     if isCoordinates:
         inputDict['coords'] = (cx, cy)
 
+    #Make a dictionary of the Galaxy's image coordinates.
     elif not useFindCenters:
         galaxyDict = {}
         with open(centers) as f:
@@ -88,59 +95,62 @@ def main():
     inputDict['subtractionData'] = args.subtractionData
 
     from cropImage import cropImage
-    from findCenter import findCenter
     from mcmcFit import mcmcFit
     from residualID import residualID
+    from imageClass import *
     import numpy as np
-    import pyfits
+
+    imageClassDict = {'C': CFHTLS, 'S': SDSS}
+    #the appropriate formatting for these objects
+    imageObj = imageClassDict[args.imageFormat] 
+    imageDict = {}
 
     #load in filenames from directory
     if inputDict['isDir']:
         fileList = os.listdir(filename)
-        baseNames = set()
-        trackedObjs = []
-        for fname in fileList:
-            if fname[:6] == 'CFHTLS':
-                baseNames.add(fname[:-7])
-
-        baseNames = list(baseNames)
         fileDirectory = filename
+        for fname in fileList:
+            #Only look at .fits images
+            if fname[:-5] != '.fits':
+                continue
+
+            obj = imageObj(fname)
+
+            if obj.imageID in imageDict:
+                imageDict[obj.imageID].addImage(fname)
+
+            else:
+                imageDict[obj.imageID] = obj 
+
     #load in lone image
     else:
-        baseName = filename[:-7]
-        lineIndex = baseName.rfind('/')
-        fileDirectory, baseName = baseName[:lineIndex], baseName[lineIndex:]
-        baseNames = [baseName]
+        lineIndex = filename.rfind('/')
+        fileDirectory, baseName= filename[:lineIndex], filename[lineIndex]
+        obj = imageObj(baseName)
+        imageDict[obj.imageID] = obj 
 
     bands = ['g', 'i']
-    for baseName in baseNames:
+    for imageObj in imageDict.itervalues():
         #savefile name for sample chain
         name = inputDict['output']+baseName+'_samples' if inputDict['chain'] else None
+        coords = None
+        galaxyDict = None
 
-        images = {}
-        for band in bands:
-            #load in image and find its center through designated method
-            fitsImage = pyfits.open(fileDirectory+baseName+'_'+band+'.fits')
-            image = fitsImage[0].data
-            if inputDict['useFindCenters']:
-                c_y, c_x = findCenter(image)
-            elif inputDict['isCoordinates']:
-                c_x, c_y = inputDict['coords']
-            else:
-                c_x, c_y = inputDict['galaxyDict'][baseName[7:]]
-            #crop down to size, and possibly save
-            image, c_x, c_y = cropImage(image, c_x, c_y, plot = inputDict['cutout'], filename = inputDict['output'] + baseName+'_'+band+'_cutout.png')
-            if inputDict['cutoutData']:
-                import numpy as np
-                np.savetxt(inputDict['output']+baseName+'_'+band+'_cutoutData', image)
+        if inputDict['isCoordinates']:
+            coords = inputDict['coords']
 
-            images[band] = image
+        if 'galaxyDict' in inputDict:
+            galaxyDict = inputDict['galaxyDict']
+
+        imageObj.calculateCenters(coords,galaxyDict)
+        imageObj.cropImage(inputDict['cutout'], inputDict['output'])
 
         BFs = []
         i_fits = []
         #perform first fit with 1 Gaussian
         #Then, use to charecterize max number of parameters
-        i_fit,theta, bf  = mcmcFit(images['i'], 1, c_x, c_y, filename = name)
+        c_x, c_y = imageObj.center
+        i_fit,theta, bf  = mcmcFit(imageObj['i'], 1, c_x, c_y, filename = name)
         BFs.append(bf)
         i_fits.append(i_fit)
 
@@ -159,7 +169,7 @@ def main():
 
         #iterate until we reach our limit or BF decreases
         for n in xrange(2,maxGaussians):
-            i_fit, theta, bf = mcmcFit(images['i'], n, c_x, c_y, filename = name)
+            i_fit, theta, bf = mcmcFit(imageObj['i'], n, c_x, c_y, filename = name)
             BFs.append(bf)
             i_fits.append(i_fit)
             if BFs[-1]/BFs[-1] > 1: #new Model is worse!
@@ -168,8 +178,8 @@ def main():
         bestArg = np.argmax(np.array(BFs))
         print 'Best model N = %d'%(bestArg+1)
         i_fit = i_fits[bestArg]
-        i_fit_scaled = i_fit*images['g'][c]/images['i'][c]
-        calc_img = images['g'] - i_fit_scaled
+        i_fit_scaled = i_fit*imageObj['g'][c]/imageObj['i'][c]
+        calc_img = imageObj['g'] - i_fit_scaled
 
         if inputDict['subtraction']:
             from matplotlib import pyplot as plt
