@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="ae9ba962-254c-4a9c-803d-873e46cbf84d" name="Default" comment="">
+    <list default="true" id="ae9ba962-254c-4a9c-803d-873e46cbf84d" name="Default" comment="Currently some problems, not doign the cropping or center finding correctly.">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cropImage.py" afterPath="$PROJECT_DIR$/src/cropImage.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/imageClass.py" afterPath="$PROJECT_DIR$/src/imageClass.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/modelImages.py" afterPath="$PROJECT_DIR$/src/modelImages.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="sgl-model-detect.iws" />
@@ -26,11 +29,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="imageClass.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="modelImages.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/modelImages.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="1805" max-vertical-offset="3405">
+              <caret line="149" column="9" selection-start-line="149" selection-start-column="9" selection-end-line="149" selection-end-column="9" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="imageClass.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/imageClass.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1260">
-              <caret line="27" column="28" selection-start-line="27" selection-start-column="28" selection-end-line="27" selection-end-column="28" />
+            <state vertical-scroll-proportion="0.35714287" vertical-offset="470" max-vertical-offset="1380">
+              <caret line="53" column="8" selection-start-line="53" selection-start-column="8" selection-end-line="53" selection-end-column="8" />
               <folding>
                 <element signature="e#211#224#0" expanded="true" />
               </folding>
@@ -38,11 +51,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="modelImages.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/modelImages.py">
+      <file leaf-file-name="cropImage.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/cropImage.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.6687697" vertical-offset="2184" max-vertical-offset="3135">
-              <caret line="188" column="22" selection-start-line="188" selection-start-column="22" selection-end-line="188" selection-end-column="22" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="360" max-vertical-offset="1500">
+              <caret line="60" column="9" selection-start-line="60" selection-start-column="9" selection-end-line="60" selection-end-column="9" />
               <folding />
             </state>
           </provider>
@@ -64,15 +77,16 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/src/mcmcFit.py" />
-        <option value="$PROJECT_DIR$/src/imageClass.py" />
+        <option value="$PROJECT_DIR$/src/cropImage.py" />
         <option value="$PROJECT_DIR$/src/modelImages.py" />
+        <option value="$PROJECT_DIR$/src/imageClass.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="y" value="-4" />
-    <option name="width" value="1920" />
-    <option name="height" value="1084" />
+    <option name="y" value="24" />
+    <option name="width" value="960" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -318,12 +332,18 @@
       <option name="project" value="LOCAL" />
       <updated>1430883964204</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Added the imageClass module to include the formatting info for general images.">
+      <created>1430883972499</created>
+      <option name="number" value="00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1430883972499</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="-4" width="1920" height="1084" extended-state="6" />
-    <editor active="false" />
+    <frame x="0" y="24" width="960" height="1056" extended-state="4" />
+    <editor active="true" />
     <layout>
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32948583" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32948583" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -331,7 +351,7 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20208333" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.209375" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
@@ -379,7 +399,7 @@
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2565">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#778#796#0" expanded="true" />
+            <element signature="e#778#796#0" expanded="false" />
             <element signature="e#1174#1446#0" expanded="false" />
             <element signature="e#1634#2269#0" expanded="false" />
             <element signature="e#2328#2964#0" expanded="false" />
@@ -402,7 +422,7 @@
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2565">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#778#796#0" expanded="true" />
+            <element signature="e#778#796#0" expanded="false" />
             <element signature="e#1174#1446#0" expanded="false" />
             <element signature="e#1634#2269#0" expanded="false" />
             <element signature="e#2328#2964#0" expanded="false" />
@@ -425,7 +445,7 @@
         <state vertical-scroll-proportion="0.0" vertical-offset="1260" max-vertical-offset="2565">
           <caret line="139" column="40" selection-start-line="139" selection-start-column="40" selection-end-line="139" selection-end-column="40" />
           <folding>
-            <element signature="e#778#796#0" expanded="true" />
+            <element signature="e#778#796#0" expanded="false" />
             <element signature="e#1174#1446#0" expanded="false" />
             <element signature="e#1634#2269#0" expanded="false" />
             <element signature="e#2328#2964#0" expanded="false" />
@@ -435,21 +455,29 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/imageClass.py">
+    <entry file="file://$PROJECT_DIR$/src/modelImages.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1260">
-          <caret line="27" column="28" selection-start-line="27" selection-start-column="28" selection-end-line="27" selection-end-column="28" />
-          <folding>
-            <element signature="e#211#224#0" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="0.0" vertical-offset="2075" max-vertical-offset="3405">
+          <caret line="149" column="9" selection-start-line="149" selection-start-column="9" selection-end-line="149" selection-end-column="9" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/modelImages.py">
+    <entry file="file://$PROJECT_DIR$/src/cropImage.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6687697" vertical-offset="2184" max-vertical-offset="3135">
-          <caret line="188" column="22" selection-start-line="188" selection-start-column="22" selection-end-line="188" selection-end-column="22" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="360" max-vertical-offset="1500">
+          <caret line="60" column="9" selection-start-line="60" selection-start-column="9" selection-end-line="60" selection-end-column="9" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/imageClass.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.35714287" vertical-offset="470" max-vertical-offset="1380">
+          <caret line="53" column="8" selection-start-line="53" selection-start-column="8" selection-end-line="53" selection-end-column="8" />
+          <folding>
+            <element signature="e#211#224#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

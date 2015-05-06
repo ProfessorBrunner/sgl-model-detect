@@ -13,8 +13,11 @@ def main():
 #I need a series of optional arguments to have save checkpoints along the process.
     parser.add_argument('filename', metavar = 'filename', type = str, help = 'Either a fits filename or a directory of files.')
     parser.add_argument('outputdir', metavar = 'output', type = str, help = 'Location to store the programs output')
+    parser.add_argument('imageFormat', metavar = 'format', type = str, help = 'Determines the format of images to use. Optiones are "C" for CFHTLS or "S" for SDSS.')
+    parser.add_argument('bands', metavar = 'bands', type = str, help = "What bands to use in the fit. If just one, will fit only that band. If 2 given, first will be\
+                                                                       primary fit to and 2nd will be the one subtracted from")
     parser.add_argument('centers', metavar = 'centers', type = str, help = 'Either a filename or a comma separate pair of coordinates for x,y. Default is to use findCenter.', default = None, nargs = '?')
-    parser.add_argument('format', metavar = 'imageFormat', type = str, help = 'Determines the format of images to use. Optiones are "C" for CFHTLS or "S" for SDSS.')
+
     parser.add_argument('--cutout', dest = 'cutout', action = 'store_const', const = True, default = False,\
                          help = 'Save a .png of the original cutout to file.')
     parser.add_argument('--cutoutData', dest = 'cutoutData', action = 'store_const', const = True, default = False,\
@@ -31,6 +34,8 @@ def main():
     args = parser.parse_args()
     filename = args.filename
     outputdir = args.outputdir
+
+    bands = args.bands
 
     if args.imageFormat not in ['C', 'S']:
         print 'Invalid format entry; please select "C" or "S"'
@@ -66,12 +71,15 @@ def main():
             exit(-1)
     #begin setting up the input dict
     #This is a straightforward way to carry around various options
+    #TODO Reconsider the input dict; it's become more nightmare than tool
     inputDict = {}
     inputDict['filename'] = filename
     inputDict['output']= outputdir
     inputDict['useFindCenters'] = useFindCenters
     inputDict['isCoordinates'] = isCoordinates
     inputDict['isDir'] = os.path.isdir(filename)
+    inputDict['primaryBand'] = bands[0]
+    inputDict['secondaryBand'] = bands[1] if len(bands)>1 else None
 
     if isCoordinates:
         inputDict['coords'] = (cx, cy)
@@ -97,12 +105,12 @@ def main():
     from cropImage import cropImage
     from mcmcFit import mcmcFit
     from residualID import residualID
-    from imageClass import *
+    import imageClass
     import numpy as np
 
-    imageClassDict = {'C': CFHTLS, 'S': SDSS}
+    imageClassDict = {'C': imageClass.CFHTLS, 'S': imageClass.SDSS}
     #the appropriate formatting for these objects
-    imageObj = imageClassDict[args.imageFormat] 
+    imgClass = imageClassDict[args.imageFormat]
     imageDict = {}
 
     #load in filenames from directory
@@ -111,25 +119,21 @@ def main():
         fileDirectory = filename
         for fname in fileList:
             #Only look at .fits images
-            if fname[:-5] != '.fits':
+            if fname[-5:] != '.fits':
                 continue
-
-            obj = imageObj(fname)
+            obj = imgClass(fileDirectory+fname)
 
             if obj.imageID in imageDict:
-                imageDict[obj.imageID].addImage(fname)
+                imageDict[obj.imageID].addImage(fileDirectory+fname)
 
             else:
                 imageDict[obj.imageID] = obj 
 
     #load in lone image
     else:
-        lineIndex = filename.rfind('/')
-        fileDirectory, baseName= filename[:lineIndex], filename[lineIndex]
-        obj = imageObj(baseName)
+        obj = imgClass(filename)
         imageDict[obj.imageID] = obj 
 
-    bands = ['g', 'i']
     for imageObj in imageDict.itervalues():
         #savefile name for sample chain
         name = inputDict['output']+baseName+'_samples' if inputDict['chain'] else None
@@ -143,16 +147,17 @@ def main():
             galaxyDict = inputDict['galaxyDict']
 
         imageObj.calculateCenters(coords,galaxyDict)
+        #print 'Cutout'
         imageObj.cropImage(inputDict['cutout'], inputDict['output'])
 
         BFs = []
-        i_fits = []
+        prim_fits = []
         #perform first fit with 1 Gaussian
         #Then, use to charecterize max number of parameters
         c_x, c_y = imageObj.center
-        i_fit,theta, bf  = mcmcFit(imageObj['i'], 1, c_x, c_y, filename = name)
+        prim_fit,theta, bf  = mcmcFit(imageObj[inputDict['primaryBand']], 1, c_x, c_y, filename = name)
         BFs.append(bf)
-        i_fits.append(i_fit)
+        prim_fits.append(prim_fit)
 
         c = (int(c_y), int(c_x))
 
@@ -169,35 +174,48 @@ def main():
 
         #iterate until we reach our limit or BF decreases
         for n in xrange(2,maxGaussians):
-            i_fit, theta, bf = mcmcFit(imageObj['i'], n, c_x, c_y, filename = name)
+            prim_fit, theta, bf = mcmcFit(imageObj[inputDict['primaryBand']], n, c_x, c_y, filename = name)
             BFs.append(bf)
-            i_fits.append(i_fit)
+            prim_fits.append(prim_fit)
             if BFs[-1]/BFs[-1] > 1: #new Model is worse!
                 break
 
         bestArg = np.argmax(np.array(BFs))
         print 'Best model N = %d'%(bestArg+1)
-        i_fit = i_fits[bestArg]
-        i_fit_scaled = i_fit*imageObj['g'][c]/imageObj['i'][c]
-        calc_img = imageObj['g'] - i_fit_scaled
+        if inputDict['secondaryBand'] is not None:
+            prim_fit = prim_fits[bestArg]
+            prim_fit_scaled = prim_fit*imageObj[inputDict['secondaryBand']][c]/imageObj[inputDict['primaryBand']][c]
+            calc_img = imageObj[inputDict['secondaryBand']] - prim_fit_scaled
 
+        else:
+            calc_img = imageObj[inputDict['primaryBand']] - prim_fit
+        '''
+        from matplotlib import pyplot as plt
+        print 'Model'
+        im = plt.imshow(prim_fit)
+        plt.colorbar(im)
+        plt.show()
+        plt.clf()
+        plt.close()
+        '''
         if inputDict['subtraction']:
             from matplotlib import pyplot as plt
             im = plt.imshow(calc_img)
             plt.colorbar(im)
-            plt.savefig(inputDict['output']+baseName+'_subtraction.png')
-            plt.show()
+            plt.savefig(inputDict['output']+imageObj.imageID+'_subtraction.png')
+            #print 'Subtraction'
+            #plt.show()
             plt.clf()
             plt.close()
 
         if inputDict['subtractionData']:
             import numpy as np
-            np.savetxt(inputDict['output']+baseName+'_residualData', calc_img)
+            np.savetxt(inputDict['output']+imageObj.imageID+'_residualData', calc_img)
 
         #TODO Plotting functionality here
         #check for lens properties
         lens = residualID(calc_img, c_x, c_y)
-        print 'The image %s represents a lens: %s'%(baseName, str(lens))
+        print 'The image %s represents a lens: %s'%(imageObj.imageID, str(lens))
 
 if __name__ == '__main__':
     main()
