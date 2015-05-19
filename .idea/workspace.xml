@@ -1,13 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="ae9ba962-254c-4a9c-803d-873e46cbf84d" name="Default" comment="Currently some problems, not doign the cropping or center finding correctly.">
+    <list default="true" id="ae9ba962-254c-4a9c-803d-873e46cbf84d" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0173.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0174.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0175.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0176.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0177.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0178.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0179.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0180.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0181.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0183.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0184.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0185.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0187.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0188.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0189.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0190.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0191.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0192.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0193.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0194.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000211-1-0355.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000211-1-0356.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000211-1-0357.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000211-1-0358.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000211-1-0359.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0173.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0174.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0175.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0176.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0177.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0178.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0179.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0180.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0181.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0183.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0184.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0185.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0187.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0188.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0189.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0190.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0191.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0192.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0193.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0194.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000211-1-0355.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000211-1-0356.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000211-1-0357.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000211-1-0358.fits" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000211-1-0359.fits" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cropImage.py" afterPath="$PROJECT_DIR$/src/cropImage.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/findCenter.py" afterPath="$PROJECT_DIR$/src/findCenter.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/imageClass.py" afterPath="$PROJECT_DIR$/src/imageClass.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/modelImages.py" afterPath="$PROJECT_DIR$/src/modelImages.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/sgl-model-detect.iml" afterPath="$PROJECT_DIR$/.idea/sgl-model-detect.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="sgl-model-detect.iws" />
@@ -33,8 +79,8 @@
       <file leaf-file-name="modelImages.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/modelImages.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-0.8962723">
-              <caret line="161" column="15" selection-start-line="161" selection-start-column="15" selection-end-line="161" selection-end-column="15" />
+            <state vertical-scroll-proportion="0.49270666">
+              <caret line="155" column="0" selection-start-line="155" selection-start-column="0" selection-end-line="155" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -50,11 +96,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="findCenter.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/findCenter.py">
+      <file leaf-file-name="cropImage.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/cropImage.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="33" column="14" selection-start-line="33" selection-start-column="14" selection-end-line="33" selection-end-column="59" />
+              <caret line="32" column="44" selection-start-line="32" selection-start-column="44" selection-end-line="32" selection-end-column="44" />
               <folding />
             </state>
           </provider>
@@ -65,6 +111,7 @@
   <component name="Git.Settings">
     <option name="PREVIOUS_COMMIT_AUTHORS">
       <list>
+        <option value="Sean" />
         <option value="mclaughlin6464" />
         <option value="Sean McLaughlin" />
         <option value="mclaughiln6464" />
@@ -76,10 +123,10 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/src/mcmcFit.py" />
-        <option value="$PROJECT_DIR$/src/cropImage.py" />
         <option value="$PROJECT_DIR$/src/findCenter.py" />
         <option value="$PROJECT_DIR$/src/imageClass.py" />
         <option value="$PROJECT_DIR$/src/modelImages.py" />
+        <option value="$PROJECT_DIR$/src/cropImage.py" />
       </list>
     </option>
   </component>
@@ -351,7 +398,13 @@
       <option name="project" value="LOCAL" />
       <updated>1430883972499</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="New implementation works on old images, albeit slowly. May just be because of my crappy laptop. Still trouble with finding centers in SDSS images.">
+      <created>1432059539409</created>
+      <option name="number" value="00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1432059539409</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -359,23 +412,23 @@
     <editor active="true" />
     <layout>
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32972136" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32948583" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.1382353" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32972136" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32948583" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32948583" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -398,7 +451,8 @@
     <MESSAGE value="In the middle of updating the inclusion of covariance and a Bayes Factor" />
     <MESSAGE value="IUntested, but input covariance and BF" />
     <MESSAGE value="Added the imageClass module to include the formatting info for general images." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added the imageClass module to include the formatting info for general images." />
+    <MESSAGE value="New implementation works on old images, albeit slowly. May just be because of my crappy laptop. Still trouble with finding centers in SDSS images." />
+    <option name="LAST_COMMIT_MESSAGE" value="New implementation works on old images, albeit slowly. May just be because of my crappy laptop. Still trouble with finding centers in SDSS images." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -520,10 +574,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/cropImage.py">
+    <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="60" column="8" selection-start-line="60" selection-start-column="8" selection-end-line="60" selection-end-column="8" />
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -536,10 +590,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
+    <entry file="file://$PROJECT_DIR$/src/cropImage.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <caret line="32" column="44" selection-start-line="32" selection-start-column="44" selection-end-line="32" selection-end-column="44" />
           <folding />
         </state>
       </provider>
@@ -554,8 +608,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/modelImages.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.8962723">
-          <caret line="161" column="15" selection-start-line="161" selection-start-column="15" selection-end-line="161" selection-end-column="15" />
+        <state vertical-scroll-proportion="0.49270666">
+          <caret line="155" column="0" selection-start-line="155" selection-start-column="0" selection-end-line="155" selection-end-column="0" />
           <folding />
         </state>
       </provider>

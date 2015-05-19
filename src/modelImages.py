@@ -87,10 +87,12 @@ def main():
     #Make a dictionary of the Galaxy's image coordinates.
     elif not useFindCenters:
         galaxyDict = {}
+        idx = 2 if args.imageFormat == 'C' else 1 #The catalogs are formatted slightly differently
+        # This was easier than fixing the catalogs, but a standard format may be preferable.
         with open(centers) as f:
             for line in f:
                 splitLine = line.strip().split(' ')
-                coords = [float(x) for x in splitLine[2:]]
+                coords = [float(x) for x in splitLine[idx:]]
                 galaxyDict[splitLine[0]] = coords
 
         inputDict['galaxyDict'] = galaxyDict
@@ -102,7 +104,6 @@ def main():
     #inputDict['residuals']=args.residuals
     inputDict['subtractionData'] = args.subtractionData
 
-    from cropImage import cropImage
     from mcmcFit import mcmcFit
     from residualID import residualID
     import imageClass
@@ -138,6 +139,7 @@ def main():
         #savefile name for sample chain
         name = inputDict['output']+imageObj.imageID+'_samples' if inputDict['chain'] else None
         print imageObj.imageID
+        print imageObj.images['i'].shape
         coords = None
         galaxyDict = None
 

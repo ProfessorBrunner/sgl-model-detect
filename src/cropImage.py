@@ -26,7 +26,7 @@ python cropimage.py filename c_x c_y savename 20
 
 If none is given, it will be set to 30.
 '''
-
+#TODO Merge with imageClass; this is too small to stand alone
 import numpy as np
 from matplotlib import pyplot as plt
 
