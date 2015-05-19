@@ -210,7 +210,16 @@ def main():
 
         if inputDict['subtractionData']:
             import numpy as np
+<<<<<<< .merge_file_3oQVxL
             np.savetxt(inputDict['output']+imageObj.imageID+'_residualData', calc_img)
+=======
+            np.savetxt(inputDict['output']+baseName+'_residualData', calc_img)
+        if inputDict['subtraction']:
+            from matplotlib import pyplot as plt
+            plt.imshow(calc_img)
+            plt.savefig(inputDict['output']+baseName+'_subtraction.png')
+            plt.close()
+>>>>>>> .merge_file_lzhSLL
 
         #TODO Plotting functionality here
         #check for lens properties
