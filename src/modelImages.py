@@ -136,7 +136,8 @@ def main():
 
     for imageObj in imageDict.itervalues():
         #savefile name for sample chain
-        name = inputDict['output']+baseName+'_samples' if inputDict['chain'] else None
+        name = inputDict['output']+imageObj.imageID+'_samples' if inputDict['chain'] else None
+        print imageObj.imageID
         coords = None
         galaxyDict = None
 
@@ -147,6 +148,7 @@ def main():
             galaxyDict = inputDict['galaxyDict']
 
         imageObj.calculateCenters(coords,galaxyDict)
+        print imageObj.center
         #print 'Cutout'
         imageObj.cropImage(inputDict['cutout'], inputDict['output'])
 
@@ -155,7 +157,9 @@ def main():
         #perform first fit with 1 Gaussian
         #Then, use to charecterize max number of parameters
         c_x, c_y = imageObj.center
+        print 'Fitting now'
         prim_fit,theta, bf  = mcmcFit(imageObj[inputDict['primaryBand']], 1, c_x, c_y, filename = name)
+        print 1
         BFs.append(bf)
         prim_fits.append(prim_fit)
 
@@ -174,6 +178,7 @@ def main():
 
         #iterate until we reach our limit or BF decreases
         for n in xrange(2,maxGaussians):
+            print n
             prim_fit, theta, bf = mcmcFit(imageObj[inputDict['primaryBand']], n, c_x, c_y, filename = name)
             BFs.append(bf)
             prim_fits.append(prim_fit)
@@ -189,7 +194,7 @@ def main():
 
         else:
             calc_img = imageObj[inputDict['primaryBand']] - prim_fit
-        '''
+
         from matplotlib import pyplot as plt
         print 'Model'
         im = plt.imshow(prim_fit)
@@ -197,7 +202,7 @@ def main():
         plt.show()
         plt.clf()
         plt.close()
-        '''
+
         if inputDict['subtraction']:
             from matplotlib import pyplot as plt
             im = plt.imshow(calc_img)
@@ -210,16 +215,14 @@ def main():
 
         if inputDict['subtractionData']:
             import numpy as np
-<<<<<<< .merge_file_3oQVxL
             np.savetxt(inputDict['output']+imageObj.imageID+'_residualData', calc_img)
-=======
-            np.savetxt(inputDict['output']+baseName+'_residualData', calc_img)
+            np.savetxt(inputDict['output']+imageObj.imageID+'_residualData', calc_img)
         if inputDict['subtraction']:
             from matplotlib import pyplot as plt
             plt.imshow(calc_img)
-            plt.savefig(inputDict['output']+baseName+'_subtraction.png')
+            plt.savefig(inputDict['output']+imageObj.imageID+'_subtraction.png')
+            plt.show()
             plt.close()
->>>>>>> .merge_file_lzhSLL
 
         #TODO Plotting functionality here
         #check for lens properties

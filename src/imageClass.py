@@ -41,9 +41,11 @@ class Image(object):
         if coords is not None:
             c_x, c_y = coords
         elif galaxyDict is not None:
-            c_x, c_y = inputDict['galaxyDict'][self.imageID]
+            c_x, c_y = galaxyDict[self.imageID]
         else:
-            c_y, c_x = findCenter(image)
+            import numpy as np
+            c_y, c_x = np.unravel_index(image.argmax(), image.shape) #center is just the brightest spot
+            #c_y, c_x = findCenter(image)
 
         self.center = (c_x, c_y)
 
@@ -65,8 +67,8 @@ class CFHTLS(Image):
    
     def _getImageID(self, filename):
         lineIndex = filename.rfind('/')
-        fileDirectory, baseName= filename[:lineIndex], filename[lineIndex:]
-        return baseName[:-7]
+        fileDirectory, baseName= filename[:lineIndex+1], filename[lineIndex+1:]
+        return baseName[7:-7]
     
     def _getBand(self, filename):
         lineIndex = filename.rfind('/')

@@ -67,10 +67,10 @@ def findCenter(image, plot = False, filename = None):
                 norm = lm(image.mean() + .5*image.std(), image.max(), clip = 'True'),\
 				    cmap = cm.gray, origin = 'lower')
             plt.scatter(xmean, ymean, c='r')
-            plt.plot([xLims[0] for i in xrange(100)], np.linspace(yLims[0],yLims[1], 100), color = 'm', linewidth= 2, alpha = .2)
-            plt.plot([xLims[1] for i in xrange(100)], np.linspace(yLims[0], yLims[1], 100), color ='m', linewidth= 2, alpha = .2)
-            plt.plot(np.linspace(xLims[0],xLims[1], 100),[yLims[0] for i in xrange(100)], color = 'm', linewidth= 2, alpha = .2)
-            plt.plot(np.linspace(xLims[0],xLims[1], 100),[yLims[1] for i in xrange(100)], color = 'm', linewidth= 2, alpha = .2)
+            plt.plot([xLims[0] for i in xrange(100)], np.linspace(yLims[0],yLims[1], 100), color = 'm', linewidth= 4, alpha = .2)
+            plt.plot([xLims[1] for i in xrange(100)], np.linspace(yLims[0], yLims[1], 100), color ='m', linewidth= 4, alpha = .2)
+            plt.plot(np.linspace(xLims[0],xLims[1], 100),[yLims[0] for i in xrange(100)], color = 'm', linewidth= 4, alpha = .2)
+            plt.plot(np.linspace(xLims[0],xLims[1], 100),[yLims[1] for i in xrange(100)], color = 'm', linewidth= 4, alpha = .2)
 
         maxPos = (ymean, xmean) 
         boxRatio = .8*boxRatio #the box around the max will be half the size of the image.
