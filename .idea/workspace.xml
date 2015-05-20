@@ -2,57 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ae9ba962-254c-4a9c-803d-873e46cbf84d" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0173.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0174.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0175.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0176.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0177.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0178.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0179.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0180.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0181.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0183.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0184.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0185.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0187.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0188.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0189.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0190.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0191.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0192.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0193.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000109-3-0194.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000211-1-0355.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000211-1-0356.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000211-1-0357.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000211-1-0358.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-g-000211-1-0359.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0173.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0174.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0175.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0176.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0177.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0178.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0179.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0180.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0181.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0183.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0184.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0185.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0187.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0188.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0189.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0190.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0191.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0192.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0193.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000109-3-0194.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000211-1-0355.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000211-1-0356.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000211-1-0357.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000211-1-0358.fits" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/sdss_lrgs/frame-r-000211-1-0359.fits" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cropImage.py" afterPath="$PROJECT_DIR$/src/cropImage.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/mcmcFit.py" afterPath="$PROJECT_DIR$/src/mcmcFit.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/modelImages.py" afterPath="$PROJECT_DIR$/src/modelImages.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -76,11 +26,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="modelImages.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="modelImages.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/modelImages.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.49270666">
-              <caret line="155" column="0" selection-start-line="155" selection-start-column="0" selection-end-line="155" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="211" column="82" selection-start-line="211" selection-start-column="82" selection-end-line="211" selection-end-column="82" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="mcmcFit.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/mcmcFit.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.22528364">
+              <caret line="132" column="28" selection-start-line="132" selection-start-column="28" selection-end-line="132" selection-end-column="28" />
               <folding />
             </state>
           </provider>
@@ -100,7 +60,7 @@
         <entry file="file://$PROJECT_DIR$/src/cropImage.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="32" column="44" selection-start-line="32" selection-start-column="44" selection-end-line="32" selection-end-column="44" />
+              <caret line="62" column="19" selection-start-line="55" selection-start-column="8" selection-end-line="62" selection-end-column="19" />
               <folding />
             </state>
           </provider>
@@ -122,11 +82,11 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/mcmcFit.py" />
         <option value="$PROJECT_DIR$/src/findCenter.py" />
         <option value="$PROJECT_DIR$/src/imageClass.py" />
-        <option value="$PROJECT_DIR$/src/modelImages.py" />
         <option value="$PROJECT_DIR$/src/cropImage.py" />
+        <option value="$PROJECT_DIR$/src/modelImages.py" />
+        <option value="$PROJECT_DIR$/src/mcmcFit.py" />
       </list>
     </option>
   </component>
@@ -216,6 +176,57 @@
     <property name="SearchEverywhereHistoryKey" value="line numbers&#9;null&#9;null" />
   </component>
   <component name="RunManager">
+    <configuration default="true" type="DjangoTestsConfigurationType" factoryName="Django tests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="sgl-model-detect" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="TARGET" value="" />
+      <option name="SETTINGS_FILE" value="" />
+      <option name="CUSTOM_SETTINGS" value="false" />
+      <option name="USE_OPTIONS" value="false" />
+      <option name="OPTIONS" value="" />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug">
+      <method />
+    </configuration>
+    <configuration default="true" type="PyBehaveRunConfigurationType" factoryName="Behave">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="sgl-model-detect" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="ADDITIONAL_ARGS" value="" />
+      <method />
+    </configuration>
+    <configuration default="true" type="PyLettuceRunConfigurationType" factoryName="Lettuce">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="sgl-model-detect" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="ADDITIONAL_ARGS" value="" />
+      <method />
+    </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -232,6 +243,9 @@
       <option name="SCRIPT_NAME" value="" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="js.build_tools.gulp" factoryName="Gulp.js">
       <method />
     </configuration>
     <configuration default="true" type="tests" factoryName="Attests">
@@ -404,7 +418,13 @@
       <option name="project" value="LOCAL" />
       <updated>1432059539409</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="New data added, along with a catalog for the centers. SDSS images are still not cooperating.">
+      <created>1432071070761</created>
+      <option name="number" value="00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1432071070761</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -412,26 +432,26 @@
     <editor active="true" />
     <layout>
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32972136" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32948583" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.1382353" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32972136" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32948583" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32948583" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -452,7 +472,8 @@
     <MESSAGE value="IUntested, but input covariance and BF" />
     <MESSAGE value="Added the imageClass module to include the formatting info for general images." />
     <MESSAGE value="New implementation works on old images, albeit slowly. May just be because of my crappy laptop. Still trouble with finding centers in SDSS images." />
-    <option name="LAST_COMMIT_MESSAGE" value="New implementation works on old images, albeit slowly. May just be because of my crappy laptop. Still trouble with finding centers in SDSS images." />
+    <MESSAGE value="New data added, along with a catalog for the centers. SDSS images are still not cooperating." />
+    <option name="LAST_COMMIT_MESSAGE" value="New data added, along with a catalog for the centers. SDSS images are still not cooperating." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -462,6 +483,30 @@
     <entry file="file://$PROJECT_DIR$/src/modelImages.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/imageClass.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="70" column="0" selection-start-line="70" selection-start-column="0" selection-end-line="70" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/cropImage.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="32" column="44" selection-start-line="32" selection-start-column="44" selection-end-line="32" selection-end-column="44" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/modelImages.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
           <caret line="149" column="9" selection-start-line="149" selection-start-column="9" selection-end-line="149" selection-end-column="9" />
           <folding />
         </state>
@@ -471,9 +516,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#211#224#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -497,9 +540,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#211#224#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -523,9 +564,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#211#224#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -564,13 +603,6 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="88" column="37" selection-start-line="88" selection-start-column="37" selection-end-line="88" selection-end-column="37" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/mcmcFit.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="139" column="40" selection-start-line="139" selection-start-column="40" selection-end-line="139" selection-end-column="40" />
         </state>
       </provider>
     </entry>
@@ -586,14 +618,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="33" column="14" selection-start-line="33" selection-start-column="14" selection-end-line="33" selection-end-column="59" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/cropImage.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="32" column="44" selection-start-line="32" selection-start-column="44" selection-end-line="32" selection-end-column="44" />
+          <caret line="62" column="19" selection-start-line="55" selection-start-column="8" selection-end-line="62" selection-end-column="19" />
           <folding />
         </state>
       </provider>
@@ -608,8 +639,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/modelImages.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.49270666">
-          <caret line="155" column="0" selection-start-line="155" selection-start-column="0" selection-end-line="155" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="211" column="82" selection-start-line="211" selection-start-column="82" selection-end-line="211" selection-end-column="82" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/mcmcFit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.22528364">
+          <caret line="132" column="28" selection-start-line="132" selection-start-column="28" selection-end-line="132" selection-end-column="28" />
           <folding />
         </state>
       </provider>

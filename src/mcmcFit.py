@@ -51,7 +51,7 @@ def lnprior(theta):
     N = len(theta)/NPARAM #save us from having to put N in the global scope
     amps, varXs, varYs, corrs = [theta[i*N:(i+1)*N] for i in xrange(NPARAM)]
 
-    if any(1e-1>a or a>1e3 for a in amps):
+    if any(1e-3>a or a>1e2 for a in amps):
         return -np.inf
 
     #enforcing order
@@ -109,7 +109,7 @@ def BayesFactor(samples, theta, args):
 
     return BF
 
-def mcmcFit(image, N, c_x, c_y, n_walkers = 1000, filename = None):
+def mcmcFit(image, N, c_x, c_y, n_walkers = 500, filename = None):
 
     np.random.seed(int(time()))
 
@@ -127,15 +127,22 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 1000, filename = None):
 
     #initial guess
     pos = []
+    imageMean = image.mean()
+    print 'Image mean value: %f'%imageMean
     for walk in xrange(n_walkers):
         row = np.zeros(ndim)
         for i in xrange(ndim):
             if i < N: #amp
-                row[i] = 10**(4*np.random.rand()-1)
+                row[i] = 10**(4*np.random.rand()-3)
+                #row[i] = np.random.lognormal(imageMean)#try logNormal near mean.
             elif i<ndim-N: #var
                 row[i] = 10**(5*np.random.rand()-2)
             else: #corr
                 row[i] = 2*np.random.rand()-1
+                #Trying a normal dist. rather and a uniform.
+                #The assumption being Galaxies are more likely to be spherical than very elliptical
+                #x = .2*np.random.randn()
+                #row[i] = x if abs(x)<=1 else 0 #possible a sample could be out of allowed bounds (very unlikely though)
         pos.append(row)
     #TODO Consider removing this portion
     #sometimes the center is not exactly accurate. This part finds the maximum in the region around the center.
@@ -175,6 +182,23 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 1000, filename = None):
             calc_vals[i] = (bin_edges[max_idx]+bin_edges[max_idx+1])/2
 
     calc_as, calc_varXs, calc_varYs, calc_corrs = [calc_vals[i*N:(i+1)*N] for i in xrange(NPARAM)]
+
+    for i in xrange(ndim):
+        if i < N:
+            plt.title("Amplitude %d"%(i+1))
+
+        elif i < ndim-N:
+            plt.title("Radial %d"%(i-N+1))
+        else:
+            plt.title('Corr %d'%(-1*(i-ndim)))
+
+        if i<ndim-N:
+            plt.hist(np.log10(samples[:,i]), bins = n_bins)
+            plt.vlines(np.log10(calc_vals[i]),0,15000,colors = ['r'])
+        else:
+            plt.hist(samples[:, i], bins = n_bins)
+
+        plt.show()
 
     covariance_mats = []
     for varX, varY, corr in izip(calc_varXs, calc_varYs, calc_corrs):

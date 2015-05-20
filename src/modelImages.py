@@ -115,6 +115,7 @@ def main():
     imageDict = {}
 
     #load in filenames from directory
+    #TODO Reads in all images, even the ones not currently being fit to. Waste of memory and time.
     if inputDict['isDir']:
         fileList = os.listdir(filename)
         fileDirectory = filename
@@ -134,12 +135,13 @@ def main():
     else:
         obj = imgClass(filename)
         imageDict[obj.imageID] = obj 
-
-    for imageObj in imageDict.itervalues():
+    #For now, randomize so I see different values while testing.
+    x = imageDict.values()
+    np.random.shuffle(x)
+    for imageObj in x:
         #savefile name for sample chain
         name = inputDict['output']+imageObj.imageID+'_samples' if inputDict['chain'] else None
-        print imageObj.imageID
-        print imageObj.images['i'].shape
+        print 'Image ID : %s'%imageObj.imageID
         coords = None
         galaxyDict = None
 
@@ -150,9 +152,23 @@ def main():
             galaxyDict = inputDict['galaxyDict']
 
         imageObj.calculateCenters(coords,galaxyDict)
-        print imageObj.center
         #print 'Cutout'
-        imageObj.cropImage(inputDict['cutout'], inputDict['output'])
+        #imageObj.cropImage(inputDict['cutout'], inputDict['output'])
+        imageObj.cropImage()
+
+        if inputDict['cutout']:
+            for band in bands:
+                from matplotlib import pyplot as plt
+                plt.figure()
+                im = plt.imshow(imageObj.images[band])
+                plt.colorbar(im)
+                c_x, c_y = imageObj.center
+                plt.scatter(c_x, c_y, color = 'k')
+                #If leaving at this spot, fix filename
+                #plt.savefig(filename)
+                plt.show()
+                plt.clf()
+                plt.close()
 
         BFs = []
         prim_fits = []
@@ -161,7 +177,9 @@ def main():
         c_x, c_y = imageObj.center
         print 'Fitting now'
         prim_fit,theta, bf  = mcmcFit(imageObj[inputDict['primaryBand']], 1, c_x, c_y, filename = name)
-        print 1
+        print 'Gaussian #1'
+        print theta
+        print'--'*15
         BFs.append(bf)
         prim_fits.append(prim_fit)
 
@@ -175,16 +193,23 @@ def main():
         varX, varY = theta[1:3]
         #area of an ellipse
         area = np.pi*np.power(nSigma, 2)*np.sqrt(varX*varY)
-
+        #MaxGaussians is sometimes <=2, which means only one sample is run. There should be a minimum max Gaussians.
         maxGaussians =  int(area/(4*pixelsPerParam))
-
+        if maxGaussians < 3:
+            maxGaussians = 3 #minimum value of 3
+        elif maxGaussians > 10:
+            maxGaussians = 10 #upper value of 10. Arbitrarily chosen and can be extended.
+        print 'Max Gaussians = %d'%maxGaussians
         #iterate until we reach our limit or BF decreases
         for n in xrange(2,maxGaussians):
-            print n
             prim_fit, theta, bf = mcmcFit(imageObj[inputDict['primaryBand']], n, c_x, c_y, filename = name)
+            print 'Gaussian #%d'%n
+            print theta
+            print '--'*15
             BFs.append(bf)
             prim_fits.append(prim_fit)
-            if BFs[-1]/BFs[-1] > 1: #new Model is worse!
+            if BFs[-1]/BFs[-2] > 1: #new Model is worse!
+            #NOTE Double-check that this is right and not supposed to be backwards
                 break
 
         bestArg = np.argmax(np.array(BFs))
@@ -200,6 +225,7 @@ def main():
         from matplotlib import pyplot as plt
         print 'Model'
         im = plt.imshow(prim_fit)
+        plt.title('Model')
         plt.colorbar(im)
         plt.show()
         plt.clf()
@@ -210,8 +236,8 @@ def main():
             im = plt.imshow(calc_img)
             plt.colorbar(im)
             plt.savefig(inputDict['output']+imageObj.imageID+'_subtraction.png')
-            #print 'Subtraction'
-            #plt.show()
+            print 'Subtraction'
+            plt.show()
             plt.clf()
             plt.close()
 
@@ -219,12 +245,6 @@ def main():
             import numpy as np
             np.savetxt(inputDict['output']+imageObj.imageID+'_residualData', calc_img)
             np.savetxt(inputDict['output']+imageObj.imageID+'_residualData', calc_img)
-        if inputDict['subtraction']:
-            from matplotlib import pyplot as plt
-            plt.imshow(calc_img)
-            plt.savefig(inputDict['output']+imageObj.imageID+'_subtraction.png')
-            plt.show()
-            plt.close()
 
         #TODO Plotting functionality here
         #check for lens properties
