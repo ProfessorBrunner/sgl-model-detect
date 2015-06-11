@@ -26,7 +26,7 @@ import emcee as mc
 from time import time
 from matplotlib import pyplot as plt
 from scipy.stats import mode, gaussian_kde
-from multiprocessing import cpu_count
+from multiprocessing import cpu_count, Pool
 from itertools import izip
 
 #TODO: there's a problem with the vectorization of this calculation. Isn't efficient in this form.
@@ -51,7 +51,7 @@ def lnprior(theta):
     N = len(theta)/NPARAM #save us from having to put N in the global scope
     amps, varXs, varYs, corrs = [theta[i*N:(i+1)*N] for i in xrange(NPARAM)]
 
-    if any(1e-3>a or a>1e2 for a in amps):
+    if any(1e-5>a or a>1e5 for a in amps):
         return -np.inf
 
     #enforcing order
@@ -60,7 +60,7 @@ def lnprior(theta):
 
     #TODO find a proper bounds for this value
     for var in (varXs, varYs):
-        if any(v<1e-2 or v>1e3 for v in var):
+        if any(v<1e-4 or v>1e4 for v in var):
             return -np.inf
 
     if any(corr<-1 or corr>1 for corr in corrs):
@@ -96,18 +96,48 @@ def lnprob(theta, image, xx, yy, c_x, c_y, inv_sigma2):
         return lp+lnlike(theta, image, xx, yy, c_x, c_y, inv_sigma2)
     return -np.inf
 
-def BayesFactor(samples, theta, args):
+def beHelper(sample):
+    #Hellper for BayesianEvidence
+    #has to be top level for parallelization purposes
+    logDens = np.log(beHelper.kde(sample)[0])#acquire a lock for this object?
+    logp = lnlike(sample, *beHelper.args)
+    return logp+np.log(beHelper.N)-logDens
+
+beHelper.kde = None
+beHelper.args = None
+beHelper.N = None
+
+def BayesianEvidence(samples, args):
     #technique taken form the code in astroML to calculate Bayesian odds. Be sure to cite
     #They use a simler method than what I employ here
+    from time import time
+    t0 = time()
+    nCores = cpu_count()
     N,D = samples.shape
 
-    kde = gaussian_kde(samples.T)
-    logDens = kde(theta)[0]
-    logp = lnlike(theta, *args)
+    beHelper.kde = gaussian_kde(samples.T)
+    beHelper.args = args
+    beHelper.N = N
 
-    BF = logp+np.log(N)-logDens
+    nSamples = 5000
+    allBEs = np.zeros(nSamples)
+    #normalized liklihood?
+    #All samples takes too long. Do a small selection
+    randSamplesIdx = np.random.choice(xrange(len(samples)), size = nSamples, replace = False)
+    randSamples = samples[randSamplesIdx]
 
-    return BF
+    p = Pool(nCores)
+    try:
+        allBEs = p.map(beHelper, randSamples)
+    except KeyboardInterrupt:
+        raise
+
+    p25, p50, p75 = np.percentile(allBEs, [25, 50, 75])
+    BE, dBE =  p50, 0.7413 * (p75 - p25)
+    print 'BE: %f\tdBE/BE: %f'%(BE, dBE/BE)
+    #BE = np.median(allBEs)
+    print 'BE Calculation time: %.6f Seconds'%(time()-t0)
+    return BE
 
 def mcmcFit(image, N, c_x, c_y, n_walkers = 500, filename = None):
 
@@ -127,28 +157,32 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 500, filename = None):
 
     #initial guess
     pos = []
-    imageMean = image.mean()
-    print 'Image mean value: %f'%imageMean
+    imageMax = image.max()
+    print 'Image max value: %f'%imageMax
     for walk in xrange(n_walkers):
         row = np.zeros(ndim)
         for i in xrange(ndim):
             if i < N: #amp
-                row[i] = 10**(4*np.random.rand()-3)
-                #row[i] = np.random.lognormal(imageMean)#try logNormal near mean.
+                #row[i] = 10**(4*np.random.rand()-3)
+                row[i] = np.random.lognormal(mean = np.log10(imageMax/2), sigma = 2.0)#try logNormal near max
             elif i<ndim-N: #var
                 row[i] = 10**(5*np.random.rand()-2)
             else: #corr
-                row[i] = 2*np.random.rand()-1
+                #row[i] = 2*np.random.rand()-1
                 #Trying a normal dist. rather and a uniform.
                 #The assumption being Galaxies are more likely to be spherical than very elliptical
-                #x = .2*np.random.randn()
-                #row[i] = x if abs(x)<=1 else 0 #possible a sample could be out of allowed bounds (very unlikely though)
+                x = -2
+                while abs(x) > 1:
+                    x = np.random.randn()
+                row[i] = x
         pos.append(row)
-    #TODO Consider removing this portion
+    #TODO Consider removing,expanding, or moving this portion
     #sometimes the center is not exactly accurate. This part finds the maximum in the region around the center.
+    '''
     dy, dx = np.unravel_index(image[c_y-1:c_y+2, c_x-1:c_x+2].argmax(), (3,3))
     dy,dx = dy-1, dx-1
     c_y, c_x = c_y+dy, c_x+dx
+    '''
 
     args = (image, xx, yy, c_x, c_y, inv_sigma2) 
     sampler = mc.EnsembleSampler(n_walkers, ndim,\
@@ -163,6 +197,7 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 500, filename = None):
     if filename is not None:
         np.savetxt(filename, samples, delimiter = ',')
 
+    #TODO MAP as chain median?
     #the MAP is simply the mean of the chain
     #calc_vals = samples.mean(axis = 0)
 
@@ -182,7 +217,7 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 500, filename = None):
             calc_vals[i] = (bin_edges[max_idx]+bin_edges[max_idx+1])/2
 
     calc_as, calc_varXs, calc_varYs, calc_corrs = [calc_vals[i*N:(i+1)*N] for i in xrange(NPARAM)]
-
+    '''
     for i in xrange(ndim):
         if i < N:
             plt.title("Amplitude %d"%(i+1))
@@ -199,7 +234,7 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 500, filename = None):
             plt.hist(samples[:, i], bins = n_bins)
 
         plt.show()
-
+    '''
     covariance_mats = []
     for varX, varY, corr in izip(calc_varXs, calc_varYs, calc_corrs):
         #construct a covariance matrix
@@ -208,8 +243,9 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 500, filename = None):
         covariance_mats.append(mat)
 
     calc_img = sum(gaussian(xx,yy,c_x,c_y,a,cov) for a,cov in izip(calc_as, covariance_mats))
-    BF = BayesFactor(samples, calc_vals, args)
-    return calc_img, calc_vals, BF
+    #Calculate the evidence for this model
+    BE = BayesianEvidence(samples, args)
+    return calc_img, calc_vals, BE
 
 if __name__ == '__main__':
     import argparse

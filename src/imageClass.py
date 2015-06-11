@@ -4,17 +4,15 @@
 #It will also include a few subclasses depending on filename syntax
 
 import pyfits
-from findCenter import findCenter
 from cropImage import cropImage
 
 class Image(object):
     
     def __init__(self, filename):
 
-        self.filenames = [filename]
-
         self.imageID = self._getImageID(filename) 
-        band = self._getBand(filename) 
+        band = self._getBand(filename)
+        self.filenames = {band : filename}
         fitsImage = pyfits.open(filename)
         self.images = { band : fitsImage[0].data}
 
@@ -28,14 +26,14 @@ class Image(object):
         del self.images[key]
 
     def addImage(self,filename):
-        self.filenames.append(filename)
 
-        band = self._getBand(filename) 
+        band = self._getBand(filename)
+        self.filenames[band] = filename
         fitsImage = pyfits.open(filename)
         self.images[band] = fitsImage[0].data
 
     def calculateCenters(self, coords = None, galaxyDict = None):
-        
+        import numpy as np
         image = self.images.values()[0] #get first image
         #Is there a way I should make use of the multiple images?
         if coords is not None:
@@ -43,9 +41,13 @@ class Image(object):
         elif galaxyDict is not None:
             c_x, c_y = galaxyDict[self.imageID]
         else:
-            import numpy as np
             c_y, c_x = np.unravel_index(image.argmax(), image.shape) #center is just the brightest spot
             #c_y, c_x = findCenter(image)
+
+        #sometimes the center is not exactly accurate. This part finds the maximum in the region around the center.
+        dy, dx = np.unravel_index(image[c_y-2:c_y+3, c_x-2:c_x+3].argmax(), (5,5))
+        dy,dx = dy-2, dx-2 #so if c_x c_y is the max dx, dy will be 0,0
+        c_y, c_x = c_y+dy, c_x+dx
 
         self.center = (c_x, c_y)
 
@@ -55,15 +57,34 @@ class Image(object):
             self.images[band] = image
         self.center = (c_x, c_y)
 
+    def getOtherBand(self,bands):
+        'Attempts to get other images of the same ID in different bands. Assumes only one image is loaded into the object so far'
+        #Implemented in subclasses
+        pass
+
     def _getImageID(self, filename):
         #Implemented in subclasses
         return None
         
     def _getBand(self, filename):
         #Implemented in subclasses
-        return '' 
+        return ''
 
 class CFHTLS(Image):
+
+    def getOtherBand(self, bands):
+        'Attempts to get other images of the same ID in different bands. Assumes only one image is loaded into the object so far'
+        #Note that band is a string of all bands used in the image. The program first checks which one we already have!
+
+        for band in bands:
+            if band not in self.filenames:
+                break
+
+        filename = self.filenames.values()[0]
+        lineIndex = filename.rfind('/')
+        fileDirectory, baseName = filename[:lineIndex+1], filename[lineIndex+1:]
+        otherFilename = ''.join([fileDirectory,'CFHTLS_',self.imageID,'_', band,'.fits'])
+        self.addImage(otherFilename)
    
     def _getImageID(self, filename):
         lineIndex = filename.rfind('/')
@@ -76,6 +97,20 @@ class CFHTLS(Image):
         return baseName[-6]
         
 class SDSS(Image):
+
+    def getOtherBand(self,bands):
+        'Attempts to get other images of the same ID in different bands. Assumes only one image is loaded into the object so far'
+        #Note that band is a string of all bands used in the image. The program first checks which one we already have!
+
+        for band in bands:
+            if band not in self.filenames:
+                break
+
+        filename = self.filenames.values()[0]
+        lineIndex = filename.rfind('/')
+        fileDirectory, baseName = filename[:lineIndex+1], filename[lineIndex+1:]
+        otherFilename = ''.join([fileDirectory,'frame-',band,'-',self.imageID,'.fits'])
+        self.addImage(otherFilename)
 
     def _getImageID(self, filename):
         lineIndex = filename.rfind('/')

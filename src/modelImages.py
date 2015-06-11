@@ -34,7 +34,7 @@ def main():
     args = parser.parse_args()
     filename = args.filename
     outputdir = args.outputdir
-
+    #TODO check that inputs are correct/ in the right form ex. no commas in bands
     bands = args.bands
 
     if args.imageFormat not in ['C', 'S']:
@@ -92,7 +92,7 @@ def main():
         with open(centers) as f:
             for line in f:
                 splitLine = line.strip().split(' ')
-                coords = [float(x) for x in splitLine[idx:]]
+                coords = [float(x) for x in splitLine[idx:]]#ADDED -1 to see if it more accurately assess center
                 galaxyDict[splitLine[0]] = coords
 
         inputDict['galaxyDict'] = galaxyDict
@@ -132,9 +132,12 @@ def main():
                 imageDict[obj.imageID] = obj 
 
     #load in lone image
+    #load in other bands of that image as well
     else:
         obj = imgClass(filename)
-        imageDict[obj.imageID] = obj 
+        imageDict[obj.imageID] = obj
+        obj.getOtherBand(bands)
+
     #For now, randomize so I see different values while testing.
     x = imageDict.values()
     np.random.shuffle(x)
@@ -170,20 +173,30 @@ def main():
                 plt.clf()
                 plt.close()
 
-        BFs = []
+        BEs = []
         prim_fits = []
         #perform first fit with 1 Gaussian
         #Then, use to charecterize max number of parameters
         c_x, c_y = imageObj.center
         print 'Fitting now'
-        prim_fit,theta, bf  = mcmcFit(imageObj[inputDict['primaryBand']], 1, c_x, c_y, filename = name)
+        prim_fit,theta, be  = mcmcFit(imageObj[inputDict['primaryBand']], 1, c_x, c_y, filename = name)
         print 'Gaussian #1'
         print theta
         print'--'*15
-        BFs.append(bf)
+        BEs.append(be)
         prim_fits.append(prim_fit)
 
         c = (int(c_y), int(c_x))
+
+        #TODO Delete, only for testing
+
+        prim_fit_scaled = prim_fit*imageObj[inputDict['secondaryBand']][c]/imageObj[inputDict['primaryBand']][c]
+        calc_img = imageObj[inputDict['secondaryBand']] - prim_fit_scaled
+        from matplotlib import pyplot as plt
+        im = plt.imshow(calc_img)
+        plt.colorbar(im)
+        plt.title('%d'%1)
+        plt.show()
 
         #estimate how much "signal" we have, so we don't overfit
         #area enclosed within nSigma
@@ -195,24 +208,36 @@ def main():
         area = np.pi*np.power(nSigma, 2)*np.sqrt(varX*varY)
         #MaxGaussians is sometimes <=2, which means only one sample is run. There should be a minimum max Gaussians.
         maxGaussians =  int(area/(4*pixelsPerParam))
-        if maxGaussians < 3:
-            maxGaussians = 3 #minimum value of 3
+        if maxGaussians < 2:
+            maxGaussians = 2 #minimum value of 3
         elif maxGaussians > 10:
             maxGaussians = 10 #upper value of 10. Arbitrarily chosen and can be extended.
         print 'Max Gaussians = %d'%maxGaussians
-        #iterate until we reach our limit or BF decreases
-        for n in xrange(2,maxGaussians):
-            prim_fit, theta, bf = mcmcFit(imageObj[inputDict['primaryBand']], n, c_x, c_y, filename = name)
+        #iterate until we reach our limit or BE decreases
+        for n in xrange(2,maxGaussians+1):
+            prim_fit, theta, be = mcmcFit(imageObj[inputDict['primaryBand']], n, c_x, c_y, filename = name)
             print 'Gaussian #%d'%n
             print theta
             print '--'*15
-            BFs.append(bf)
+
+            BEs.append(be)
             prim_fits.append(prim_fit)
-            if BFs[-1]/BFs[-2] > 1: #new Model is worse!
+            #TODO Delete, only for testing
+
+            prim_fit_scaled = prim_fit*imageObj[inputDict['secondaryBand']][c]/imageObj[inputDict['primaryBand']][c]
+            calc_img = imageObj[inputDict['secondaryBand']] - prim_fit_scaled
+
+            im = plt.imshow(calc_img)
+            plt.colorbar(im)
+            plt.title('%d'%n)
+            plt.show()
+
+            print 'Diff: %.3f\t Old: %.3f\t New: %.3f'%(BEs[-1]-BEs[-2], BEs[-1], BEs[-2])
+            if BEs[-1] < BEs[-2]: #new Model is worse!
             #NOTE Double-check that this is right and not supposed to be backwards
                 break
 
-        bestArg = np.argmax(np.array(BFs))
+        bestArg = np.argmax(np.array(BEs))
         print 'Best model N = %d'%(bestArg+1)
         if inputDict['secondaryBand'] is not None:
             prim_fit = prim_fits[bestArg]
@@ -225,8 +250,15 @@ def main():
         from matplotlib import pyplot as plt
         print 'Model'
         im = plt.imshow(prim_fit)
-        plt.title('Model')
+        plt.title('Model, N = %d'%(bestArg+1))
         plt.colorbar(im)
+        plt.show()
+        plt.clf()
+        plt.close()
+
+        plt.title('BEs')
+        plt.plot(BEs)
+        plt.scatter(bestArg, BEs[bestArg], color = 'r')
         plt.show()
         plt.clf()
         plt.close()
