@@ -77,6 +77,7 @@ class Image(object):
 
         #readujust the centers. They've moved now that the image has been cropped
         self.center = (c_x - xLims[0], c_y-yLims[0])
+        print 'Final Center:',self.center #this should be 15, right? if this is centered correctly?
 
     def getOtherBand(self,bands):
         'Attempts to get other images of the same ID in different bands. Assumes only one image is loaded into the object so far'

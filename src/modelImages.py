@@ -18,8 +18,11 @@ def main():
                                                                        primary fit to and 2nd will be the one subtracted from")
     #TODO Adjust input for center finding. Centers can be given as hard centers or initial guesses. Perhaps a flag?
     #Some guess has to be entered because cropping won't be possible otherewise
-    parser.add_argument('centers', metavar = 'centers', type = str, help = 'Either a filename or a comma separate pair of coordinates for x,y. Default is to use findCenter.', default = None, nargs = '?')
+    parser.add_argument('centers', metavar = 'centers', type = str, help = \
+        'Either a filename or a comma separate pair of coordinates for x,y. Default is to use findCenter.', default = None, nargs = '?')
 
+    parser.add_argument('--fixedCenters', dest = 'fixedCenters', action = 'store_const', const = True, default = False,\
+                         help = 'Use the given centers as fixed values. Otherwise, they will be treated as initial guesses')
     parser.add_argument('--cutout', dest = 'cutout', action = 'store_const', const = True, default = False,\
                          help = 'Save a .png of the original cutout to file.')
     parser.add_argument('--cutoutData', dest = 'cutoutData', action = 'store_const', const = True, default = False,\
@@ -89,6 +92,14 @@ def main():
     inputDict['primaryBand'] = bands[0]
     inputDict['secondaryBand'] = bands[1] if len(bands)>1 else None
 
+    inputDict['fixedCenters'] = args.fixedCenters
+    inputDict['cutout'] = args.cutout
+    inputDict['cutoutData'] = args.cutoutData
+    inputDict['chain'] = args.chain
+    inputDict['subtraction'] = args.subtraction
+    #inputDict['residuals']=args.residuals
+    inputDict['subtractionData'] = args.subtractionData
+
     if isCoordinates:
         inputDict['coords'] = (cx, cy)
 
@@ -105,13 +116,7 @@ def main():
                 galaxyDict[splitLine[0]] = coords
 
         inputDict['galaxyDict'] = galaxyDict
-    #TODO why is this section of input dict creation separate? Why not move it up?
-    inputDict['cutout'] = args.cutout
-    inputDict['cutoutData'] = args.cutoutData
-    inputDict['chain'] = args.chain
-    inputDict['subtraction'] = args.subtraction
-    #inputDict['residuals']=args.residuals
-    inputDict['subtractionData'] = args.subtractionData
+
 
     from mcmcFit import mcmcFit
     from residualID import residualID
@@ -148,7 +153,7 @@ def main():
         obj.getOtherBand(bands)
 
     #For now, randomize so I see different values while testing.
-    #TODO Delete, so it's more stable.
+    #TODO Delete after testing, so it's more stable.
     x = imageDict.values()
     np.random.shuffle(x)
     for imageObj in x:
@@ -185,13 +190,18 @@ def main():
                 plt.clf()
                 plt.close()
 
+        if inputDict['cutoutData']:
+            import numpy as np
+            for band in bands:
+                np.savetxt(inputDict['output']+imageObj.imageID+'_cutoutData', imageObj.images[band])
+
         BEs = []
         prim_fits = []
         #perform first fit with 1 Gaussian
         #Then, use to charecterize max number of parameters
         c_x, c_y = imageObj.center
         print 'Fitting now'
-        prim_fit,theta, be  = mcmcFit(imageObj[inputDict['primaryBand']], 1, c_x, c_y, filename = name)
+        prim_fit,theta, be  = mcmcFit(imageObj[inputDict['primaryBand']], 1, c_x, c_y, not inputDict['fixedCenters'], filename = name)
         print 'Gaussian #1'
         print theta
         print'--'*15
@@ -199,7 +209,11 @@ def main():
         prim_fits.append(prim_fit)
 
         #Necessary because imageObj.center is in the opposite order of numpy slicing.
-        c = (int(c_y), int(c_x))
+        if inputDict['fixedCenters']:
+            c = (int(c_y), int(c_x))
+        else:
+            c = theta[1], theta[0]
+        print c
 
         #TODO Delete, only for testing
 
@@ -229,7 +243,7 @@ def main():
 
         #iterate until we reach our limit or BE decreases
         for n in xrange(2,maxGaussians+1):
-            prim_fit, theta, be = mcmcFit(imageObj[inputDict['primaryBand']], n, c_x, c_y, filename = name)
+            prim_fit, theta, be = mcmcFit(imageObj[inputDict['primaryBand']], n, c_x, c_y,not inputDict['fixedCenters'], filename = name)
             print 'Gaussian #%d'%n
             print theta
             print '--'*15
@@ -251,6 +265,7 @@ def main():
             #NOTE Double-check that this is right and not supposed to be backwards
                 break
 
+        #TODO fix scaling so it uses the calculated center rather than the image's center
         bestArg = np.argmax(np.array(BEs))
         print 'Best model N = %d'%(bestArg+1)
         if inputDict['secondaryBand'] is not None:
@@ -291,12 +306,11 @@ def main():
         if inputDict['subtractionData']:
             import numpy as np
             np.savetxt(inputDict['output']+imageObj.imageID+'_residualData', calc_img)
-            np.savetxt(inputDict['output']+imageObj.imageID+'_residualData', calc_img)
 
         #TODO Plotting functionality here
         #TODO Have this flagged on/off. We don't need to check for lenses on all of em.
         #check for lens properties
-        lens = residualID(calc_img, c_x, c_y)
+        lens = residualID(calc_img, c[1], c[0])
         print 'The image %s represents a lens: %s'%(imageObj.imageID, str(lens))
 
 if __name__ == '__main__':
