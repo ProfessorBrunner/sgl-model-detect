@@ -29,11 +29,12 @@ from scipy.stats import mode, gaussian_kde
 from multiprocessing import cpu_count, Pool
 from itertools import izip
 
-#TODO: there's a problem with the vectorization of this calculation. Isn't efficient in this form.
+
 
 #the number of parameters per Gaussian
 NPARAM = 4
 
+#TODO: there's a problem with the vectorization of this calculation. Isn't efficient in this form.
 def gaussian(x,y, cx, cy, a, cov):
     muMPos = np.dstack([x-cx, y-cy]) 
     invCov = np.linalg.inv(cov)
@@ -46,6 +47,8 @@ def gaussian(x,y, cx, cy, a, cov):
 
 #theta contains the variables for the amplitude and width
 #theta = [A1,A2...An,VarX1, VarX1..., VarXN, VarY1, VarY2,...VarYN] add covs later,Cov1, Cov2,...CovN]
+#TODO Update Prior
+#A few decisions to make here, whether to have it be Normal or Uniform, and to what degree?
 def lnprior(theta):
     #log uniform priors
     N = len(theta)/NPARAM #save us from having to put N in the global scope
@@ -70,6 +73,7 @@ def lnprior(theta):
     return -1*np.sum(np.log(theta[:(NPARAM-1)*N]))
 
 def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2):
+    #TODO adjust N and unpacking the centers, and they don't need to be given anymore
     N = len(theta)/NPARAM
     amps, varXs, varYs, corrs = [theta[i*N:(i+1)*N] for i in xrange(NPARAM)]
 
@@ -90,6 +94,7 @@ def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2):
     #assume Gaussian errors
     return -.5*(np.sum(((diff)**2)*inv_sigma2-np.log(inv_sigma2)))
 
+#TODO Don't need to pass in centers anymore, it'll be in theta now.
 def lnprob(theta, image, xx, yy, c_x, c_y, inv_sigma2):
     lp = lnprior(theta)
     if np.isfinite(lp):
@@ -139,6 +144,7 @@ def BayesianEvidence(samples, args):
     print 'BE Calculation time: %.6f Seconds'%(time()-t0)
     return BE
 
+#Centers should still be needed for initial guess
 def mcmcFit(image, N, c_x, c_y, n_walkers = 500, filename = None):
 
     np.random.seed(int(time()))
@@ -156,9 +162,10 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 500, filename = None):
     nburn = int(nsteps*.25)
 
     #initial guess
+    #TODO add Gaussian Guesses around the provided center
     pos = []
     imageMax = image.max()
-    print 'Image max value: %f'%imageMax
+
     for walk in xrange(n_walkers):
         row = np.zeros(ndim)
         for i in xrange(ndim):
@@ -176,17 +183,9 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 500, filename = None):
                     x = np.random.randn()
                 row[i] = x
         pos.append(row)
-    #TODO Consider removing,expanding, or moving this portion
-    #sometimes the center is not exactly accurate. This part finds the maximum in the region around the center.
-    '''
-    dy, dx = np.unravel_index(image[c_y-1:c_y+2, c_x-1:c_x+2].argmax(), (3,3))
-    dy,dx = dy-1, dx-1
-    c_y, c_x = c_y+dy, c_x+dx
-    '''
-
+    #TODO remove centers from args
     args = (image, xx, yy, c_x, c_y, inv_sigma2) 
-    sampler = mc.EnsembleSampler(n_walkers, ndim,\
-                                 lnprob, args = args,threads = cpu_count())
+    sampler = mc.EnsembleSampler(n_walkers, ndim, lnprob, args = args,threads = cpu_count())
     #run the sampler. Longest running line in the code
     sampler.run_mcmc(pos, nsteps)
 
@@ -205,6 +204,7 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 500, filename = None):
     n_bins = int(np.sqrt(samples.shape[0])/4)#arbitrary
     calc_vals = np.zeros(ndim)
 
+    #TODO Plot center changes
     for i in xrange(ndim):
         if i< ndim-N:
             hist, bin_edges = np.histogram(np.log10(samples[:,i]), bins = n_bins)
@@ -242,6 +242,7 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 500, filename = None):
         mat = np.array([varX, cov, cov, varY]).reshape((2,2))
         covariance_mats.append(mat)
 
+    #TODO fix gaussian call and calue unpacking here
     calc_img = sum(gaussian(xx,yy,c_x,c_y,a,cov) for a,cov in izip(calc_as, covariance_mats))
     #Calculate the evidence for this model
     BE = BayesianEvidence(samples, args)

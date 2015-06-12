@@ -16,6 +16,8 @@ def main():
     parser.add_argument('imageFormat', metavar = 'format', type = str, help = 'Determines the format of images to use. Optiones are "C" for CFHTLS or "S" for SDSS.')
     parser.add_argument('bands', metavar = 'bands', type = str, help = "What bands to use in the fit. If just one, will fit only that band. If 2 given, first will be\
                                                                        primary fit to and 2nd will be the one subtracted from")
+    #TODO Adjust input for center finding. Centers can be given as hard centers or initial guesses. Perhaps a flag?
+    #Some guess has to be entered because cropping won't be possible otherewise
     parser.add_argument('centers', metavar = 'centers', type = str, help = 'Either a filename or a comma separate pair of coordinates for x,y. Default is to use findCenter.', default = None, nargs = '?')
 
     parser.add_argument('--cutout', dest = 'cutout', action = 'store_const', const = True, default = False,\
@@ -34,8 +36,12 @@ def main():
     args = parser.parse_args()
     filename = args.filename
     outputdir = args.outputdir
-    #TODO check that inputs are correct/ in the right form ex. no commas in bands
     bands = args.bands
+
+    if len(bands) > 2 or ',' in bands:
+        print 'Invalid band entry; at most 2 bands may be entered, no commas. Ex: ig'
+        from sys import exit
+        exit(-1)
 
     if args.imageFormat not in ['C', 'S']:
         print 'Invalid format entry; please select "C" or "S"'
@@ -43,6 +49,7 @@ def main():
         exit(-1)
 
     #determine which center finding method to use
+    #TODO Is findCenters still useful at all? Probably no sense deleting it.
     useFindCenters = args.centers is None
     if useFindCenters:
         isCoordinates = False
@@ -55,6 +62,7 @@ def main():
         cy = int(splitCenters[1].strip())
 
     files = [filename, outputdir]
+    #Then we've been given a list of centers that will have to be read in.
     if not useFindCenters and not isCoordinates:
         files.append(args.centers)
         centers = args.centers
@@ -85,6 +93,7 @@ def main():
         inputDict['coords'] = (cx, cy)
 
     #Make a dictionary of the Galaxy's image coordinates.
+    #TODO Rename GalaxyDict to a more descriptive name?
     elif not useFindCenters:
         galaxyDict = {}
         idx = 2 if args.imageFormat == 'C' else 1 #The catalogs are formatted slightly differently
@@ -92,11 +101,11 @@ def main():
         with open(centers) as f:
             for line in f:
                 splitLine = line.strip().split(' ')
-                coords = [float(x) for x in splitLine[idx:]]#ADDED -1 to see if it more accurately assess center
+                coords = [float(x) for x in splitLine[idx:]]
                 galaxyDict[splitLine[0]] = coords
 
         inputDict['galaxyDict'] = galaxyDict
-
+    #TODO why is this section of input dict creation separate? Why not move it up?
     inputDict['cutout'] = args.cutout
     inputDict['cutoutData'] = args.cutoutData
     inputDict['chain'] = args.chain
@@ -139,6 +148,7 @@ def main():
         obj.getOtherBand(bands)
 
     #For now, randomize so I see different values while testing.
+    #TODO Delete, so it's more stable.
     x = imageDict.values()
     np.random.shuffle(x)
     for imageObj in x:
@@ -154,11 +164,13 @@ def main():
         if 'galaxyDict' in inputDict:
             galaxyDict = inputDict['galaxyDict']
 
-        imageObj.calculateCenters(coords,galaxyDict)
-        #print 'Cutout'
-        #imageObj.cropImage(inputDict['cutout'], inputDict['output'])
+        #adjusts the center estimate, or finds one outright if none were given.
+        imageObj.calculateCenter(coords,galaxyDict)
+
         imageObj.cropImage()
 
+        #Plot the Requested Cutout
+        #TODO Where is cutout data?
         if inputDict['cutout']:
             for band in bands:
                 from matplotlib import pyplot as plt
@@ -186,6 +198,7 @@ def main():
         BEs.append(be)
         prim_fits.append(prim_fit)
 
+        #Necessary because imageObj.center is in the opposite order of numpy slicing.
         c = (int(c_y), int(c_x))
 
         #TODO Delete, only for testing
@@ -213,6 +226,7 @@ def main():
         elif maxGaussians > 10:
             maxGaussians = 10 #upper value of 10. Arbitrarily chosen and can be extended.
         print 'Max Gaussians = %d'%maxGaussians
+
         #iterate until we reach our limit or BE decreases
         for n in xrange(2,maxGaussians+1):
             prim_fit, theta, be = mcmcFit(imageObj[inputDict['primaryBand']], n, c_x, c_y, filename = name)
@@ -247,6 +261,7 @@ def main():
         else:
             calc_img = imageObj[inputDict['primaryBand']] - prim_fit
 
+        #TODO Delete; only for testing
         from matplotlib import pyplot as plt
         print 'Model'
         im = plt.imshow(prim_fit)
@@ -279,6 +294,7 @@ def main():
             np.savetxt(inputDict['output']+imageObj.imageID+'_residualData', calc_img)
 
         #TODO Plotting functionality here
+        #TODO Have this flagged on/off. We don't need to check for lenses on all of em.
         #check for lens properties
         lens = residualID(calc_img, c_x, c_y)
         print 'The image %s represents a lens: %s'%(imageObj.imageID, str(lens))

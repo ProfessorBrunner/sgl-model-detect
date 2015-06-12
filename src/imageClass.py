@@ -5,6 +5,7 @@
 
 import pyfits
 from cropImage import cropImage
+from findCenter import findCenter
 
 class Image(object):
     
@@ -31,8 +32,8 @@ class Image(object):
         self.filenames[band] = filename
         fitsImage = pyfits.open(filename)
         self.images[band] = fitsImage[0].data
-
-    def calculateCenters(self, coords = None, galaxyDict = None):
+    #TODO Delete findcenter?
+    def calculateCenter(self, coords = None, galaxyDict = None):
         import numpy as np
         image = self.images.values()[0] #get first image
         #Is there a way I should make use of the multiple images?
@@ -51,11 +52,31 @@ class Image(object):
 
         self.center = (c_x, c_y)
 
-    def cropImage(self, plot = False, output = ''):
+    def cropImage(self, sideLength = 30):
+        #Crops the full fits image down to a small chunk around the given center guess.
         for band, image in self.images.iteritems():
-            image, c_x, c_y = cropImage(image, self.center[0], self.center[1], plot = plot, filename = output + self.imageID+'_'+band+'_cutout.png')
-            self.images[band] = image
-        self.center = (c_x, c_y)
+
+            c_x, c_y = self.center
+            img_y, img_x = image.shape
+
+            xLims = [int(c_x - .5*sideLength),int( c_x + .5*sideLength)]
+            yLims = [int(c_y - .5*sideLength), int(c_y + .5*sideLength)]
+
+            #if any of the lims are out of bounds, make them the edge instead
+            for i in xrange(2):
+                if xLims[i] <0:
+                    xLims[i] = 0
+                if xLims[i]>img_x:
+                    xLims[i] = img_x
+                if yLims[i] <0:
+                    yLims[i] = 0
+                if yLims[i]>img_y:
+                    yLims[i] = img_y
+
+            self.images[band] = image[yLims[0]:yLims[1], xLims[0]:xLims[1]]
+
+        #readujust the centers. They've moved now that the image has been cropped
+        self.center = (c_x - xLims[0], c_y-yLims[0])
 
     def getOtherBand(self,bands):
         'Attempts to get other images of the same ID in different bands. Assumes only one image is loaded into the object so far'
