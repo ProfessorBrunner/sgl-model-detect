@@ -82,8 +82,9 @@ def lnprior(theta, movingCenter, imageSize):
     #TODO make centerStd tunable and make an option for a uniform distrbution
     if not movingCenter:
         return lnp
-    centerStd = (imageSize[0]+imageSize[1])/2 #Average size divided by 2 (~65% of the time center is within this distance of the image center)
-    return lnp - (sum(imageSize)/2-(c_x+c_y))/(2*centerStd) #logNormal for the centers
+    #centerStd = (imageSize[0]+imageSize[1])/2 #Average size divided by 2 (~65% of the time center is within this distance of the image center)
+    #return lnp - (sum(imageSize)/2-(c_x+c_y))/(2*centerStd) #logNormal for the centers
+    return lnp
 
 def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2, movingCenter):
 
@@ -193,7 +194,8 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 500, filename = None)
                 mean = image.shape[i]/2
                 x = -1
                 while x<0 or x>image.shape[i]:
-                    x = mean*np.random.randn()+mean
+                    #x = mean*np.random.randn()+mean
+                    x = np.random.rand()*image.shape[i]
                 row[i] = x
 
         for i in xrange(2*movingCenters,ndim):
@@ -226,12 +228,15 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 500, filename = None)
     #TODO MAP as chain median?
     #the MAP is simply the mean of the chain
     #calc_vals = samples.mean(axis = 0)
-
-    #calculate the mode from a histogram
+    p25, calc_vals, p75 = np.percentile(samples,[25,50,75], axis = 0)
+    spread = .7413 * (p75 - p25)
+    for i in xrange(ndim):
+        print calc_vals[i], spread[i]
     n_bins = int(np.sqrt(samples.shape[0])/4)#arbitrary
-    calc_vals = np.zeros(ndim)
 
-    #TODO Plot center changes
+    '''
+    #calculate the mode from a histogram
+    calc_vals = np.zeros(ndim)
 
     for i in xrange(ndim):
         if (movingCenters and 1< i < ndim-N) or i<ndim-N:
@@ -243,9 +248,14 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 500, filename = None)
             hist, bin_edges = np.histogram(samples[:,i], bins = n_bins)
             max_idx = np.argmax(hist)
             calc_vals[i] = (bin_edges[max_idx]+bin_edges[max_idx+1])/2
+    '''
+    if movingCenters:
+        calc_cx, calc_cy = calc_vals[0:2]
+    else:
+        calc_cx, calc_cy = c_x, c_y
 
-    calc_cx, calc_cy = calc_vals[0:2]
     calc_as, calc_varXs, calc_varYs, calc_corrs = [calc_vals[i*N+2*(movingCenters):(i+1)*N+2*(movingCenters)] for i in xrange(NPARAM)]
+
 
     for i in xrange(ndim):
         if movingCenters:
@@ -272,7 +282,6 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 500, filename = None)
                 plt.title("Radial %d: %.3f"%(i-N+1, calc_vals[i]))
             else:
                 plt.title('Corr %d: %.3f'%(i-ndim+N+1, calc_vals[i]))
-
             if i<ndim-N:
                 plt.hist(np.log10(samples[:,i]), bins = n_bins)
                 plt.vlines(np.log10(calc_vals[i]),0,15000,colors = ['r'])
@@ -295,42 +304,3 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 500, filename = None)
     BE = BayesianEvidence(samples, args)
     return calc_img, calc_vals, BE
 
-if __name__ == '__main__':
-    import argparse
-    import pyfits
-    from cropImage import cropImage 
-
-    parser = argparse.ArgumentParser(description = desc)
-    parser.add_argument('filename', metavar = 'fname', type = str, help = 'The name of the fits file to be read in.')
-    parser.add_argument('nGaussians', metavar = 'N', type = int, help = 'Number of Gaussians to use in the fit.', default = 2)
-    parser.add_argument('center_x', metavar = 'cx', type = int, help = 'The center in x')
-    parser.add_argument('center_y', metavar = 'cy', type = int, help = 'The center in y')
-    parser.add_argument('n_walkers', metavar = 'n_walkers', type = int, help = 'Number of walkers',nargs = '?', default = 1000)
-    parser.add_argument('saveFile', metavar = 'sfile', type = str, help = 'Where to store the sample chain.',nargs = '?', default = 0)
-
-    args = parser.parse_args()
-
-    filename = args.filename
-
-    try:
-        fitsImage = pyfits.open(filename)
-    except IOError:
-        print 'ERROR: Invalid filename.'
-        from sys import exit
-        exit(-1)
-
-    image = fitsImage[0].data
-    #TODO Make findcenter find the center of the images if none are passed in.
-    c_y, c_x = args.center_y, args.center_x
-
-    image, c_x, c_y = cropImage(image, c_x, c_y)
-
-    N = args.nGaussians
-    calc_img, theta, BF = mcmcFit(image, N, c_x, c_y, args.n_walkers, args.saveFile)
-    plt.subplot(121)
-    im = plt.imshow(image)
-    plt.colorbar()
-    plt.subplot(122)
-    im = plt.imshow(image-calc_img)
-    plt.colorbar()
-    plt.show()

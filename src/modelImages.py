@@ -16,8 +16,6 @@ def main():
     parser.add_argument('imageFormat', metavar = 'format', type = str, help = 'Determines the format of images to use. Optiones are "C" for CFHTLS or "S" for SDSS.')
     parser.add_argument('bands', metavar = 'bands', type = str, help = "What bands to use in the fit. If just one, will fit only that band. If 2 given, first will be\
                                                                        primary fit to and 2nd will be the one subtracted from")
-    #TODO Adjust input for center finding. Centers can be given as hard centers or initial guesses. Perhaps a flag?
-    #Some guess has to be entered because cropping won't be possible otherewise
     parser.add_argument('centers', metavar = 'centers', type = str, help = \
         'Either a filename or a comma separate pair of coordinates for x,y. Default is to use findCenter.', default = None, nargs = '?')
 
@@ -52,7 +50,7 @@ def main():
         exit(-1)
 
     #determine which center finding method to use
-    #TODO Is findCenters still useful at all? Probably no sense deleting it.
+    #TODO rename useFindCenters to be more descriptive
     useFindCenters = args.centers is None
     if useFindCenters:
         isCoordinates = False
@@ -61,8 +59,8 @@ def main():
 
     if isCoordinates:
         splitCenters = args.centers.split(',')
-        cx = int(splitCenters[0].strip())
-        cy = int(splitCenters[1].strip())
+        c_x = int(splitCenters[0].strip())
+        c_y = int(splitCenters[1].strip())
 
     files = [filename, outputdir]
     #Then we've been given a list of centers that will have to be read in.
@@ -80,32 +78,13 @@ def main():
             print 'ERROR: Invalied path %s'%f
             from sys import exit
             exit(-1)
-    #begin setting up the input dict
-    #This is a straightforward way to carry around various options
-    #TODO Reconsider the input dict; it's become more nightmare than tool
-    inputDict = {}
-    inputDict['filename'] = filename
-    inputDict['output']= outputdir
-    inputDict['useFindCenters'] = useFindCenters
-    inputDict['isCoordinates'] = isCoordinates
-    inputDict['isDir'] = os.path.isdir(filename)
-    inputDict['primaryBand'] = bands[0]
-    inputDict['secondaryBand'] = bands[1] if len(bands)>1 else None
 
-    inputDict['fixedCenters'] = args.fixedCenters
-    inputDict['cutout'] = args.cutout
-    inputDict['cutoutData'] = args.cutoutData
-    inputDict['chain'] = args.chain
-    inputDict['subtraction'] = args.subtraction
-    #inputDict['residuals']=args.residuals
-    inputDict['subtractionData'] = args.subtractionData
-
-    if isCoordinates:
-        inputDict['coords'] = (cx, cy)
+    primaryBand = bands[0]
+    secondaryBand = bands[1] if len(bands)>1 else None
 
     #Make a dictionary of the Galaxy's image coordinates.
     #TODO Rename GalaxyDict to a more descriptive name?
-    elif not useFindCenters:
+    if not (useFindCenters or isCoordinates) :
         galaxyDict = {}
         idx = 2 if args.imageFormat == 'C' else 1 #The catalogs are formatted slightly differently
         # This was easier than fixing the catalogs, but a standard format may be preferable.
@@ -114,9 +93,8 @@ def main():
                 splitLine = line.strip().split(' ')
                 coords = [float(x) for x in splitLine[idx:]]
                 galaxyDict[splitLine[0]] = coords
-
-        inputDict['galaxyDict'] = galaxyDict
-
+    else:
+        galaxyDict = None
 
     from mcmcFit import mcmcFit
     from residualID import residualID
@@ -130,7 +108,8 @@ def main():
 
     #load in filenames from directory
     #TODO Reads in all images, even the ones not currently being fit to. Waste of memory and time.
-    if inputDict['isDir']:
+    if os.path.isdir(filename):
+        #if the input is a directory
         fileList = os.listdir(filename)
         fileDirectory = filename
         for fname in fileList:
@@ -158,17 +137,13 @@ def main():
     np.random.shuffle(x)
     for imageObj in x:
         #savefile name for sample chain
-        name = inputDict['output']+imageObj.imageID+'_samples' if inputDict['chain'] else None
+        name = outputdir+imageObj.imageID+'_samples' if args.chain else None
         print 'Image ID : %s'%imageObj.imageID
-        coords = None
-        galaxyDict = None
 
-        if inputDict['isCoordinates']:
-            coords = inputDict['coords']
-
-        if 'galaxyDict' in inputDict:
-            galaxyDict = inputDict['galaxyDict']
-
+        if isCoordinates:
+            coords = (c_x, c_y)
+        else:
+            coords = None
         #adjusts the center estimate, or finds one outright if none were given.
         imageObj.calculateCenter(coords,galaxyDict)
 
@@ -176,7 +151,7 @@ def main():
 
         #Plot the Requested Cutout
         #TODO Where is cutout data?
-        if inputDict['cutout']:
+        if args.cutout:
             for band in bands:
                 from matplotlib import pyplot as plt
                 plt.figure()
@@ -190,10 +165,10 @@ def main():
                 plt.clf()
                 plt.close()
 
-        if inputDict['cutoutData']:
+        if args.cutoutData:
             import numpy as np
             for band in bands:
-                np.savetxt(inputDict['output']+imageObj.imageID+'_cutoutData', imageObj.images[band])
+                np.savetxt(outputdir+imageObj.imageID+'_cutoutData', imageObj.images[band])
 
         BEs = []
         prim_fits = []
@@ -201,24 +176,24 @@ def main():
         #Then, use to charecterize max number of parameters
         c_x, c_y = imageObj.center
         print 'Fitting now'
-        prim_fit,theta, be  = mcmcFit(imageObj[inputDict['primaryBand']], 1, c_x, c_y, not inputDict['fixedCenters'], filename = name)
+        prim_fit,theta, be  = mcmcFit(imageObj[primaryBand], 1, c_x, c_y, not args.fixedCenters, filename = name)
         print 'Gaussian #1'
         print theta
         print'--'*15
         BEs.append(be)
         prim_fits.append(prim_fit)
 
-        #Necessary because imageObj.center is in the opposite order of numpy slicing.
-        if inputDict['fixedCenters']:
-            c = (int(c_y), int(c_x))
+        #Necessary despite centers existing because because imageObj.center is in the opposite order of numpy slicing.
+        if args.fixedCenters:
+            c = c_y, c_x
         else:
             c = theta[1], theta[0]
         print c
 
         #TODO Delete, only for testing
 
-        prim_fit_scaled = prim_fit*imageObj[inputDict['secondaryBand']][c]/imageObj[inputDict['primaryBand']][c]
-        calc_img = imageObj[inputDict['secondaryBand']] - prim_fit_scaled
+        prim_fit_scaled = prim_fit*imageObj[secondaryBand][c]/imageObj[primaryBand][c]
+        calc_img = imageObj[secondaryBand] - prim_fit_scaled
         from matplotlib import pyplot as plt
         im = plt.imshow(calc_img)
         plt.colorbar(im)
@@ -243,7 +218,7 @@ def main():
 
         #iterate until we reach our limit or BE decreases
         for n in xrange(2,maxGaussians+1):
-            prim_fit, theta, be = mcmcFit(imageObj[inputDict['primaryBand']], n, c_x, c_y,not inputDict['fixedCenters'], filename = name)
+            prim_fit, theta, be = mcmcFit(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, filename = name)
             print 'Gaussian #%d'%n
             print theta
             print '--'*15
@@ -252,8 +227,8 @@ def main():
             prim_fits.append(prim_fit)
             #TODO Delete, only for testing
 
-            prim_fit_scaled = prim_fit*imageObj[inputDict['secondaryBand']][c]/imageObj[inputDict['primaryBand']][c]
-            calc_img = imageObj[inputDict['secondaryBand']] - prim_fit_scaled
+            prim_fit_scaled = prim_fit*imageObj[secondaryBand][c]/imageObj[primaryBand][c]
+            calc_img = imageObj[secondaryBand] - prim_fit_scaled
 
             im = plt.imshow(calc_img)
             plt.colorbar(im)
@@ -267,14 +242,15 @@ def main():
 
         #TODO fix scaling so it uses the calculated center rather than the image's center
         bestArg = np.argmax(np.array(BEs))
+        calcImgDict = {}
+        calc_img = imageObj[primaryBand] - prim_fit
+        calcImgDict[primaryBand] = calc_img
         print 'Best model N = %d'%(bestArg+1)
-        if inputDict['secondaryBand'] is not None:
+        if secondaryBand is not None:
             prim_fit = prim_fits[bestArg]
-            prim_fit_scaled = prim_fit*imageObj[inputDict['secondaryBand']][c]/imageObj[inputDict['primaryBand']][c]
-            calc_img = imageObj[inputDict['secondaryBand']] - prim_fit_scaled
-
-        else:
-            calc_img = imageObj[inputDict['primaryBand']] - prim_fit
+            prim_fit_scaled = prim_fit*imageObj[secondaryBand][c]/imageObj[primaryBand][c]
+            calc_img = imageObj[secondaryBand] - prim_fit_scaled
+            calcImgDict[secondaryBand] = calc_img
 
         #TODO Delete; only for testing
         from matplotlib import pyplot as plt
@@ -293,19 +269,25 @@ def main():
         plt.clf()
         plt.close()
 
-        if inputDict['subtraction']:
+        if args.subtraction:
             from matplotlib import pyplot as plt
-            im = plt.imshow(calc_img)
-            plt.colorbar(im)
-            plt.savefig(inputDict['output']+imageObj.imageID+'_subtraction.png')
-            print 'Subtraction'
-            plt.show()
-            plt.clf()
-            plt.close()
+            for band in bands:
+                plt.figure()
+                im = plt.imshow(calcImgDict[band])
+                plt.colorbar(im)
+                if not args.fixedCenters:
+                    plt.scatter(theta[0], theta[1], color = 'm')
 
-        if inputDict['subtractionData']:
+                #If leaving at this spot, fix filename
+                plt.savefig(outputdir+imageObj.imageID+'_subtraction.png')
+                plt.show()
+                plt.clf()
+                plt.close()
+
+
+        if args.subtractionData:
             import numpy as np
-            np.savetxt(inputDict['output']+imageObj.imageID+'_residualData', calc_img)
+            np.savetxt(outputdir+imageObj.imageID+'_residualData', calc_img)
 
         #TODO Plotting functionality here
         #TODO Have this flagged on/off. We don't need to check for lenses on all of em.

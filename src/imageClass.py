@@ -4,8 +4,6 @@
 #It will also include a few subclasses depending on filename syntax
 
 import pyfits
-from cropImage import cropImage
-from findCenter import findCenter
 
 class Image(object):
     
@@ -32,18 +30,20 @@ class Image(object):
         self.filenames[band] = filename
         fitsImage = pyfits.open(filename)
         self.images[band] = fitsImage[0].data
-    #TODO Delete findcenter?
+
     def calculateCenter(self, coords = None, galaxyDict = None):
         import numpy as np
         image = self.images.values()[0] #get first image
         #Is there a way I should make use of the multiple images?
+        if coords is not None and galaxyDict is not None:
+            print 'Warning: Two sources are being passed into calculateCenter; not clear which to use.'
+
         if coords is not None:
             c_x, c_y = coords
         elif galaxyDict is not None:
             c_x, c_y = galaxyDict[self.imageID]
         else:
             c_y, c_x = np.unravel_index(image.argmax(), image.shape) #center is just the brightest spot
-            #c_y, c_x = findCenter(image)
 
         #sometimes the center is not exactly accurate. This part finds the maximum in the region around the center.
         dy, dx = np.unravel_index(image[c_y-2:c_y+3, c_x-2:c_x+3].argmax(), (5,5))
