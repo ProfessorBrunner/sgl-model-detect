@@ -151,7 +151,8 @@ def mcmcFit(image, N, c_x, c_y, n_walkers = 600, ddof = 0, filename = None):
 
     #using clustering on the samples to select the parameters from the posterior
     calc_as, calc_rs = calcsCluster(samples, N)
-
+    print calc_as
+    print calc_rs
     calc_img = sum(gaussian(xx,yy,c_x,c_y,10**a,10**r) for a,r in zip(calc_as, calc_rs))
     #calcuate the chi2 test
     ddof = -2*N + ddof 
