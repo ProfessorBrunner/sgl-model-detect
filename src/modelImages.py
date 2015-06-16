@@ -150,7 +150,6 @@ def main():
         imageObj.cropImage()
 
         #Plot the Requested Cutout
-        #TODO Where is cutout data?
         if args.cutout:
             for band in bands:
                 from matplotlib import pyplot as plt

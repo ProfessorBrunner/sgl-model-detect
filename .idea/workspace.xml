@@ -2,9 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ae9ba962-254c-4a9c-803d-873e46cbf84d" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/cropImage.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/findCenter.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/imageClass.py" afterPath="$PROJECT_DIR$/src/imageClass.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/mcmcFit.py" afterPath="$PROJECT_DIR$/src/mcmcFit.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/modelImages.py" afterPath="$PROJECT_DIR$/src/modelImages.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
@@ -29,25 +26,28 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="modelImages.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="modelImages.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/modelImages.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.34359807">
-              <caret line="278" column="63" selection-start-line="278" selection-start-column="63" selection-end-line="278" selection-end-column="63" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="259" column="18" selection-start-line="259" selection-start-column="18" selection-end-line="259" selection-end-column="18" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mcmcFit.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="mcmcFit.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/mcmcFit.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="254" column="34" selection-start-line="254" selection-start-column="34" selection-end-line="254" selection-end-column="34" />
+            <state vertical-scroll-proportion="0.9967585">
+              <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
               <folding>
                 <element signature="e#778#796#0" expanded="true" />
-                <element signature="e#1181#1453#0" expanded="false" />
-                <element signature="e#4424#4670#0" expanded="false" />
+                <element signature="e#1825#3136#0" expanded="false" />
+                <element signature="e#3210#4119#0" expanded="false" />
+                <element signature="e#4323#4495#0" expanded="false" />
+                <element signature="e#4523#4769#0" expanded="false" />
+                <element signature="e#4896#5838#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -82,8 +82,8 @@
         <option value="$PROJECT_DIR$/src/findCenter.py" />
         <option value="$PROJECT_DIR$/src/cropImage.py" />
         <option value="$PROJECT_DIR$/src/imageClass.py" />
-        <option value="$PROJECT_DIR$/src/mcmcFit.py" />
         <option value="$PROJECT_DIR$/src/modelImages.py" />
+        <option value="$PROJECT_DIR$/src/mcmcFit.py" />
       </list>
     </option>
   </component>
@@ -122,7 +122,7 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scratches" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -157,7 +157,7 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -451,7 +451,13 @@
       <option name="project" value="LOCAL" />
       <updated>1434147272996</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="After testing, center finding works as it's supposed to.">
+      <created>1434396274887</created>
+      <option name="number" value="00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1434396274887</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -471,14 +477,14 @@
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32948583" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32948583" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -504,7 +510,8 @@
     <MESSAGE value="Beefed up the Bayes Factor calculation." />
     <MESSAGE value="When through with comments to narrow down where changes need to be made for center finding. Also moved cropImage code into imageClass" />
     <MESSAGE value="Center finding is implemented and seems to be working. Still a few more tests are needed." />
-    <option name="LAST_COMMIT_MESSAGE" value="Center finding is implemented and seems to be working. Still a few more tests are needed." />
+    <MESSAGE value="After testing, center finding works as it's supposed to." />
+    <option name="LAST_COMMIT_MESSAGE" value="After testing, center finding works as it's supposed to." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -513,6 +520,37 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/src/modelImages.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="278" column="63" selection-start-line="278" selection-start-column="63" selection-end-line="278" selection-end-column="63" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/mcmcFit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#778#796#0" expanded="true" />
+            <element signature="e#1825#3136#0" expanded="false" />
+            <element signature="e#3210#4119#0" expanded="false" />
+            <element signature="e#4323#4495#0" expanded="false" />
+            <element signature="e#4523#4769#0" expanded="false" />
+            <element signature="e#4896#5838#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/imageClass.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="43" column="0" selection-start-line="43" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/modelImages.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -527,8 +565,11 @@
           <caret line="161" column="9" selection-start-line="161" selection-start-column="4" selection-end-line="161" selection-end-column="9" />
           <folding>
             <element signature="e#778#796#0" expanded="true" />
-            <element signature="e#1181#1453#0" expanded="false" />
-            <element signature="e#4424#4670#0" expanded="false" />
+            <element signature="e#1825#3136#0" expanded="false" />
+            <element signature="e#3210#4119#0" expanded="false" />
+            <element signature="e#4323#4495#0" expanded="false" />
+            <element signature="e#4523#4769#0" expanded="false" />
+            <element signature="e#4896#5838#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -570,8 +611,11 @@
           <caret line="121" column="19" selection-start-line="121" selection-start-column="19" selection-end-line="121" selection-end-column="19" />
           <folding>
             <element signature="e#778#796#0" expanded="true" />
-            <element signature="e#1181#1453#0" expanded="false" />
-            <element signature="e#4424#4670#0" expanded="false" />
+            <element signature="e#1825#3136#0" expanded="false" />
+            <element signature="e#3210#4119#0" expanded="false" />
+            <element signature="e#4323#4495#0" expanded="false" />
+            <element signature="e#4523#4769#0" expanded="false" />
+            <element signature="e#4896#5838#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -605,8 +649,11 @@
           <caret line="128" column="27" selection-start-line="128" selection-start-column="27" selection-end-line="128" selection-end-column="27" />
           <folding>
             <element signature="e#778#796#0" expanded="true" />
-            <element signature="e#1181#1453#0" expanded="false" />
-            <element signature="e#4424#4670#0" expanded="false" />
+            <element signature="e#1825#3136#0" expanded="false" />
+            <element signature="e#3210#4119#0" expanded="false" />
+            <element signature="e#4323#4495#0" expanded="false" />
+            <element signature="e#4523#4769#0" expanded="false" />
+            <element signature="e#4896#5838#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -641,8 +688,11 @@
           <caret line="101" column="135" selection-start-line="101" selection-start-column="135" selection-end-line="101" selection-end-column="135" />
           <folding>
             <element signature="e#778#796#0" expanded="true" />
-            <element signature="e#1181#1453#0" expanded="false" />
-            <element signature="e#4424#4670#0" expanded="false" />
+            <element signature="e#1825#3136#0" expanded="false" />
+            <element signature="e#3210#4119#0" expanded="false" />
+            <element signature="e#4323#4495#0" expanded="false" />
+            <element signature="e#4523#4769#0" expanded="false" />
+            <element signature="e#4896#5838#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -669,8 +719,11 @@
           <caret line="136" column="71" selection-start-line="136" selection-start-column="71" selection-end-line="136" selection-end-column="71" />
           <folding>
             <element signature="e#778#796#0" expanded="true" />
-            <element signature="e#1181#1453#0" expanded="false" />
-            <element signature="e#4424#4670#0" expanded="false" />
+            <element signature="e#1825#3136#0" expanded="false" />
+            <element signature="e#3210#4119#0" expanded="false" />
+            <element signature="e#4323#4495#0" expanded="false" />
+            <element signature="e#4523#4769#0" expanded="false" />
+            <element signature="e#4896#5838#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -697,8 +750,11 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#778#796#0" expanded="true" />
-            <element signature="e#1181#1453#0" expanded="false" />
-            <element signature="e#4424#4670#0" expanded="false" />
+            <element signature="e#1825#3136#0" expanded="false" />
+            <element signature="e#3210#4119#0" expanded="false" />
+            <element signature="e#4323#4495#0" expanded="false" />
+            <element signature="e#4523#4769#0" expanded="false" />
+            <element signature="e#4896#5838#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -725,8 +781,11 @@
           <caret line="132" column="28" selection-start-line="132" selection-start-column="28" selection-end-line="132" selection-end-column="28" />
           <folding>
             <element signature="e#778#796#0" expanded="true" />
-            <element signature="e#1181#1453#0" expanded="false" />
-            <element signature="e#4424#4670#0" expanded="false" />
+            <element signature="e#1825#3136#0" expanded="false" />
+            <element signature="e#3210#4119#0" expanded="false" />
+            <element signature="e#4323#4495#0" expanded="false" />
+            <element signature="e#4523#4769#0" expanded="false" />
+            <element signature="e#4896#5838#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -863,23 +922,26 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/mcmcFit.py">
+    <entry file="file://$PROJECT_DIR$/src/modelImages.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="254" column="34" selection-start-line="254" selection-start-column="34" selection-end-line="254" selection-end-column="34" />
-          <folding>
-            <element signature="e#778#796#0" expanded="true" />
-            <element signature="e#1181#1453#0" expanded="false" />
-            <element signature="e#4424#4670#0" expanded="false" />
-          </folding>
+          <caret line="259" column="18" selection-start-line="259" selection-start-column="18" selection-end-line="259" selection-end-column="18" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/modelImages.py">
+    <entry file="file://$PROJECT_DIR$/src/mcmcFit.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.34359807">
-          <caret line="278" column="63" selection-start-line="278" selection-start-column="63" selection-end-line="278" selection-end-column="63" />
-          <folding />
+        <state vertical-scroll-proportion="0.9967585">
+          <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
+          <folding>
+            <element signature="e#778#796#0" expanded="true" />
+            <element signature="e#1825#3136#0" expanded="false" />
+            <element signature="e#3210#4119#0" expanded="false" />
+            <element signature="e#4323#4495#0" expanded="false" />
+            <element signature="e#4523#4769#0" expanded="false" />
+            <element signature="e#4896#5838#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>

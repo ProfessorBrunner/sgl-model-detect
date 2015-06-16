@@ -36,6 +36,10 @@ NPARAM = 4
 
 #TODO: there's a problem with the vectorization of this calculation. Isn't efficient in this form.
 def gaussian(x,y, cx, cy, a, cov):
+    #TODO Only for testing; forcing spherical
+    cov[0,1] = cov[1,0] = 0
+    cov[1,1] = cov[0,0]
+
     muMPos = np.dstack([x-cx, y-cy]) 
     invCov = np.linalg.inv(cov)
     output = np.zeros(x.shape)
@@ -144,7 +148,7 @@ def BayesianEvidence(samples, args):
     beHelper.args = args
     beHelper.N = N
 
-    nSamples = 5000
+    nSamples = 1000
     #normalized liklihood?
     #All samples takes too long. Do a small selection
     randSamplesIdx = np.random.choice(xrange(len(samples)), size = nSamples, replace = False)
@@ -165,7 +169,7 @@ def BayesianEvidence(samples, args):
     return BE
 
 #Centers should still be needed for initial guess
-def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 500, filename = None):
+def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1000, filename = None):
     np.random.seed(int(time()))
     t0 = time()
     #numpy arrays of the indicies, used in the calculations
@@ -183,7 +187,6 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 500, filename = None)
     nburn = int(nsteps*.25)
 
     #initial guess
-    #TODO add Gaussian Guesses around the provided center
     pos = []
     imageMax = image.max()
 
@@ -200,10 +203,12 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 500, filename = None)
 
         for i in xrange(2*movingCenters,ndim):
             if i < 2*movingCenters+N: #amp
-                #row[i] = 10**(4*np.random.rand()-3)
+                #row[i] = 10**(8*np.random.rand()-4)
                 row[i] = np.random.lognormal(mean = np.log10(imageMax/2), sigma = 2.0)#try logNormal near max
             elif i<ndim-N: #var
+                #TODO fix not fitting other Gaussians
                 row[i] = 10**(5*np.random.rand()-2)
+                #row[i] = 10**(8*np.random.rand()-4)
             else: #corr
                 #row[i] = 2*np.random.rand()-1
                 #Trying a normal dist. rather and a uniform.
@@ -213,6 +218,7 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 500, filename = None)
                     x = np.random.randn()
                 row[i] = x
         pos.append(row)
+
     args = (image, xx, yy, c_x, c_y, inv_sigma2, movingCenters)
     sampler = mc.EnsembleSampler(n_walkers, ndim, lnprob, args = args,threads = cpu_count())
     #run the sampler. Longest running line in the code
@@ -228,13 +234,14 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 500, filename = None)
     #TODO MAP as chain median?
     #the MAP is simply the mean of the chain
     #calc_vals = samples.mean(axis = 0)
+    '''
     p25, calc_vals, p75 = np.percentile(samples,[25,50,75], axis = 0)
     spread = .7413 * (p75 - p25)
     for i in xrange(ndim):
         print calc_vals[i], spread[i]
+    '''
     n_bins = int(np.sqrt(samples.shape[0])/4)#arbitrary
 
-    '''
     #calculate the mode from a histogram
     calc_vals = np.zeros(ndim)
 
@@ -248,7 +255,7 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 500, filename = None)
             hist, bin_edges = np.histogram(samples[:,i], bins = n_bins)
             max_idx = np.argmax(hist)
             calc_vals[i] = (bin_edges[max_idx]+bin_edges[max_idx+1])/2
-    '''
+
     if movingCenters:
         calc_cx, calc_cy = calc_vals[0:2]
     else:
@@ -299,6 +306,14 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 500, filename = None)
 
     #TODO fix gaussian call and calue unpacking here
     calc_img = sum(gaussian(xx,yy,calc_cx,calc_cy,a,cov) for a,cov in izip(calc_as, covariance_mats))
+    from copy import deepcopy
+    imCopy = deepcopy(image)
+    for a,cov in izip(calc_as, covariance_mats):
+        g = gaussian(xx,yy,calc_cx, calc_cy,a,cov)
+        imCopy-=g
+        im = plt.imshow(imCopy)
+        plt.colorbar(im)
+        plt.show()
     #Calculate the evidence for this model
     print 'Fitting Time: %.4f Seconds'%(time()-t0)
     BE = BayesianEvidence(samples, args)
