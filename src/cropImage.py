@@ -52,8 +52,6 @@ def cropImage(image, c_x, c_y, sideLength= 30, plot = False, filename = None):
     #readujust the centers. They've moved now that the image has been cropped
     c_y, c_x = c_y-yLims[0], c_x - xLims[0]
 
-    print 'Slice Sides: (%d, %d)'%(xLims[0], yLims[0])
-
     if plot:
         plt.figure()
         im = plt.imshow(image)

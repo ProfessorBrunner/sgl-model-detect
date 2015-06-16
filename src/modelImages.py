@@ -107,18 +107,18 @@ if not inputDict['isDir']:
                 c_x, c_y = inputDict['coords']
             else:
                 c_x, c_y = inputDict['galaxyDict'][baseName[8:]]
-            print 'Original centers: (%d, %d)'%(c_x, c_y)
+                c_x, c_y = c_x-1, c_y-1
             image, c_x, c_y = cropImage(image, c_x, c_y, plot = inputDict['cutout'], filename = inputDict['output'] + baseName+'_'+band+'_cutout.png')
             if inputDict['cutoutData']:
                 import numpy as np
                 np.savetxt(inputDict['output']+baseName+'_'+band+'_cutoutData', image)
             images[band] = image    
         #TODO Fix ddof so chi2stat is correct!
-        print 'Cropped centers: (%d, %d)'%(c_x, c_y)
         i_fit, i_stat, i_p = mcmcFit(images['i'], 2, c_x, c_y, filename = name)
         c = (int(c_y), int(c_x))
-        i_fit = i_fit*images['g'][c]/images['i'][c]
-        calc_img = images['g'] - i_fit
+        i_fit_scaled = i_fit*images['g'][c]/images['i'][c]
+        calc_img = images['g'] - i_fit_scaled
+        img_fit = i_fit
     else:
         fitsImage = pyfits.open(filename)
         image = fitsImage[0].data
@@ -145,8 +145,13 @@ if not inputDict['isDir']:
         im = plt.imshow(calc_img)
         plt.colorbar(im)
         plt.scatter(c_x, c_y, color = 'm')
-        plt.show()
-        #plt.savefig(inputDict['output']+baseName+'_subtraction.png')
+        #plt.show()
+        plt.savefig(inputDict['output']+baseName+'_g_subtraction.png')
+        im = plt.imshow(images['i']-img_fit)
+        plt.colorbar(im)
+        plt.scatter(c_x, c_y, color = 'm')
+        #plt.show()
+        plt.savefig(inputDict['output']+baseName+'_i_subtraction.png')
         plt.close()
 
     #TODO Plotting functionality here
@@ -199,12 +204,11 @@ else :
             np.savetxt(inputDict['output']+baseName+'_residualData', calc_img)
 
         if inputDict['subtraction']:
-            print 'Here'
             from matplotlib import pyplot as plt
             im = plt.imshow(calc_img)
             plt.colorbar(im)
-            plt.show()
-            #plt.savefig(inputDict['output']+baseName+'_subtraction.png')
+            #plt.show()
+            plt.savefig(inputDict['output']+baseName+'_subtraction.png')
             plt.close()
 
         #TODO Plotting functionality here

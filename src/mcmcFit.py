@@ -79,6 +79,7 @@ def calcsCluster(samples, N, decimals = 2, n_clusters = 3):
     sampled_rs = samples[:, N:].reshape((-1))
 
     data = np.c_[sampled_as, sampled_rs]
+
     #reshape the data such that it's 2-D, with amps on one axis and radii on the other.
 
     n_clusters = N+1
