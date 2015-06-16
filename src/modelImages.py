@@ -106,15 +106,16 @@ if not inputDict['isDir']:
             elif inputDict['isCoordinates']:
                 c_x, c_y = inputDict['coords']
             else:
-                c_x, c_y = inputDict['galaxyDict'][baseName[7:]]
-
+                c_x, c_y = inputDict['galaxyDict'][baseName[8:]]
+            print 'Original centers: (%d, %d)'%(c_x, c_y)
             image, c_x, c_y = cropImage(image, c_x, c_y, plot = inputDict['cutout'], filename = inputDict['output'] + baseName+'_'+band+'_cutout.png')
             if inputDict['cutoutData']:
                 import numpy as np
                 np.savetxt(inputDict['output']+baseName+'_'+band+'_cutoutData', image)
             images[band] = image    
         #TODO Fix ddof so chi2stat is correct!
-        i_fit, i_stat, i_p = mcmcFit(images['i'], 3, c_x, c_y, filename = name)
+        print 'Cropped centers: (%d, %d)'%(c_x, c_y)
+        i_fit, i_stat, i_p = mcmcFit(images['i'], 2, c_x, c_y, filename = name)
         c = (int(c_y), int(c_x))
         i_fit = i_fit*images['g'][c]/images['i'][c]
         calc_img = images['g'] - i_fit
@@ -127,8 +128,7 @@ if not inputDict['isDir']:
         elif inputDict['isCoordinates']:
             c_x, c_y = inputDict['coords']
         else:
-            c_x, c_y = inputDict['galaxyDict'][baseName[7:]]
- 
+            c_x, c_y = inputDict['galaxyDict'][baseName[8:]]
         image, c_x, c_y = cropImage(image, c_x, c_y, plot = inputDict['cutout'], filename = inputDict['output']+baseName+'_cutout.png')
         if inputDict['cutoutData']:
             import numpy as np
@@ -139,6 +139,15 @@ if not inputDict['isDir']:
     if inputDict['residualData']:
         import numpy as np
         np.savetxt(inputDict['output']+baseName+'_residualData', calc_img)
+
+    if inputDict['subtraction']:
+        from matplotlib import pyplot as plt
+        im = plt.imshow(calc_img)
+        plt.colorbar(im)
+        plt.scatter(c_x, c_y, color = 'm')
+        plt.show()
+        #plt.savefig(inputDict['output']+baseName+'_subtraction.png')
+        plt.close()
 
     #TODO Plotting functionality here
     lens = residualID(image, c_x, c_y)
@@ -155,7 +164,6 @@ else :
 
     baseNames = list(baseNames)
     for baseName in baseNames:
-<<<<<<< HEAD
         lineIndex = baseName.rfind('/')
         fileDirectory, baseName = baseName[:lineIndex], baseName[lineIndex:]
         bans = ['g', 'i']
@@ -163,7 +171,6 @@ else :
             fitsImage = pyfits.open(fileDirectory + basename + '_'+ band + '.fits')
             fullImage =fitsImage[0].data
             image, c_x, 
-=======
         name = inputDict['output']+baseName+'_samples' if inputDict['chain'] else None
         bands = ['g', 'i']
         images = {}
@@ -175,7 +182,7 @@ else :
             elif inputDict['isCoordinates']:
                 c_x, c_y = inputDict['coords']
             else:
-                c_x, c_y = inputDict['galaxyDict'][baseName[7:]]
+                c_x, c_y = inputDict['galaxyDict'][baseName[8:]]
 
             image, c_x, c_y = cropImage(image, c_x, c_y, plot = inputDict['cutout'], filename = inputDict['output'] + baseName+'_'+band+'_cutout.png')
             if inputDict['cutoutData']:
@@ -190,14 +197,17 @@ else :
         if inputDict['residualData']:
             import numpy as np
             np.savetxt(inputDict['output']+baseName+'_residualData', calc_img)
+
         if inputDict['subtraction']:
+            print 'Here'
             from matplotlib import pyplot as plt
-            plt.imshow(calc_img)
-            plt.savefig(inputDict['output']+baseName+'_subtraction.png')
+            im = plt.imshow(calc_img)
+            plt.colorbar(im)
+            plt.show()
+            #plt.savefig(inputDict['output']+baseName+'_subtraction.png')
             plt.close()
 
         #TODO Plotting functionality here
         lens = residualID(image, c_x, c_y)
         print lens
->>>>>>> e202074d1a35c2b90923bfd1ddf86343092c054b
 
