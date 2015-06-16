@@ -57,8 +57,8 @@ def cropImage(image, c_x, c_y, sideLength= 30, plot = False, filename = None):
         im = plt.imshow(image)
         plt.colorbar(im)
         plt.scatter(c_x, c_y, color = 'm')
-        plt.show()
-        #plt.savefig(filename)
+        #plt.show()
+        plt.savefig(filename)
         plt.clf()
         plt.close()
 
