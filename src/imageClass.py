@@ -46,9 +46,11 @@ class Image(object):
             c_y, c_x = np.unravel_index(image.argmax(), image.shape) #center is just the brightest spot
 
         #sometimes the center is not exactly accurate. This part finds the maximum in the region around the center.
+        '''
         dy, dx = np.unravel_index(image[c_y-2:c_y+3, c_x-2:c_x+3].argmax(), (5,5))
         dy,dx = dy-2, dx-2 #so if c_x c_y is the max dx, dy will be 0,0
         c_y, c_x = c_y+dy, c_x+dx
+        '''
 
         self.center = (c_x, c_y)
 
@@ -57,6 +59,7 @@ class Image(object):
         for band, image in self.images.iteritems():
 
             c_x, c_y = self.center
+            print 'Original Center: (%d, %d)'%self.center
             img_y, img_x = image.shape
 
             xLims = [int(c_x - .5*sideLength),int( c_x + .5*sideLength)]
@@ -74,10 +77,10 @@ class Image(object):
                     yLims[i] = img_y
 
             self.images[band] = image[yLims[0]:yLims[1], xLims[0]:xLims[1]]
-
+        print 'Slice Coords: (%d, %d)'%(xLims[0], yLims[0])
         #readujust the centers. They've moved now that the image has been cropped
         self.center = (c_x - xLims[0], c_y-yLims[0])
-        print 'Final Center:',self.center #this should be 15, right? if this is centered correctly?
+        print 'Final Center: (%d, %d)'%self.center #this should be 15, right? if this is centered correctly?
 
     def getOtherBand(self,bands):
         'Attempts to get other images of the same ID in different bands. Assumes only one image is loaded into the object so far'

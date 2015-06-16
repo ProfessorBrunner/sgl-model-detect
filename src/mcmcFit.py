@@ -74,6 +74,7 @@ def lnprior(theta, movingCenter, imageSize):
         return -np.inf
 
     #TODO find a proper bounds for this value
+    #TODO fix; modified for testing
     for var in (varXs, varYs):
         if any(v<1e-4 or v>1e4 for v in var):
             return -np.inf
@@ -82,7 +83,8 @@ def lnprior(theta, movingCenter, imageSize):
         return -np.inf
 
     #log Uniform prior
-    lnp= -1*np.sum(np.log(theta[:(NPARAM-1)*N]))
+    #TODO Fix modifyied for testing
+    lnp= -1*np.sum(np.log(theta[2*movingCenter:(NPARAM-2)*N]))
     #TODO make centerStd tunable and make an option for a uniform distrbution
     if not movingCenter:
         return lnp
@@ -169,7 +171,7 @@ def BayesianEvidence(samples, args):
     return BE
 
 #Centers should still be needed for initial guess
-def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1000, filename = None):
+def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2500, filename = None):
     np.random.seed(int(time()))
     t0 = time()
     #numpy arrays of the indicies, used in the calculations
@@ -183,7 +185,7 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1000, filename = None
     ndim = N*NPARAM #1 Amplitude and 3 Radial dimentions
     if movingCenters:
         ndim+=2
-    nsteps = 200
+    nsteps = 300
     nburn = int(nsteps*.25)
 
     #initial guess

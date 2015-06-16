@@ -204,7 +204,7 @@ def main():
         pixelsPerParam = 10
         nSigma = 2
 
-        varX, varY = theta[1:3]
+        varX, varY = theta[1+2*(not args.fixedCenters):3+2*(not args.fixedCenters)]
         #area of an ellipse
         area = np.pi*np.power(nSigma, 2)*np.sqrt(varX*varY)
         #MaxGaussians is sometimes <=2, which means only one sample is run. There should be a minimum max Gaussians.
@@ -216,6 +216,7 @@ def main():
         print 'Max Gaussians = %d'%maxGaussians
 
         #iterate until we reach our limit or BE decreases
+
         for n in xrange(2,maxGaussians+1):
             prim_fit, theta, be = mcmcFit(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, filename = name)
             print 'Gaussian #%d'%n
