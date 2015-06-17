@@ -59,7 +59,6 @@ class Image(object):
         for band, image in self.images.iteritems():
 
             c_x, c_y = self.center
-            print 'Original Center: (%d, %d)'%self.center
             img_y, img_x = image.shape
 
             xLims = [int(c_x - .5*sideLength),int( c_x + .5*sideLength)]
@@ -77,10 +76,8 @@ class Image(object):
                     yLims[i] = img_y
 
             self.images[band] = image[yLims[0]:yLims[1], xLims[0]:xLims[1]]
-        print 'Slice Coords: (%d, %d)'%(xLims[0], yLims[0])
         #readujust the centers. They've moved now that the image has been cropped
         self.center = (c_x - xLims[0], c_y-yLims[0])
-        print 'Final Center: (%d, %d)'%self.center #this should be 15, right? if this is centered correctly?
 
     def getOtherBand(self,bands):
         'Attempts to get other images of the same ID in different bands. Assumes only one image is loaded into the object so far'

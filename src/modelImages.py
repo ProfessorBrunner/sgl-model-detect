@@ -100,6 +100,8 @@ def main():
     from residualID import residualID
     import imageClass
     import numpy as np
+    import seaborn
+    seaborn.set()
 
     imageClassDict = {'C': imageClass.CFHTLS, 'S': imageClass.SDSS}
     #the appropriate formatting for these objects
@@ -135,6 +137,7 @@ def main():
     #TODO Delete after testing, so it's more stable.
     x = imageDict.values()
     np.random.shuffle(x)
+    chosen_cmap = 'jet'
     for imageObj in x:
         #savefile name for sample chain
         name = outputdir+imageObj.imageID+'_samples' if args.chain else None
@@ -154,12 +157,11 @@ def main():
             for band in bands:
                 from matplotlib import pyplot as plt
                 plt.figure()
-                im = plt.imshow(imageObj.images[band])
+                im = plt.imshow(imageObj.images[band], cmap = chosen_cmap)
                 plt.colorbar(im)
                 c_x, c_y = imageObj.center
                 plt.scatter(c_x, c_y, color = 'k')
-                #If leaving at this spot, fix filename
-                #plt.savefig(filename)
+                plt.savefig(outputdir+imageObj.imageID+'_'+band+'_cutout.png')
                 plt.show()
                 plt.clf()
                 plt.close()
@@ -167,7 +169,7 @@ def main():
         if args.cutoutData:
             import numpy as np
             for band in bands:
-                np.savetxt(outputdir+imageObj.imageID+'_cutoutData', imageObj.images[band])
+                np.savetxt(outputdir+imageObj.imageID+'_'+band+'_cutoutData', imageObj.images[band])
 
         BEs = []
         prim_fits = []
@@ -177,8 +179,12 @@ def main():
         print 'Fitting now'
         prim_fit,theta, be  = mcmcFit(imageObj[primaryBand], 1, c_x, c_y, not args.fixedCenters, filename = name)
         print 'Gaussian #1'
-        print theta
-        print'--'*15
+        if not args.fixedCenters:
+            print '(x,y):\t(%.3f, %.3f)'%(theta[0], theta[1])
+        for i in xrange(1,2):
+            printParams = (i, theta[(not args.fixedCenters)+i], i, theta[(not args.fixedCenters)+i+1], i,theta[(not args.fixedCenters)+i+2], i, theta[(not args.fixedCenters)+i+3])
+            print 'A%d:\t%.3f\nVx%d:\t%.3f\nVy%d:\t%.3f\nP%d:\t%.3f'%printParams
+        print'\n'+'--'*20
         BEs.append(be)
         prim_fits.append(prim_fit)
 
@@ -187,16 +193,36 @@ def main():
             c = c_y, c_x
         else:
             c = theta[1], theta[0]
-        print c
+
 
         #TODO Delete, only for testing
 
-        prim_fit_scaled = prim_fit*imageObj[secondaryBand][c]/imageObj[primaryBand][c]
-        calc_img = imageObj[secondaryBand] - prim_fit_scaled
         from matplotlib import pyplot as plt
-        im = plt.imshow(calc_img)
-        plt.colorbar(im)
-        plt.title('%d'%1)
+        imPlots = []
+        fig = plt.figure(figsize = (20,30))
+        minVal, maxVal = 0, 0
+        plt.subplot(131)
+        im = plt.imshow(imageObj[primaryBand],cmap = chosen_cmap)
+        minVal = min(minVal, imageObj[primaryBand].min())
+        maxVal = max(maxVal, imageObj[primaryBand].max())
+        imPlots.append(im)
+        plt.subplot(132)
+        im = plt.imshow(prim_fit,cmap = chosen_cmap)
+        minVal = min(minVal, prim_fit.min())
+        maxVal = max(maxVal, prim_fit.max())
+        imPlots.append(im)
+        plt.subplot(133)
+        calc_img = imageObj[primaryBand]-prim_fit
+        im = plt.imshow(calc_img,cmap = chosen_cmap)
+        minVal = min(minVal,calc_img.min())
+        maxVal = max(maxVal,calc_img.max())
+        imPlots.append(im)
+        for image in imPlots:
+            image.set_clim(minVal, maxVal)
+        cax = fig.add_axes([0.2, 0.08, 0.6, 0.04])
+        fig.colorbar(imPlots[0], cax, orientation='horizontal')
+        fig.suptitle('%d'%1)
+        plt.savefig(outputdir+imageObj.imageID+'_%d_'%1+'fullModel.png')
         plt.show()
 
         #estimate how much "signal" we have, so we don't overfit
@@ -216,29 +242,57 @@ def main():
         print 'Max Gaussians = %d'%maxGaussians
 
         #iterate until we reach our limit or BE decreases
-
+        #TODO delete
+        maxGaussians = 3
         for n in xrange(2,maxGaussians+1):
             prim_fit, theta, be = mcmcFit(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, filename = name)
             print 'Gaussian #%d'%n
-            print theta
-            print '--'*15
+            if not args.fixedCenters:
+                print '(x,y):\t(%.3f, %.3f)'%(theta[0], theta[1])
+            for i in xrange(1,n+1):
+                printParams = (i, theta[(not args.fixedCenters)+i], i, theta[(not args.fixedCenters)+i+1*n], i,theta[(not args.fixedCenters)+i+2*n], i, theta[(not args.fixedCenters)+i+3*n])
+                print 'A%d:\t%.3f\nVx%d:\t%.3f\nVy%d:\t%.3f\nP%d:\t%.3f'%printParams
+            print'\n'+'--'*20
 
             BEs.append(be)
             prim_fits.append(prim_fit)
+
             #TODO Delete, only for testing
+            from matplotlib import pyplot as plt
+            imPlots = []
+            fig = plt.figure(figsize = (40,60))
+            minVal, maxVal = 0, 0
+            plt.subplot(131)
+            im = plt.imshow(imageObj[primaryBand],cmap = chosen_cmap)
+            minVal = min(minVal, imageObj[primaryBand].min())
+            maxVal = max(maxVal, imageObj[primaryBand].max())
+            imPlots.append(im)
+            plt.subplot(132)
+            im = plt.imshow(prim_fit,cmap = chosen_cmap)
+            minVal = min(minVal, prim_fit.min())
+            maxVal = max(maxVal, prim_fit.max())
+            imPlots.append(im)
+            plt.subplot(133)
+            calc_img = imageObj[primaryBand]-prim_fit
+            im = plt.imshow(calc_img,cmap = chosen_cmap)
+            minVal = min(minVal,calc_img.min())
+            maxVal = max(maxVal,calc_img.max())
+            imPlots.append(im)
+            for image in imPlots:
+                image.set_clim(minVal, maxVal)
+            cax = fig.add_axes([0.2, 0.08, 0.6, 0.04])
+            fig.colorbar(imPlots[0],cax, orientation = 'horizontal')
 
-            prim_fit_scaled = prim_fit*imageObj[secondaryBand][c]/imageObj[primaryBand][c]
-            calc_img = imageObj[secondaryBand] - prim_fit_scaled
-
-            im = plt.imshow(calc_img)
-            plt.colorbar(im)
-            plt.title('%d'%n)
+            fig.suptitle('%d'%n)
+            plt.savefig(outputdir+imageObj.imageID+'_%d_'%n+'fullModel.png')
             plt.show()
+
 
             print 'Diff: %.3f\t Old: %.3f\t New: %.3f'%(BEs[-1]-BEs[-2], BEs[-1], BEs[-2])
             if BEs[-1] < BEs[-2]: #new Model is worse!
             #NOTE Double-check that this is right and not supposed to be backwards
-                break
+                #break
+                pass
 
         #TODO fix scaling so it uses the calculated center rather than the image's center
         bestArg = np.argmax(np.array(BEs))
@@ -251,7 +305,7 @@ def main():
             prim_fit_scaled = prim_fit*imageObj[secondaryBand][c]/imageObj[primaryBand][c]
             calc_img = imageObj[secondaryBand] - prim_fit_scaled
             calcImgDict[secondaryBand] = calc_img
-
+        '''
         #TODO Delete; only for testing
         from matplotlib import pyplot as plt
         print 'Model'
@@ -268,18 +322,19 @@ def main():
         plt.show()
         plt.clf()
         plt.close()
+        '''
 
         if args.subtraction:
             from matplotlib import pyplot as plt
             for band in bands:
                 plt.figure()
-                im = plt.imshow(calcImgDict[band])
+                im = plt.imshow(calcImgDict[band],cmap = chosen_cmap)
                 plt.colorbar(im)
                 if not args.fixedCenters:
                     plt.scatter(theta[0], theta[1], color = 'm')
 
                 #If leaving at this spot, fix filename
-                plt.savefig(outputdir+imageObj.imageID+'_subtraction.png')
+                plt.savefig(outputdir+imageObj.imageID+'_'+band+'_subtraction.png')
                 plt.show()
                 plt.clf()
                 plt.close()
@@ -287,11 +342,13 @@ def main():
 
         if args.subtractionData:
             import numpy as np
-            np.savetxt(outputdir+imageObj.imageID+'_residualData', calc_img)
+            np.savetxt(outputdir+imageObj.imageID+'_'+band+'_residualData', calc_img)
 
         #TODO Plotting functionality here
         #TODO Have this flagged on/off. We don't need to check for lenses on all of em.
         #check for lens properties
+        #from goodnessOfFit import goodnessOfFit
+        #goodnessOfFit(calcImgDict[primaryBand], 4*(bestArg+1)+2*(not args.fixedCenters), 1)
         lens = residualID(calc_img, c[1], c[0])
         print 'The image %s represents a lens: %s'%(imageObj.imageID, str(lens))
 

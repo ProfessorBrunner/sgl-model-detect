@@ -28,8 +28,8 @@ from matplotlib import pyplot as plt
 from scipy.stats import mode, gaussian_kde
 from multiprocessing import cpu_count, Pool
 from itertools import izip
-
-
+import seaborn
+seaborn.set()
 
 #the number of parameters per Gaussian
 NPARAM = 4
@@ -37,8 +37,8 @@ NPARAM = 4
 #TODO: there's a problem with the vectorization of this calculation. Isn't efficient in this form.
 def gaussian(x,y, cx, cy, a, cov):
     #TODO Only for testing; forcing spherical
-    cov[0,1] = cov[1,0] = 0
-    cov[1,1] = cov[0,0]
+    #cov[0,1] = cov[1,0] = 0
+    #cov[1,1] = cov[0,0]
 
     muMPos = np.dstack([x-cx, y-cy]) 
     invCov = np.linalg.inv(cov)
@@ -66,7 +66,7 @@ def lnprior(theta, movingCenter, imageSize):
     if movingCenter and any(c< 0 or c>maxC for c, maxC in izip((c_x, c_y), imageSize)):
         return -np.inf
 
-    if any(1e-5>a or a>1e5 for a in amps):
+    if any(1e0>a or a>1e5 for a in amps):
         return -np.inf
 
     #enforcing order
@@ -76,12 +76,11 @@ def lnprior(theta, movingCenter, imageSize):
     #TODO find a proper bounds for this value
     #TODO fix; modified for testing
     for var in (varXs, varYs):
-        if any(v<1e-4 or v>1e4 for v in var):
+        if any(v<1e-1 or v>1e3 for v in var):
             return -np.inf
 
     if any(corr<-1 or corr>1 for corr in corrs):
         return -np.inf
-
     #log Uniform prior
     #TODO Fix modifyied for testing
     lnp= -1*np.sum(np.log(theta[2*movingCenter:(NPARAM-2)*N]))
@@ -171,7 +170,7 @@ def BayesianEvidence(samples, args):
     return BE
 
 #Centers should still be needed for initial guess
-def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2500, filename = None):
+def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1000, filename = None):
     np.random.seed(int(time()))
     t0 = time()
     #numpy arrays of the indicies, used in the calculations
@@ -206,10 +205,10 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2500, filename = None
         for i in xrange(2*movingCenters,ndim):
             if i < 2*movingCenters+N: #amp
                 #row[i] = 10**(8*np.random.rand()-4)
-                row[i] = np.random.lognormal(mean = np.log10(imageMax/2), sigma = 2.0)#try logNormal near max
+                row[i] = np.random.lognormal(mean = np.log(imageMax/2), sigma = 1.0)#try logNormal near max
             elif i<ndim-N: #var
                 #TODO fix not fitting other Gaussians
-                row[i] = 10**(5*np.random.rand()-2)
+                row[i] = 10**(2*np.random.rand()-1)
                 #row[i] = 10**(8*np.random.rand()-4)
             else: #corr
                 #row[i] = 2*np.random.rand()-1
@@ -235,28 +234,30 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2500, filename = None
 
     #TODO MAP as chain median?
     #the MAP is simply the mean of the chain
-    #calc_vals = samples.mean(axis = 0)
-    '''
-    p25, calc_vals, p75 = np.percentile(samples,[25,50,75], axis = 0)
+    calc_means = samples.mean(axis = 0)
+
+    p25, calc_medians, p75 = np.percentile(samples,[25,50,75], axis = 0)
     spread = .7413 * (p75 - p25)
-    for i in xrange(ndim):
-        print calc_vals[i], spread[i]
-    '''
-    n_bins = int(np.sqrt(samples.shape[0])/4)#arbitrary
+    #for i in xrange(ndim):
+    #   print calc_vals[i], spread[i]
+
+    n_bins = int(np.sqrt(samples.shape[0]))#arbitrary
 
     #calculate the mode from a histogram
-    calc_vals = np.zeros(ndim)
+    calc_modes = np.zeros(ndim)
 
     for i in xrange(ndim):
-        if (movingCenters and 1< i < ndim-N) or i<ndim-N:
-            hist, bin_edges = np.histogram(np.log10(samples[:,i]), bins = n_bins)
-            max_idx = np.argmax(hist)
+        #if (movingCenters and 1< i < ndim-N) or i<ndim-N:
+        #    hist, bin_edges = np.histogram(np.log10(samples[:,i]), bins = n_bins)
+        #    max_idx = np.argmax(hist)
             #NOTE unsure if I should take the mean over the exponents or values
-            calc_vals[i] = 10**((bin_edges[max_idx]+bin_edges[max_idx+1])/2)#center of peak
-        else:
-            hist, bin_edges = np.histogram(samples[:,i], bins = n_bins)
-            max_idx = np.argmax(hist)
-            calc_vals[i] = (bin_edges[max_idx]+bin_edges[max_idx+1])/2
+        #    calc_vals[i] = 10**((bin_edges[max_idx]+bin_edges[max_idx+1])/2)#center of peak
+        #else:
+        hist, bin_edges = np.histogram(samples[:,i], bins = n_bins)
+        max_idx = np.argmax(hist)
+        calc_modes[i] = (bin_edges[max_idx]+bin_edges[max_idx+1])/2
+
+    calc_vals = calc_medians
 
     if movingCenters:
         calc_cx, calc_cy = calc_vals[0:2]
@@ -267,22 +268,35 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2500, filename = None
 
 
     for i in xrange(ndim):
+        fig = plt.figure()
         if movingCenters:
             if i<2:
                 plt.title('Center %d: %.3f'%(i+1, calc_vals[i]))
             elif i < N+2:
-                plt.title("Amplitude %d: %.3f"%(i+1-2, calc_vals[i]))
-
+                #plt.title("Amplitude %d: %.3f"%(i+1-2, calc_vals[i]))
+                fig.suptitle("Amplitude %d: %.3f"%(i+1-2, calc_vals[i]))
             elif i < ndim-N:
-                plt.title("Radial %d: %.3f"%(i-N+1-2, calc_vals[i]))
+                #plt.title("Radial %d: %.3f"%(i-N+1-2, calc_vals[i]))
+                fig.suptitle("Radial %d: %.3f"%(i-N+1-2, calc_vals[i]))
             else:
                 plt.title('Corr %d: %.3f'%(i-ndim+N+1, calc_vals[i]))
 
             if 1<i<ndim-N:
+                plt.subplot(211)
                 plt.hist(np.log10(samples[:,i]), bins = n_bins)
-                plt.vlines(np.log10(calc_vals[i]),0,15000,colors = ['r'])
-            else:
-                plt.hist(samples[:, i], bins = n_bins)
+                plt.vlines(np.log10(calc_vals[i]),0,2000,colors = ['r'])
+                plt.vlines(np.log10(calc_means[i]),0,2000,colors = ['g'])
+                plt.vlines(np.log10(calc_medians[i]),0,2000,colors = ['m'])
+
+                plt.subplot(212)
+            #else:
+            #    plt.hist(samples[:, i], bins = n_bins)
+
+            plt.hist(samples[:, i], bins = n_bins)
+            plt.vlines(calc_vals[i],0,2000, colors = ['r'])
+            plt.vlines(calc_means[i],0,2000, colors = ['g'])
+            plt.vlines(calc_medians[i],0,2000, colors = ['m'])
+
         else:
             if i < N:
                 plt.title("Amplitude %d: %.3f"%(i+1, calc_vals[i]))
@@ -291,11 +305,14 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2500, filename = None
                 plt.title("Radial %d: %.3f"%(i-N+1, calc_vals[i]))
             else:
                 plt.title('Corr %d: %.3f'%(i-ndim+N+1, calc_vals[i]))
+
             if i<ndim-N:
                 plt.hist(np.log10(samples[:,i]), bins = n_bins)
-                plt.vlines(np.log10(calc_vals[i]),0,15000,colors = ['r'])
+                plt.vlines(np.log10(calc_vals[i]),0,1500,colors = ['r'])
             else:
                 plt.hist(samples[:, i], bins = n_bins)
+            #plt.hist(samples[:, i], bins = n_bins)
+            #plt.vlines(calc_vals[i],0,2000, colors = ['r'])
 
         plt.show()
 
@@ -306,16 +323,8 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2500, filename = None
         mat = np.array([varX, cov, cov, varY]).reshape((2,2))
         covariance_mats.append(mat)
 
-    #TODO fix gaussian call and calue unpacking here
     calc_img = sum(gaussian(xx,yy,calc_cx,calc_cy,a,cov) for a,cov in izip(calc_as, covariance_mats))
-    from copy import deepcopy
-    imCopy = deepcopy(image)
-    for a,cov in izip(calc_as, covariance_mats):
-        g = gaussian(xx,yy,calc_cx, calc_cy,a,cov)
-        imCopy-=g
-        im = plt.imshow(imCopy)
-        plt.colorbar(im)
-        plt.show()
+
     #Calculate the evidence for this model
     print 'Fitting Time: %.4f Seconds'%(time()-t0)
     BE = BayesianEvidence(samples, args)
