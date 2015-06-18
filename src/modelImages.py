@@ -199,7 +199,7 @@ def main():
 
         from matplotlib import pyplot as plt
         imPlots = []
-        fig = plt.figure(figsize = (20,30))
+        fig = plt.figure(figsize = (30,20))
         minVal, maxVal = 0, 0
         plt.subplot(131)
         im = plt.imshow(imageObj[primaryBand],cmap = chosen_cmap)
@@ -246,6 +246,7 @@ def main():
         maxGaussians = 3
         for n in xrange(2,maxGaussians+1):
             prim_fit, theta, be = mcmcFit(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, filename = name)
+
             print 'Gaussian #%d'%n
             if not args.fixedCenters:
                 print '(x,y):\t(%.3f, %.3f)'%(theta[0], theta[1])
@@ -260,7 +261,7 @@ def main():
             #TODO Delete, only for testing
             from matplotlib import pyplot as plt
             imPlots = []
-            fig = plt.figure(figsize = (40,60))
+            fig = plt.figure(figsize = (30,20))
             minVal, maxVal = 0, 0
             plt.subplot(131)
             im = plt.imshow(imageObj[primaryBand],cmap = chosen_cmap)
@@ -297,11 +298,11 @@ def main():
         #TODO fix scaling so it uses the calculated center rather than the image's center
         bestArg = np.argmax(np.array(BEs))
         calcImgDict = {}
-        calc_img = imageObj[primaryBand] - prim_fit
+        #calc_img = imageObj[primaryBand] - prim_fit
         calcImgDict[primaryBand] = calc_img
         print 'Best model N = %d'%(bestArg+1)
+        prim_fit = prim_fits[bestArg]
         if secondaryBand is not None:
-            prim_fit = prim_fits[bestArg]
             prim_fit_scaled = prim_fit*imageObj[secondaryBand][c]/imageObj[primaryBand][c]
             calc_img = imageObj[secondaryBand] - prim_fit_scaled
             calcImgDict[secondaryBand] = calc_img
@@ -347,8 +348,8 @@ def main():
         #TODO Plotting functionality here
         #TODO Have this flagged on/off. We don't need to check for lenses on all of em.
         #check for lens properties
-        #from goodnessOfFit import goodnessOfFit
-        #goodnessOfFit(calcImgDict[primaryBand], 4*(bestArg+1)+2*(not args.fixedCenters), 1)
+        from goodnessOfFit import goodnessOfFit
+        goodnessOfFit(prim_fit, imageObj[primaryBand], 4*(bestArg+1)+2*(not args.fixedCenters), 1)
         lens = residualID(calc_img, c[1], c[0])
         print 'The image %s represents a lens: %s'%(imageObj.imageID, str(lens))
 

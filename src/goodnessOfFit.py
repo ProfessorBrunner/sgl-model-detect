@@ -10,13 +10,14 @@ from scipy.stats import chi2
 import numpy as np
 from matplotlib import pyplot as plt
 
-def goodnessOfFit(errImage,k, sigma):
+def goodnessOfFit(model, data,k, sigma):
+    errImage = (data-model)/np.sqrt(model) #Poisson noise, sigma = sqrt(mu)
     N =1
     for dim in errImage.shape:
         N*=dim
     #N data points in the image
     dof = N - k
-    errImage/=sigma
+
     chi2Statistic = np.sum( i**2 for i in errImage.reshape((-1)))
     chi2dof = chi2Statistic/dof
     print chi2dof
