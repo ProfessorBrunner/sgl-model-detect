@@ -243,7 +243,7 @@ def main():
 
         #iterate until we reach our limit or BE decreases
         #TODO delete
-        maxGaussians = 3
+        maxGaussians = 5
         for n in xrange(2,maxGaussians+1):
             prim_fit, theta, be = mcmcFit(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, filename = name)
 

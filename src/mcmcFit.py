@@ -35,19 +35,34 @@ seaborn.set()
 NPARAM = 4
 
 #TODO: there's a problem with the vectorization of this calculation. Isn't efficient in this form.
-def gaussian(x,y, cx, cy, a, cov):
-    #TODO Only for testing; forcing spherical
-    #cov[0,1] = cov[1,0] = 0
-    #cov[1,1] = cov[0,0]
-
+def gaussian(x,y, cx, cy, a, cov, p = False):
+    '''
     muMPos = np.dstack([x-cx, y-cy]) 
     invCov = np.linalg.inv(cov)
     output = np.zeros(x.shape)
     for i, row in enumerate(muMPos):
         for j, vec in enumerate(row):
-            output[i,j] =np.dot(vec, np.dot(invCov, vec))  
+            output[i,j] =np.dot(vec.T, np.dot(invCov, vec))
         
-    return a*np.exp(-.5*output) 
+    return a*np.exp(-.5*output)
+    '''
+    VarX, VarY = cov[0,0], cov[1,1]
+    sigXsigY = np.sqrt(VarX*VarY)
+    corr = cov[0,1]/(sigXsigY)
+    xDiff = x-cx
+    yDiff = y-cy
+    #Normally this calculation would be [xDiff, yDiff].T*np.linalg.inv(cov)*[xDiff, yDiff]
+    #Multiplying through by hand yields this more efficient result.
+    expVal = -(xDiff**2)/(2*VarX)-(yDiff**2)/(2*VarY)+(corr/(1-corr**2))*(xDiff*yDiff)/(sigXsigY)
+
+    output =  a*np.exp(expVal)
+
+    if p:
+        print cx, cy, a, VarX, VarY, corr
+        for row in expVal:
+            print row
+
+    return output
 
 #theta contains the variables for the amplitude and width
 #theta = [A1,A2...An,VarX1, VarX1..., VarXN, VarY1, VarY2,...VarYN] add covs later,Cov1, Cov2,...CovN]
@@ -65,31 +80,33 @@ def lnprior(theta, movingCenter, imageSize):
 
     if movingCenter and any(c< 0 or c>maxC for c, maxC in izip((c_x, c_y), imageSize)):
         return -np.inf
-
-    if any(1e0>a or a>1e5 for a in amps):
+    #TODO made negative amplitudes possible
+    if any(-1e5>a or a>1e5 for a in amps):
         return -np.inf
 
     #enforcing order
-    if any(amps[i]<amps[i+1] for i in xrange(N-1)):
+    if any(abs(amps[i])<abs(amps[i+1]) for i in xrange(N-1)):
+        return -np.inf
+
+    if sum(amps)<0: #The whole thing has to be positive!
         return -np.inf
 
     #TODO find a proper bounds for this value
-    #TODO fix; modified for testing
     for var in (varXs, varYs):
         if any(v<1e-1 or v>1e3 for v in var):
             return -np.inf
 
     if any(corr<-1 or corr>1 for corr in corrs):
         return -np.inf
-    #log Uniform prior
-    #TODO Fix modifyied for testing
-    lnp= -1*np.sum(np.log(theta[2*movingCenter:(NPARAM-2)*N]))
+    #Uniform prior
+    return 1
+    #log-uniform
+    #lnp= -1*np.sum(np.log(theta[2*movingCenter:(NPARAM-2)*N]))
     #TODO make centerStd tunable and make an option for a uniform distrbution
-    if not movingCenter:
-        return lnp
+    #if not movingCenter:
+    #    return lnp
     #centerStd = (imageSize[0]+imageSize[1])/2 #Average size divided by 2 (~65% of the time center is within this distance of the image center)
     #return lnp - (sum(imageSize)/2-(c_x+c_y))/(2*centerStd) #logNormal for the centers
-    return lnp
 
 def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2, movingCenter):
 
@@ -111,6 +128,10 @@ def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2, movingCenter):
     model = np.zeros(image.shape) 
     for a,cov in izip(amps, covariance_mats):
         model+=gaussian(xx,yy,c_x, c_y, a, cov)
+
+        for val in model.flatten():
+            if np.isnan(val):
+                gaussian(xx,yy,c_x, c_y,a,cov, True)
 
     diff = image-model
 
@@ -170,7 +191,7 @@ def BayesianEvidence(samples, args):
     return BE
 
 #Centers should still be needed for initial guess
-def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1500, filename = None):
+def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1000, filename = None):
     np.random.seed(int(time()))
     t0 = time()
     #numpy arrays of the indicies, used in the calculations
@@ -206,6 +227,7 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1500, filename = None
             if i < 2*movingCenters+N: #amp
                 #row[i] = 10**(8*np.random.rand()-4)
                 row[i] = np.random.lognormal(mean = np.log(imageMax/2), sigma = 1.0)#try logNormal near max
+                #TODO add negative in guess, or just let it explore that way?
             elif i<ndim-N: #var
                 #TODO fix not fitting other Gaussians
                 row[i] = 10**(2*np.random.rand()-1)
