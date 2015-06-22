@@ -194,7 +194,6 @@ def main():
         else:
             c = theta[1], theta[0]
 
-
         #TODO Delete, only for testing
 
         from matplotlib import pyplot as plt
@@ -243,7 +242,7 @@ def main():
 
         #iterate until we reach our limit or BE decreases
         #TODO delete
-        maxGaussians = 5
+        #maxGaussians = 4
         for n in xrange(2,maxGaussians+1):
             prim_fit, theta, be = mcmcFit(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, filename = name)
 
@@ -259,6 +258,7 @@ def main():
             prim_fits.append(prim_fit)
 
             #TODO Delete, only for testing
+
             from matplotlib import pyplot as plt
             imPlots = []
             fig = plt.figure(figsize = (30,20))
@@ -292,16 +292,16 @@ def main():
             print 'Diff: %.3f\t Old: %.3f\t New: %.3f'%(BEs[-1]-BEs[-2], BEs[-1], BEs[-2])
             if BEs[-1] < BEs[-2]: #new Model is worse!
             #NOTE Double-check that this is right and not supposed to be backwards
-                #break
-                pass
+                break
+                #pass
 
         #TODO fix scaling so it uses the calculated center rather than the image's center
         bestArg = np.argmax(np.array(BEs))
+        prim_fit = prim_fits[bestArg]
         calcImgDict = {}
-        #calc_img = imageObj[primaryBand] - prim_fit
+        calc_img = imageObj[primaryBand] - prim_fit
         calcImgDict[primaryBand] = calc_img
         print 'Best model N = %d'%(bestArg+1)
-        prim_fit = prim_fits[bestArg]
         if secondaryBand is not None:
             prim_fit_scaled = prim_fit*imageObj[secondaryBand][c]/imageObj[primaryBand][c]
             calc_img = imageObj[secondaryBand] - prim_fit_scaled

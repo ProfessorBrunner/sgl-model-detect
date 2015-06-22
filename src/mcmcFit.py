@@ -34,35 +34,16 @@ seaborn.set()
 #the number of parameters per Gaussian
 NPARAM = 4
 
-#TODO: there's a problem with the vectorization of this calculation. Isn't efficient in this form.
-def gaussian(x,y, cx, cy, a, cov, p = False):
-    '''
-    muMPos = np.dstack([x-cx, y-cy]) 
-    invCov = np.linalg.inv(cov)
-    output = np.zeros(x.shape)
-    for i, row in enumerate(muMPos):
-        for j, vec in enumerate(row):
-            output[i,j] =np.dot(vec.T, np.dot(invCov, vec))
-        
-    return a*np.exp(-.5*output)
-    '''
-    VarX, VarY = cov[0,0], cov[1,1]
+def gaussian(x,y, cx, cy, a, VarX, VarY, corr):
+
     sigXsigY = np.sqrt(VarX*VarY)
-    corr = cov[0,1]/(sigXsigY)
     xDiff = x-cx
     yDiff = y-cy
     #Normally this calculation would be [xDiff, yDiff].T*np.linalg.inv(cov)*[xDiff, yDiff]
     #Multiplying through by hand yields this more efficient result.
-    expVal = -(xDiff**2)/(2*VarX)-(yDiff**2)/(2*VarY)+(corr/(1-corr**2))*(xDiff*yDiff)/(sigXsigY)
+    expVal = (-(xDiff**2)/(2*VarX)-(yDiff**2)/(2*VarY)+corr*(xDiff*yDiff)/(sigXsigY))/(1-corr**2)
 
-    output =  a*np.exp(expVal)
-
-    if p:
-        print cx, cy, a, VarX, VarY, corr
-        for row in expVal:
-            print row
-
-    return output
+    return  a*np.exp(expVal)
 
 #theta contains the variables for the amplitude and width
 #theta = [A1,A2...An,VarX1, VarX1..., VarXN, VarY1, VarY2,...VarYN] add covs later,Cov1, Cov2,...CovN]
@@ -93,7 +74,7 @@ def lnprior(theta, movingCenter, imageSize):
 
     #TODO find a proper bounds for this value
     for var in (varXs, varYs):
-        if any(v<1e-1 or v>1e3 for v in var):
+        if any(v<1e-1 or v>50 for v in var):
             return -np.inf
 
     if any(corr<-1 or corr>1 for corr in corrs):
@@ -118,20 +99,7 @@ def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2, movingCenter):
         N = len(theta)/NPARAM #save us from having to put N in the global scope
         amps, varXs, varYs, corrs = [theta[i*N:(i+1)*N] for i in xrange(NPARAM)]
 
-    covariance_mats = []
-    for varX, varY, corr in izip(varXs, varYs, corrs):
-        #construct a covariance matrix
-        cov = corr*np.sqrt(varX*varY)
-        mat = np.array([varX, cov, cov, varY]).reshape((2,2))
-        covariance_mats.append(mat)
-
-    model = np.zeros(image.shape) 
-    for a,cov in izip(amps, covariance_mats):
-        model+=gaussian(xx,yy,c_x, c_y, a, cov)
-
-        for val in model.flatten():
-            if np.isnan(val):
-                gaussian(xx,yy,c_x, c_y,a,cov, True)
+    model = sum(gaussian(xx,yy,c_x,c_y,a,varX, varY, corr) for a, varX, varY, corr in izip(amps, varXs, varYs, corrs))
 
     diff = image-model
 
@@ -170,7 +138,7 @@ def BayesianEvidence(samples, args):
     beHelper.args = args
     beHelper.N = N
 
-    nSamples = 1000
+    nSamples = 500
     #normalized liklihood?
     #All samples takes too long. Do a small selection
     randSamplesIdx = np.random.choice(xrange(len(samples)), size = nSamples, replace = False)
@@ -191,8 +159,9 @@ def BayesianEvidence(samples, args):
     return BE
 
 #Centers should still be needed for initial guess
-def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1000, filename = None):
+def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, filename = None):
     np.random.seed(int(time()))
+    #TODO Check if i'm going to exceed memory limits?
     t0 = time()
     #numpy arrays of the indicies, used in the calculations
     yy, xx = np.indices(image.shape)
@@ -205,7 +174,7 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1000, filename = None
     ndim = N*NPARAM #1 Amplitude and 3 Radial dimentions
     if movingCenters:
         ndim+=2
-    nsteps = 200
+    nsteps = 400 #Sample more for larger models
     nburn = int(nsteps*.25)
 
     #initial guess
@@ -305,18 +274,18 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1000, filename = None
                 plt.title("Radial %d: %.3f"%(i-N+1-2, calc_vals[i]))
             else:
                 plt.title('Corr %d: %.3f'%(i-ndim+N+1, calc_vals[i]))
-            '''
-            if 1<i<ndim-N:
-                plt.subplot(211)
-                plt.hist(np.log10(samples[:,i]), bins = n_bins)
-                plt.vlines(np.log10(calc_modes[i]),0,2000,colors = ['r'])
-                plt.vlines(np.log10(calc_means[i]),0,2000,colors = ['g'])
-                plt.vlines(np.log10(calc_medians[i]),0,2000,colors = ['m'])
 
-                plt.subplot(212)
+            #if 1<i<ndim-N:
+            #    plt.subplot(211)
+            #    plt.hist(np.log10(samples[:,i]), bins = n_bins)
+            #    plt.vlines(np.log10(calc_modes[i]),0,2000,colors = ['r'])
+            #    plt.vlines(np.log10(calc_means[i]),0,2000,colors = ['g'])
+            #    plt.vlines(np.log10(calc_medians[i]),0,2000,colors = ['m'])
+
+            #    plt.subplot(212)
             #else:
             #    plt.hist(samples[:, i], bins = n_bins)
-            '''
+
 
         else:
             if i < N:
@@ -326,13 +295,13 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1000, filename = None
                 plt.title("Radial %d: %.3f"%(i-N+1, calc_vals[i]))
             else:
                 plt.title('Corr %d: %.3f'%(i-ndim+N+1, calc_vals[i]))
-            '''
-            if i<ndim-N:
-                plt.hist(np.log10(samples[:,i]), bins = n_bins)
-                plt.vlines(np.log10(calc_vals[i]),0,1500,colors = ['r'])
-            else:
-                plt.hist(samples[:, i], bins = n_bins)
-            '''
+
+            #if i<ndim-N:
+            #    plt.hist(np.log10(samples[:,i]), bins = n_bins)
+            #    plt.vlines(np.log10(calc_vals[i]),0,1500,colors = ['r'])
+            #else:
+            #    plt.hist(samples[:, i], bins = n_bins)
+
             #plt.hist(samples[:, i], bins = n_bins)
             #plt.vlines(calc_vals[i],0,2000, colors = ['r'])
 
@@ -341,20 +310,14 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1000, filename = None
         #plt.vlines(calc_means[i],0,5e3, colors = ['g'], label = 'mean')
         plt.vlines(calc_medians[i],0,5e3, colors = ['m'],label = 'median')
         plt.legend()
-    plt.savefig('/home/mclaughlin6464/Documents/Research/output/chain_%d_.png'%N)
+    plt.savefig('/home/sean/Documents/Research/Output/chain_%d_.png'%N)
     plt.show()
 
-    covariance_mats = []
-    for varX, varY, corr in izip(calc_varXs, calc_varYs, calc_corrs):
-        #construct a covariance matrix
-        cov = corr*np.sqrt(varX*varY)
-        mat = np.array([varX, cov, cov, varY]).reshape((2,2))
-        covariance_mats.append(mat)
-
-    calc_img = sum(gaussian(xx,yy,calc_cx,calc_cy,a,cov) for a,cov in izip(calc_as, covariance_mats))
+    calc_img = sum(gaussian(xx,yy,calc_cx,calc_cy,a,varX, varY, corr) for a, varX, varY, corr in izip(calc_as, calc_varXs, calc_varYs, calc_corrs))
 
     #Calculate the evidence for this model
     print 'Fitting Time: %.4f Seconds'%(time()-t0)
+    print 'Chain Size: %d Megabytes'%(samples.nbytes/(1024**2))
     BE = BayesianEvidence(samples, args)
     return calc_img, calc_vals, BE
 
