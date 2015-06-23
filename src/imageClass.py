@@ -41,7 +41,10 @@ class Image(object):
         if coords is not None:
             c_x, c_y = coords
         elif galaxyDict is not None:
-            c_x, c_y = galaxyDict[self.imageID]
+            try:
+                c_x, c_y = galaxyDict[self.imageID]
+            except KeyError: #image doesn't have a defined center
+                raise
         else:
             c_y, c_x = np.unravel_index(image.argmax(), image.shape) #center is just the brightest spot
 

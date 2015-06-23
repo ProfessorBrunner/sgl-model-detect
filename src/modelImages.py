@@ -151,7 +151,11 @@ def main():
         else:
             coords = None
         #adjusts the center estimate, or finds one outright if none were given.
-        imageObj.calculateCenter(coords,galaxyDict)
+        try:
+            imageObj.calculateCenter(coords,galaxyDict)
+        except KeyError:
+            print 'No center for %s'%imageObj.imageID
+            continue
 
         imageObj.cropImage()
 

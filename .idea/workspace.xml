@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ae9ba962-254c-4a9c-803d-873e46cbf84d" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/mcmcFit.py" afterPath="$PROJECT_DIR$/src/mcmcFit.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/imageClass.py" afterPath="$PROJECT_DIR$/src/imageClass.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/modelImages.py" afterPath="$PROJECT_DIR$/src/modelImages.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -26,24 +26,34 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="modelImages.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="modelImages.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/modelImages.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-7.6857142">
-              <caret line="104" column="40" selection-start-line="104" selection-start-column="40" selection-end-line="104" selection-end-column="40" />
+            <state vertical-scroll-proportion="0.541329">
+              <caret line="157" column="20" selection-start-line="157" selection-start-column="20" selection-end-line="157" selection-end-column="20" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mcmcFit.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="mcmcFit.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/mcmcFit.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.65640193">
+            <state vertical-scroll-proportion="0.0">
               <caret line="27" column="14" selection-start-line="27" selection-start-column="14" selection-end-line="27" selection-end-column="14" />
               <folding>
                 <element signature="e#778#796#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="imageClass.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/imageClass.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="46" column="21" selection-start-line="46" selection-start-column="21" selection-end-line="46" selection-end-column="21" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -78,12 +88,12 @@
       <list>
         <option value="$PROJECT_DIR$/src/findCenter.py" />
         <option value="$PROJECT_DIR$/src/cropImage.py" />
-        <option value="$PROJECT_DIR$/src/imageClass.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/src/makeCenterFile.py" />
         <option value="$PROJECT_DIR$/src/goodnessOfFit.py" />
-        <option value="$PROJECT_DIR$/src/modelImages.py" />
         <option value="$PROJECT_DIR$/src/mcmcFit.py" />
+        <option value="$PROJECT_DIR$/src/imageClass.py" />
+        <option value="$PROJECT_DIR$/src/modelImages.py" />
       </list>
     </option>
   </component>
@@ -415,7 +425,13 @@
       <option name="project" value="LOCAL" />
       <updated>1435093963341</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="Quick back-end fix for servers">
+      <created>1435094544186</created>
+      <option name="number" value="00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1435094544186</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -471,7 +487,8 @@
     <MESSAGE value="After testing, center finding works as it's supposed to." />
     <MESSAGE value="Made some plotting tweaks to make them prettier and more useful." />
     <MESSAGE value="semi-final version running on Chameleon cloud." />
-    <option name="LAST_COMMIT_MESSAGE" value="semi-final version running on Chameleon cloud." />
+    <MESSAGE value="Quick back-end fix for servers" />
+    <option name="LAST_COMMIT_MESSAGE" value="Quick back-end fix for servers" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -871,14 +888,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/imageClass.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.9448947">
-          <caret line="80" column="0" selection-start-line="80" selection-start-column="0" selection-end-line="80" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/makeCenterFile.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="1.0486224">
@@ -887,21 +896,29 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/modelImages.py">
+    <entry file="file://$PROJECT_DIR$/src/imageClass.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-7.6857142">
-          <caret line="104" column="40" selection-start-line="104" selection-start-column="40" selection-end-line="104" selection-end-column="40" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="46" column="21" selection-start-line="46" selection-start-column="21" selection-end-line="46" selection-end-column="21" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/mcmcFit.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.65640193">
+        <state vertical-scroll-proportion="0.0">
           <caret line="27" column="14" selection-start-line="27" selection-start-column="14" selection-end-line="27" selection-end-column="14" />
           <folding>
             <element signature="e#778#796#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/modelImages.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.541329">
+          <caret line="157" column="20" selection-start-line="157" selection-start-column="20" selection-end-line="157" selection-end-column="20" />
+          <folding />
         </state>
       </provider>
     </entry>
