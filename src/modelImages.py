@@ -100,6 +100,9 @@ def main():
     from residualID import residualID
     import imageClass
     import numpy as np
+    import matplotlib as mpl
+    mpl.use('Agg')
+    from matplotlib import pyplot as plt
     import seaborn
     seaborn.set()
 
@@ -155,7 +158,6 @@ def main():
         #Plot the Requested Cutout
         if args.cutout:
             for band in bands:
-                from matplotlib import pyplot as plt
                 plt.figure()
                 im = plt.imshow(imageObj.images[band], cmap = chosen_cmap)
                 plt.colorbar(im)
@@ -196,7 +198,6 @@ def main():
 
         #TODO Delete, only for testing
 
-        from matplotlib import pyplot as plt
         imPlots = []
         fig = plt.figure(figsize = (30,20))
         minVal, maxVal = 0, 0
@@ -261,7 +262,6 @@ def main():
 
             #TODO Delete, only for testing
 
-            from matplotlib import pyplot as plt
             imPlots = []
             fig = plt.figure(figsize = (30,20))
             minVal, maxVal = 0, 0
@@ -312,7 +312,6 @@ def main():
             calcImgDict[secondaryBand] = calc_img
         '''
         #TODO Delete; only for testing
-        from matplotlib import pyplot as plt
         print 'Model'
         im = plt.imshow(prim_fit)
         plt.title('Model, N = %d'%(bestArg+1))
@@ -330,7 +329,6 @@ def main():
         '''
 
         if args.subtraction:
-            from matplotlib import pyplot as plt
             for band in bands:
                 plt.figure()
                 im = plt.imshow(calcImgDict[band],cmap = chosen_cmap)
