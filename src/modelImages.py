@@ -162,7 +162,7 @@ def main():
                 c_x, c_y = imageObj.center
                 plt.scatter(c_x, c_y, color = 'k')
                 plt.savefig(outputdir+imageObj.imageID+'_'+band+'_cutout.png')
-                plt.show()
+                #plt.show()
                 plt.clf()
                 plt.close()
 
@@ -222,7 +222,9 @@ def main():
         fig.colorbar(imPlots[0], cax, orientation='horizontal')
         fig.suptitle('%d'%1)
         plt.savefig(outputdir+imageObj.imageID+'_%d_'%1+'fullModel.png')
-        plt.show()
+        #plt.show()
+        plt.clf()
+        plt.close()
 
         #estimate how much "signal" we have, so we don't overfit
         #area enclosed within nSigma
@@ -286,7 +288,9 @@ def main():
 
             fig.suptitle('%d'%n)
             plt.savefig(outputdir+imageObj.imageID+'_%d_'%n+'fullModel.png')
-            plt.show()
+            #plt.show()
+            plt.clf()
+            plt.close()
 
 
             print 'Diff: %.3f\t Old: %.3f\t New: %.3f'%(BEs[-1]-BEs[-2], BEs[-1], BEs[-2])
@@ -336,7 +340,7 @@ def main():
 
                 #If leaving at this spot, fix filename
                 plt.savefig(outputdir+imageObj.imageID+'_'+band+'_subtraction.png')
-                plt.show()
+                #plt.show()
                 plt.clf()
                 plt.close()
 

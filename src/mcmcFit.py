@@ -150,6 +150,9 @@ def BayesianEvidence(samples, args):
     except KeyboardInterrupt:
         p.terminate()
         raise
+    except MemoryError:
+        print 'Memory Limit Exceeded. Change the settings to better fit this setup.'
+        return -np.inf
 
     p25, p50, p75 = np.percentile(allBEs, [25, 50, 75])
     BE, dBE =  p50, 0.7413 * (p75 - p25)
@@ -159,7 +162,7 @@ def BayesianEvidence(samples, args):
     return BE
 
 #Centers should still be needed for initial guess
-def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, filename = None):
+def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1000, filename = None):
     np.random.seed(int(time()))
     #TODO Check if i'm going to exceed memory limits?
     t0 = time()
@@ -310,8 +313,11 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, filename = None
         #plt.vlines(calc_means[i],0,5e3, colors = ['g'], label = 'mean')
         plt.vlines(calc_medians[i],0,5e3, colors = ['m'],label = 'median')
         plt.legend()
-    plt.savefig('/home/sean/Documents/Research/Output/chain_%d_.png'%N)
-    plt.show()
+    if filename is not None:
+        plt.savefig(filename + 'chain_%d_.png'%N)
+    #plt.show()
+    plt.clf()
+    plt.close()
 
     calc_img = sum(gaussian(xx,yy,calc_cx,calc_cy,a,varX, varY, corr) for a, varX, varY, corr in izip(calc_as, calc_varXs, calc_varYs, calc_corrs))
 

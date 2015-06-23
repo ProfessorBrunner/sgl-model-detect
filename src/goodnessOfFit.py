@@ -24,6 +24,6 @@ def goodnessOfFit(model, data,k, sigma):
 
     rv = chi2(dof)
     x = np.linspace(0, 2*dof, num = 500)
-    plt.plot(x, rv.pdf(x))
-    plt.scatter(chi2Statistic, rv.pdf(chi2Statistic), color = 'r')
-    plt.show()
+    #plt.plot(x, rv.pdf(x))
+    #plt.scatter(chi2Statistic, rv.pdf(chi2Statistic), color = 'r')
+    #plt.show()
