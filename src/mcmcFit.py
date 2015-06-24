@@ -149,12 +149,12 @@ def BayesianEvidence(samples, args):
     p = Pool(nCores)
     try:
         allBEs = p.map(beHelper, randSamples)
-    except KeyboardInterrupt:
-        p.terminate()
-        raise
     except MemoryError:
         print 'Memory Limit Exceeded. Change the settings to better fit this setup.'
         return -np.inf
+    finally:
+        p.close()
+        p.terminate()
 
     p25, p50, p75 = np.percentile(allBEs, [25, 50, 75])
     BE, dBE =  p50, 0.7413 * (p75 - p25)
@@ -164,7 +164,7 @@ def BayesianEvidence(samples, args):
     return BE
 
 #Centers should still be needed for initial guess
-def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1000, filename = None):
+def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None, id = None, chain = False):
     np.random.seed(int(time()))
     #TODO Check if i'm going to exceed memory limits?
     t0 = time()
@@ -225,12 +225,12 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1000, filename = None
     sampler.pool.terminate()#there's a bug in emcee that creates daemon threads. This kills them.
     del(sampler)
     #save samples to file
-    if filename is not None:
-        np.savetxt(filename, samples, delimiter = ',')
+    if chain and dirname is not None and id is not None:
+        np.savetxt(dirname+'_%s_%d_chain'%(id,N), samples, delimiter = ',')
 
     #TODO MAP as chain median?
     #the MAP is simply the mean of the chain
-    #calc_means = samples.mean(axis = 0)
+    calc_means = samples.mean(axis = 0)
 
     p25, calc_medians, p75 = np.percentile(samples,[25,50,75], axis = 0)
     spread = .7413 * (p75 - p25)
@@ -238,22 +238,22 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1000, filename = None
     #   print calc_vals[i], spread[i]
 
     n_bins = int(np.sqrt(samples.shape[0]))#arbitrary
-    '''
+
     #calculate the mode from a histogram
-    #calc_modes = np.zeros(ndim)
-    calc_vals = np.zeros(ndim)
+    calc_modes = np.zeros(ndim)
+    #calc_vals = np.zeros(ndim)
 
     for i in xrange(ndim):
-        if (movingCenters and 1< i < ndim-N) or i<ndim-N:
-            hist, bin_edges = np.histogram(np.log10(samples[:,i]), bins = n_bins)
-            max_idx = np.argmax(hist)
-           #NOTE unsure if I should take the mean over the exponents or values
-            calc_vals[i] = 10**((bin_edges[max_idx]+bin_edges[max_idx+1])/2)#center of peak
-        else:
-            hist, bin_edges = np.histogram(samples[:,i], bins = n_bins)
-            max_idx = np.argmax(hist)
-            calc_vals[i] = (bin_edges[max_idx]+bin_edges[max_idx+1])/2
-    '''
+        #if (movingCenters and 1< i < ndim-N) or i<ndim-N:
+        #    hist, bin_edges = np.histogram(np.log10(samples[:,i]), bins = n_bins)
+        #    max_idx = np.argmax(hist)
+        #   #NOTE unsure if I should take the mean over the exponents or values
+        #    calc_modes[i] = 10**((bin_edges[max_idx]+bin_edges[max_idx+1])/2)#center of peak
+        #else:
+        hist, bin_edges = np.histogram(samples[:,i], bins = n_bins)
+        max_idx = np.argmax(hist)
+        calc_modes[i] = (bin_edges[max_idx]+bin_edges[max_idx+1])/2
+
     calc_vals = calc_medians
     #calc_modes = calc_vals
 
@@ -265,6 +265,7 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1000, filename = None
     calc_as, calc_varXs, calc_varYs, calc_corrs = [calc_vals[i*N+2*(movingCenters):(i+1)*N+2*(movingCenters)] for i in xrange(NPARAM)]
 
     fig = plt.figure(figsize = (30,15))
+    fig.canvas.set_window_title('Samples %s'%id)
     for i in xrange(ndim):
         nRows = ndim/3+(not ndim%3==0)
         plt.subplot(nRows, 3,i+1)
@@ -311,15 +312,15 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 1000, filename = None
             #plt.vlines(calc_vals[i],0,2000, colors = ['r'])
 
         plt.hist(samples[:, i], bins = n_bins)
-        #plt.vlines(calc_modes[i],0,5e3, colors = ['r'], label = 'mode')
-        #plt.vlines(calc_means[i],0,5e3, colors = ['g'], label = 'mean')
+        plt.vlines(calc_modes[i],0,5e3, colors = ['r'], label = 'mode')
+        plt.vlines(calc_means[i],0,5e3, colors = ['g'], label = 'mean')
         plt.vlines(calc_medians[i],0,5e3, colors = ['m'],label = 'median')
         plt.legend()
-    if filename is not None:
-        plt.savefig(filename + 'chain_%d_.png'%N)
+    if dirname is not None and id is not None:
+        plt.savefig(dirname + '_%s_%d_chain.png'%(id,N))
     #plt.show()
     plt.clf()
-    plt.close()
+    #plt.close(fig)
 
     calc_img = sum(gaussian(xx,yy,calc_cx,calc_cy,a,varX, varY, corr) for a, varX, varY, corr in izip(calc_as, calc_varXs, calc_varYs, calc_corrs))
 

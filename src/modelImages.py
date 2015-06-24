@@ -138,12 +138,10 @@ def main():
 
     #For now, randomize so I see different values while testing.
     #TODO Delete after testing, so it's more stable.
-    x = imageDict.values()
-    np.random.shuffle(x)
+
     chosen_cmap = 'jet'
-    for imageObj in x:
+    for imageObj in imageDict.values():
         #savefile name for sample chain
-        name = outputdir+imageObj.imageID+'_samples' if args.chain else None
         print 'Image ID : %s'%imageObj.imageID
 
         if isCoordinates:
@@ -162,7 +160,7 @@ def main():
         #Plot the Requested Cutout
         if args.cutout:
             for band in bands:
-                plt.figure()
+                fig = plt.figure()
                 im = plt.imshow(imageObj.images[band], cmap = chosen_cmap)
                 plt.colorbar(im)
                 c_x, c_y = imageObj.center
@@ -170,7 +168,7 @@ def main():
                 plt.savefig(outputdir+imageObj.imageID+'_'+band+'_cutout.png')
                 #plt.show()
                 plt.clf()
-                plt.close()
+                plt.close(fig)
 
         if args.cutoutData:
             import numpy as np
@@ -183,7 +181,7 @@ def main():
         #Then, use to charecterize max number of parameters
         c_x, c_y = imageObj.center
         print 'Fitting now'
-        prim_fit,theta, be  = mcmcFit(imageObj[primaryBand], 1, c_x, c_y, not args.fixedCenters, filename = name)
+        prim_fit,theta, be  = mcmcFit(imageObj[primaryBand], 1, c_x, c_y, not args.fixedCenters, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
         print 'Gaussian #1'
         if not args.fixedCenters:
             print '(x,y):\t(%.3f, %.3f)'%(theta[0], theta[1])
@@ -204,6 +202,7 @@ def main():
 
         imPlots = []
         fig = plt.figure(figsize = (30,20))
+        fig.canvas.set_window_title('1 Gaussian')
         minVal, maxVal = 0, 0
         plt.subplot(131)
         im = plt.imshow(imageObj[primaryBand],cmap = chosen_cmap)
@@ -229,7 +228,7 @@ def main():
         plt.savefig(outputdir+imageObj.imageID+'_%d_'%1+'fullModel.png')
         #plt.show()
         plt.clf()
-        plt.close()
+        #plt.close(fig)
 
         #estimate how much "signal" we have, so we don't overfit
         #area enclosed within nSigma
@@ -251,7 +250,7 @@ def main():
         #TODO delete
         #maxGaussians = 4
         for n in xrange(2,maxGaussians+1):
-            prim_fit, theta, be = mcmcFit(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, filename = name)
+            prim_fit, theta, be = mcmcFit(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
 
             print 'Gaussian #%d'%n
             if not args.fixedCenters:
@@ -265,9 +264,9 @@ def main():
             prim_fits.append(prim_fit)
 
             #TODO Delete, only for testing
-
             imPlots = []
             fig = plt.figure(figsize = (30,20))
+            fig.canvas.set_window_title('%d Gaussian'%n)
             minVal, maxVal = 0, 0
             plt.subplot(131)
             im = plt.imshow(imageObj[primaryBand],cmap = chosen_cmap)
@@ -294,7 +293,7 @@ def main():
             plt.savefig(outputdir+imageObj.imageID+'_%d_'%n+'fullModel.png')
             #plt.show()
             plt.clf()
-            plt.close()
+            #plt.close(fig)
 
 
             print 'Diff: %.3f\t Old: %.3f\t New: %.3f'%(BEs[-1]-BEs[-2], BEs[-1], BEs[-2])
@@ -322,19 +321,17 @@ def main():
         plt.colorbar(im)
         plt.show()
         plt.clf()
-        plt.close()
 
         plt.title('BEs')
         plt.plot(BEs)
         plt.scatter(bestArg, BEs[bestArg], color = 'r')
         plt.show()
         plt.clf()
-        plt.close()
         '''
 
         if args.subtraction:
             for band in bands:
-                plt.figure()
+                fig = plt.figure()
                 im = plt.imshow(calcImgDict[band],cmap = chosen_cmap)
                 plt.colorbar(im)
                 if not args.fixedCenters:
@@ -344,7 +341,7 @@ def main():
                 plt.savefig(outputdir+imageObj.imageID+'_'+band+'_subtraction.png')
                 #plt.show()
                 plt.clf()
-                plt.close()
+                plt.close(fig)
 
 
         if args.subtractionData:
