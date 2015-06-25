@@ -101,7 +101,7 @@ def main():
     import imageClass
     import numpy as np
     import matplotlib as mpl
-    mpl.use('Agg')
+    #mpl.use('Agg')
     from matplotlib import pyplot as plt
     import seaborn
     seaborn.set()
@@ -139,7 +139,7 @@ def main():
     #For now, randomize so I see different values while testing.
     #TODO Delete after testing, so it's more stable.
 
-    chosen_cmap = 'jet'
+    chosen_cmap = 'gnuplot2'
     for imageObj in imageDict.values():
         #savefile name for sample chain
         print 'Image ID : %s'%imageObj.imageID
@@ -226,8 +226,8 @@ def main():
         fig.colorbar(imPlots[0], cax, orientation='horizontal')
         fig.suptitle('%d'%1)
         plt.savefig(outputdir+imageObj.imageID+'_%d_'%1+'fullModel.png')
-        #plt.show()
-        plt.clf()
+        plt.show()
+        #plt.clf()
         #plt.close(fig)
 
         #estimate how much "signal" we have, so we don't overfit
@@ -291,8 +291,8 @@ def main():
 
             fig.suptitle('%d'%n)
             plt.savefig(outputdir+imageObj.imageID+'_%d_'%n+'fullModel.png')
-            #plt.show()
-            plt.clf()
+            plt.show()
+            #plt.clf()
             #plt.close(fig)
 
 

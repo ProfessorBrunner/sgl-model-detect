@@ -25,7 +25,7 @@ import numpy as np
 import emcee as mc
 from time import time
 import matplotlib as mpl
-mpl.use('Agg')
+#mpl.use('Agg')
 from matplotlib import pyplot as plt
 from scipy.stats import mode, gaussian_kde
 from multiprocessing import cpu_count, Pool
@@ -107,7 +107,9 @@ def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2, movingCenter):
 
     #basic log normal liklihood
     #assume Gaussian errors
-    return -.5*(np.sum(((diff)**2)*inv_sigma2-np.log(inv_sigma2)))
+    #Adding Poisson weights
+    #return -.5*(np.sum(((diff)**2)*-np.log(inv_sigma2)))
+    return -.5*(np.sum( (diff**2)/image-2*np.log(image)))
 
 #note if movingCenter is true, the c_x, c_y here are overwritten immeadiately. However, if fixedCenter is true they are needed.
 def lnprob(theta, image, xx, yy, c_x, c_y, inv_sigma2, movingCenter):
@@ -173,7 +175,7 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
 
     #error used in the liklihood. Its value does not seem to change the results much.
     #Represents the std of the error, which is assumed Gaussian
-    inv_sigma2 = pow(.1, -2)
+    inv_sigma2 = pow(1, 0)
 
     #parameters for the emcee sampler.
     ndim = N*NPARAM #1 Amplitude and 3 Radial dimentions
@@ -318,8 +320,8 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
         plt.legend()
     if dirname is not None and id is not None:
         plt.savefig(dirname + '_%s_%d_chain.png'%(id,N))
-    #plt.show()
-    plt.clf()
+    plt.show()
+    #plt.clf()
     #plt.close(fig)
 
     calc_img = sum(gaussian(xx,yy,calc_cx,calc_cy,a,varX, varY, corr) for a, varX, varY, corr in izip(calc_as, calc_varXs, calc_varYs, calc_corrs))
