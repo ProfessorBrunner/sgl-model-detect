@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 #@Author Sean McLaughlin
-desc ='''
+'''
 This module fits to an image using MCMC techniques, specifically using the package emcee. 
 This module contains the function fitImage. It can be run as main or imported.
 
@@ -166,6 +166,7 @@ def BayesianEvidence(samples, args):
     return BE
 
 #Centers should still be needed for initial guess
+#TODO change the order of these parameters around, it doesn't make intuitive sense anymore. Make sure to change nlsq, too!
 def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None, id = None, chain = False):
     np.random.seed(int(time()))
     #TODO Check if i'm going to exceed memory limits?
