@@ -18,8 +18,6 @@ parser.add_argument('bands', metavar = 'bands', type = str, help = "What bands t
 parser.add_argument('centers', metavar = 'centers', type = str, help = \
     'Either a filename or a comma separate pair of coordinates for x,y. Default is to use findCenter.', default = None, nargs = '?')
 
-parser.add_argument('--fixedCenters', dest = 'fixedCenters', action = 'store_const', const = True, default = False,\
-                     help = 'Use the given centers as fixed values. Otherwise, they will be treated as initial guesses')
 parser.add_argument('--cutout', dest = 'cutout', action = 'store_const', const = True, default = False,\
                      help = 'Save a .png of the original cutout to file.')
 parser.add_argument('--cutoutData', dest = 'cutoutData', action = 'store_const', const = True, default = False,\
@@ -34,6 +32,111 @@ parser.add_argument('--subtractionData', dest = 'subtractionData', action = 'sto
                             help = 'Save the raw image data to file of the residuals.')
 
 args = parser.parse_args()
+
+#import matplotlib as mpl
+#mpl.use('Agg')
+from mcmcFit import mcmcFit, parseTheta
+from residualID import residualID
+import imageClass
+import numpy as np
+from matplotlib import pyplot as plt
+import seaborn
+seaborn.set()
+import os
+from goodnessOfFit import goodnessOfFit
+from itertools import izip
+
+SHOW_IMAGES = True
+chosen_cmap = 'gnuplot2'
+
+def plotSingleImage(imageObj, bands, chosen_cmap, outputdir, name, show = False):
+    for band in bands:
+        fig = plt.figure()
+        im = plt.imshow(imageObj.images[band], cmap = chosen_cmap)
+        plt.colorbar(im)
+
+        c_x, c_y = imageObj.center
+        plt.scatter(c_x, c_y, color = 'k')
+
+        plt.savefig(outputdir+imageObj.imageID+'_%s_%s.png'%(band, name))
+        if show:
+            plt.show()
+        else:
+            plt.clf()
+            plt.close(fig)
+
+def plotFullModel(rawImage, model, N, id, outputdir, chosen_cmap, show = False ):
+    'Helper function that creates a more elaborate plot of the image and model.'
+    imPlots = []
+    fig = plt.figure(figsize = (30,20))
+    minVal, maxVal = 0, 0
+
+    plt.subplot(131)
+    im = plt.imshow(rawImage,cmap = chosen_cmap)
+    minVal = min(minVal, rawImage.min())
+    maxVal = max(maxVal, rawImage.max())
+    imPlots.append(im)
+
+    plt.subplot(132)
+    im = plt.imshow(model,cmap = chosen_cmap)
+    minVal = min(minVal, model.min())
+    maxVal = max(maxVal, model.max())
+    imPlots.append(im)
+
+    plt.subplot(133)
+    calc_img = rawImage - model
+    im = plt.imshow(calc_img,cmap = chosen_cmap)
+    minVal = min(minVal,calc_img.min())
+    maxVal = max(maxVal,calc_img.max())
+    imPlots.append(im)
+
+    for image in imPlots:
+        image.set_clim(minVal, maxVal)
+    cax = fig.add_axes([0.2, 0.08, 0.6, 0.04])
+    fig.colorbar(imPlots[0], cax, orientation='horizontal')
+    fig.suptitle('%d Gaussian Model'%N)
+    plt.savefig(outputdir+id+'_%d_'%N+'fullModel.png')
+    if show:
+        plt.show()
+    else:
+        plt.clf()
+        plt.close(fig)
+
+def printTheta(N, theta):
+    'Helper function that prints the model produced by the sampler.'
+    if N == 1:
+        print '1 Gaussian Model\n'
+    else:
+        print '%d Gaussians Model\n'%N
+
+    Xs, Ys, As, VarXs, VarYs, Corrs = parseTheta(theta)
+    for i, (x, y, a, vx, vy, p) in enumerate(izip(Xs, Ys, As, VarXs, VarYs, Corrs)):
+        j = i+1
+        print 'Gaussian %d:'%j
+        print 'Center %d:\t (%.2f, %.2f)'%(j,x,y)
+        print 'Amplitude %d:\t%.3f\nVarX %d:\t%.3f\nVarY %d:\t%.3f\nCorr %d:\t%.3f'%(j, a,j, vx, j, vy, j, p)
+        print
+    print'\n'+'--'*20
+
+def caculateMaxGaussians(theta):
+    'From the 1 G fit calculate the maximum number of Gaussians to prevent overfitting'
+
+    #estimate how much "signal" we have, so we don't overfit
+    #area enclosed within nSigma
+    pixelsPerParam = 10
+    nSigma = 2
+    varX, varY = theta[3:5]
+    #area of an ellipse
+    area = np.pi*np.power(nSigma, 2)*np.sqrt(varX*varY)
+    #MaxGaussians is sometimes <=2, which means only one sample is run. There should be a minimum max Gaussians.
+    maxGaussians =  int(area/(4*pixelsPerParam))
+    if maxGaussians < 2:
+        maxGaussians = 2 #minimum value of 3
+    elif maxGaussians > 10:
+        maxGaussians = 10 #upper value of 10. Arbitrarily chosen and can be extended.
+    print 'Max Gaussians = %d'%maxGaussians
+
+    return maxGaussians
 filename = args.filename
 outputdir = args.outputdir
 bands = args.bands
@@ -67,7 +170,6 @@ if not useFindCenters and not isCoordinates:
     files.append(args.centers)
     centers = args.centers
 #check files for existance
-import os
 
 if os.path.isdir(filename) and filename[-1] != '/':
     filename+='/'
@@ -94,16 +196,6 @@ if not (useFindCenters or isCoordinates) :
             galaxyDict[splitLine[0]] = coords
 else:
     galaxyDict = None
-
-from mcmcFit import mcmcFit
-from residualID import residualID
-import imageClass
-import numpy as np
-import matplotlib as mpl
-#mpl.use('Agg')
-from matplotlib import pyplot as plt
-import seaborn
-seaborn.set()
 
 imageClassDict = {'C': imageClass.CFHTLS, 'S': imageClass.SDSS}
 #the appropriate formatting for these objects
@@ -135,9 +227,8 @@ else:
     imageDict[obj.imageID] = obj
     obj.getOtherBand(bands)
 
-chosen_cmap = 'gnuplot2'
 for imageObj in imageDict.values():
-    #savefile name for sample chain
+
     print 'Image ID : %s'%imageObj.imageID
 
     if isCoordinates:
@@ -155,16 +246,7 @@ for imageObj in imageDict.values():
 
     #Plot the Requested Cutout
     if args.cutout:
-        for band in bands:
-            fig = plt.figure()
-            im = plt.imshow(imageObj.images[band], cmap = chosen_cmap)
-            plt.colorbar(im)
-            c_x, c_y = imageObj.center
-            plt.scatter(c_x, c_y, color = 'k')
-            plt.savefig(outputdir+imageObj.imageID+'_'+band+'_cutout.png')
-            #plt.show()
-            plt.clf()
-            plt.close(fig)
+        plotSingleImage(imageObj, bands, chosen_cmap, outputdir, 'cutout', show = SHOW_IMAGES)
 
     if args.cutoutData:
         for band in bands:
@@ -176,126 +258,33 @@ for imageObj in imageDict.values():
     #Then, use to charecterize max number of parameters
     c_x, c_y = imageObj.center
     print 'Fitting now'
-    prim_fit,theta, be  = mcmcFit(imageObj[primaryBand], 1, c_x, c_y, not args.fixedCenters, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
-    print 'Gaussian #1'
-    if not args.fixedCenters:
-        print '(x,y):\t(%.3f, %.3f)'%(theta[0], theta[1])
-    for i in xrange(1,2):
-        printParams = (i, theta[(not args.fixedCenters)+i], i, theta[(not args.fixedCenters)+i+1], i,theta[(not args.fixedCenters)+i+2], i, theta[(not args.fixedCenters)+i+3])
-        print 'A%d:\t%.3f\nVx%d:\t%.3f\nVy%d:\t%.3f\nP%d:\t%.3f'%printParams
-    print'\n'+'--'*20
+    prim_fit,theta, be  = mcmcFit(imageObj[primaryBand], 1, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
+
+    printTheta(1, theta)
+
     BEs.append(be)
     prim_fits.append(prim_fit)
 
-    #Necessary despite centers existing because because imageObj.center is in the opposite order of numpy slicing.
-    if args.fixedCenters:
-        c = c_y, c_x
-    else:
-        c = theta[1], theta[0]
+    plotFullModel(imageObj[primaryBand], prim_fit, 1, imageObj.imageID, outputdir, chosen_cmap, show = SHOW_IMAGES)
 
-    #TODO Delete, only for testing
-
-    imPlots = []
-    fig = plt.figure(figsize = (30,20))
-    fig.canvas.set_window_title('1 Gaussian')
-    minVal, maxVal = 0, 0
-    plt.subplot(131)
-    im = plt.imshow(imageObj[primaryBand],cmap = chosen_cmap)
-    minVal = min(minVal, imageObj[primaryBand].min())
-    maxVal = max(maxVal, imageObj[primaryBand].max())
-    imPlots.append(im)
-    plt.subplot(132)
-    im = plt.imshow(prim_fit,cmap = chosen_cmap)
-    minVal = min(minVal, prim_fit.min())
-    maxVal = max(maxVal, prim_fit.max())
-    imPlots.append(im)
-    plt.subplot(133)
-    calc_img = imageObj[primaryBand]-prim_fit
-    im = plt.imshow(calc_img,cmap = chosen_cmap)
-    minVal = min(minVal,calc_img.min())
-    maxVal = max(maxVal,calc_img.max())
-    imPlots.append(im)
-    for image in imPlots:
-        image.set_clim(minVal, maxVal)
-    cax = fig.add_axes([0.2, 0.08, 0.6, 0.04])
-    fig.colorbar(imPlots[0], cax, orientation='horizontal')
-    fig.suptitle('%d'%1)
-    plt.savefig(outputdir+imageObj.imageID+'_%d_'%1+'fullModel.png')
-    plt.show()
-    #plt.clf()
-    #plt.close(fig)
-
-    #estimate how much "signal" we have, so we don't overfit
-    #area enclosed within nSigma
-    pixelsPerParam = 10
-    nSigma = 2
-
-    varX, varY = theta[1+2*(not args.fixedCenters):3+2*(not args.fixedCenters)]
-    #area of an ellipse
-    area = np.pi*np.power(nSigma, 2)*np.sqrt(varX*varY)
-    #MaxGaussians is sometimes <=2, which means only one sample is run. There should be a minimum max Gaussians.
-    maxGaussians =  int(area/(4*pixelsPerParam))
-    if maxGaussians < 2:
-        maxGaussians = 2 #minimum value of 3
-    elif maxGaussians > 10:
-        maxGaussians = 10 #upper value of 10. Arbitrarily chosen and can be extended.
-    print 'Max Gaussians = %d'%maxGaussians
+    maxGaussians = caculateMaxGaussians(theta)
 
     #iterate until we reach our limit or BE decreases
-    #TODO delete
-    #maxGaussians = 4
-    for n in xrange(2,maxGaussians+1):
-        prim_fit, theta, be = mcmcFit(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
-
-        print 'Gaussian #%d'%n
-        if not args.fixedCenters:
-            print '(x,y):\t(%.3f, %.3f)'%(theta[0], theta[1])
-        for i in xrange(1,n+1):
-            printParams = (i, theta[(not args.fixedCenters)+i], i, theta[(not args.fixedCenters)+i+1*n], i,theta[(not args.fixedCenters)+i+2*n], i, theta[(not args.fixedCenters)+i+3*n])
-            print 'A%d:\t%.3f\nVx%d:\t%.3f\nVy%d:\t%.3f\nP%d:\t%.3f'%printParams
-        print'\n'+'--'*20
+    maxGaussians = 4
+    for N in xrange(2,maxGaussians+1):
+        prim_fit, theta, be = mcmcFit(imageObj[primaryBand], N, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
+        printTheta(2, theta)
 
         BEs.append(be)
         prim_fits.append(prim_fit)
 
-        #TODO Delete, only for testing
-        imPlots = []
-        fig = plt.figure(figsize = (30,20))
-        fig.canvas.set_window_title('%d Gaussian'%n)
-        minVal, maxVal = 0, 0
-        plt.subplot(131)
-        im = plt.imshow(imageObj[primaryBand],cmap = chosen_cmap)
-        minVal = min(minVal, imageObj[primaryBand].min())
-        maxVal = max(maxVal, imageObj[primaryBand].max())
-        imPlots.append(im)
-        plt.subplot(132)
-        im = plt.imshow(prim_fit,cmap = chosen_cmap)
-        minVal = min(minVal, prim_fit.min())
-        maxVal = max(maxVal, prim_fit.max())
-        imPlots.append(im)
-        plt.subplot(133)
-        calc_img = imageObj[primaryBand]-prim_fit
-        im = plt.imshow(calc_img,cmap = chosen_cmap)
-        minVal = min(minVal,calc_img.min())
-        maxVal = max(maxVal,calc_img.max())
-        imPlots.append(im)
-        for image in imPlots:
-            image.set_clim(minVal, maxVal)
-        cax = fig.add_axes([0.2, 0.08, 0.6, 0.04])
-        fig.colorbar(imPlots[0],cax, orientation = 'horizontal')
+        plotFullModel(imageObj[primaryBand],prim_fit, N, imageObj.imageID, outputdir, chosen_cmap, show = SHOW_IMAGES)
 
-        fig.suptitle('%d'%n)
-        plt.savefig(outputdir+imageObj.imageID+'_%d_'%n+'fullModel.png')
-        plt.show()
-        #plt.clf()
-        #plt.close(fig)
-
-
-        print 'Diff: %.3f\t Old: %.3f\t New: %.3f'%(BEs[-1]-BEs[-2], BEs[-1], BEs[-2])
+        print 'BF Diff: %.3f\t Old: %.3f\t New: %.3f'%(BEs[-1]-BEs[-2], BEs[-1], BEs[-2])
         if BEs[-1] < BEs[-2]: #new Model is worse!
         #NOTE Double-check that this is right and not supposed to be backwards
-            break
-            #pass
+            #break
+            pass
 
     #TODO fix scaling so it uses the calculated center rather than the image's center
     bestArg = np.argmax(np.array(BEs))
@@ -308,44 +297,19 @@ for imageObj in imageDict.values():
         prim_fit_scaled = prim_fit*imageObj[secondaryBand][c]/imageObj[primaryBand][c]
         calc_img = imageObj[secondaryBand] - prim_fit_scaled
         calcImgDict[secondaryBand] = calc_img
-    '''
-    #TODO Delete; only for testing
-    print 'Model'
-    im = plt.imshow(prim_fit)
-    plt.title('Model, N = %d'%(bestArg+1))
-    plt.colorbar(im)
-    plt.show()
-    plt.clf()
-
-    plt.title('BEs')
-    plt.plot(BEs)
-    plt.scatter(bestArg, BEs[bestArg], color = 'r')
-    plt.show()
-    plt.clf()
-    '''
 
     if args.subtraction:
-        for band in bands:
-            fig = plt.figure()
-            im = plt.imshow(calcImgDict[band],cmap = chosen_cmap)
-            plt.colorbar(im)
-            if not args.fixedCenters:
-                plt.scatter(theta[0], theta[1], color = 'm')
-
-            #If leaving at this spot, fix filename
-            plt.savefig(outputdir+imageObj.imageID+'_'+band+'_subtraction.png')
-            #plt.show()
-            plt.clf()
-            plt.close(fig)
-
+        plotSingleImage(imageObj, bands, chosen_cmap, outputdir, 'subtraction', show = SHOW_IMAGES)
 
     if args.subtractionData:
-        np.savetxt(outputdir+imageObj.imageID+'_'+band+'_residualData', calc_img)
+        np.savetxt(outputdir+imageObj.imageID+'_'+band+'_subtractionData', calc_img)
+
+    goodnessOfFit(prim_fit, imageObj[primaryBand], 6*(bestArg+1), 1)
 
     #TODO Plotting functionality here
     #TODO Have this flagged on/off. We don't need to check for lenses on all of em.
+    #TODO take advantage of calaculated center.
     #check for lens properties
-    from goodnessOfFit import goodnessOfFit
-    goodnessOfFit(prim_fit, imageObj[primaryBand], 4*(bestArg+1)+2*(not args.fixedCenters), 1)
-    lens = residualID(calc_img, c[1], c[0])
+    c_y, c_x = imageObj.center
+    lens = residualID(calc_img,c_y, c_x )
     print 'The image %s represents a lens: %s'%(imageObj.imageID, str(lens))
