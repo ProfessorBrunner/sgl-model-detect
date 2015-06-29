@@ -102,6 +102,7 @@ def plotFullModel(rawImage, model, N, id, outputdir, chosen_cmap, show = False )
         plt.clf()
         plt.close(fig)
 
+#TODO Think of moving to mcmcFit
 def printTheta(N, theta):
     'Helper function that prints the model produced by the sampler.'
     if N == 1:
@@ -146,8 +147,8 @@ if len(bands) > 2 or ',' in bands:
     from sys import exit
     exit(-1)
 
-if args.imageFormat not in ['C', 'S']:
-    print 'Invalid format entry; please select "C" or "S"'
+if args.imageFormat not in ['C', 'S', 'T']:
+    print 'Invalid format entry; please select "C","S" or "T"'
     from sys import exit
     exit(-1)
 
@@ -197,7 +198,7 @@ if not (useFindCenters or isCoordinates) :
 else:
     galaxyDict = None
 
-imageClassDict = {'C': imageClass.CFHTLS, 'S': imageClass.SDSS}
+imageClassDict = {'C': imageClass.CFHTLS, 'S': imageClass.SDSS, 'T': imageClass.Toy}
 #the appropriate formatting for these objects
 imgClass = imageClassDict[args.imageFormat]
 imageDict = {}
@@ -270,7 +271,7 @@ for imageObj in imageDict.values():
     maxGaussians = caculateMaxGaussians(theta)
 
     #iterate until we reach our limit or BE decreases
-    maxGaussians = 4
+    #maxGaussians = 4
     for N in xrange(2,maxGaussians+1):
         prim_fit, theta, be = mcmcFit(imageObj[primaryBand], N, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
         printTheta(2, theta)
@@ -283,8 +284,8 @@ for imageObj in imageDict.values():
         print 'BF Diff: %.3f\t Old: %.3f\t New: %.3f'%(BEs[-1]-BEs[-2], BEs[-1], BEs[-2])
         if BEs[-1] < BEs[-2]: #new Model is worse!
         #NOTE Double-check that this is right and not supposed to be backwards
-            #break
-            pass
+            break
+            #pass
 
     #TODO fix scaling so it uses the calculated center rather than the image's center
     bestArg = np.argmax(np.array(BEs))

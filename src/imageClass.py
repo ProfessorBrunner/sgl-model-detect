@@ -146,3 +146,21 @@ class SDSS(Image):
         lineIndex = filename.rfind('/')
         fileDirectory, baseName= filename[:lineIndex], filename[lineIndex:]
         return baseName[7]
+
+class Toy(Image):
+
+    def getOtherBand(self,bands):
+        'Attempts to get other images of the same ID in different bands. Assumes only one image is loaded into the object so far'
+        #Toy images are only one band, so this doesn't do anything.
+        pass
+
+    def _getImageID(self, filename):
+        lineIndex = filename.rfind('/')
+        fileDirectory, baseName= filename[:lineIndex], filename[lineIndex:]
+        baseName, extension = baseName.split('.')
+        return baseName[1:]
+
+    def _getBand(self, filename):
+        #no bands on toy images, so they need a placeholder
+        #TODO subclass more behavior so the user doens't have to remember to submit a t
+        return 't'

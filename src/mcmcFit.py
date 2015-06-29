@@ -84,15 +84,15 @@ def lnprior(theta, imageSize):
     if any(corr<-1 or corr>1 for corr in corrs):
         return -np.inf
     #Uniform prior
-    return 1
+    #return 1
 
     #log-uniform
     #lnp= -1*np.sum(np.log(theta[2*movingCenter:(NPARAM-2)*N]))
     #TODO make centerStd tunable and make an option for a uniform distrbution
     #if not movingCenter:
     #    return lnp
-    #centerStd = (imageSize[0]+imageSize[1])/2 #Average size divided by 2 (~65% of the time center is within this distance of the image center)
-    #return lnp - (sum(imageSize)/2-(c_x+c_y))/(2*centerStd) #logNormal for the centers
+    centerStd = (imageSize[0]+imageSize[1])/8 #Average size divided by 2 (~65% of the time center is within this distance of the image center)
+    return sum(imageSize)*N/2-sum(Xs+Ys)/(2*centerStd) #logNormal for the centers
 
 def lnlike(theta, image, xx,yy,inv_sigma2):
 
@@ -174,11 +174,14 @@ def plotChain(calc_vals,samples, n_bins, modes, means, medians, dirname, id, sho
     calc_Xs, calc_Ys, calc_as, calc_varXs, calc_varYs, calc_corrs = parseTheta(calc_vals)
 
     N = ndim/NPARAM
-
+    '''
     if N == 2: #BONUS ROUND
-        seaborn.jointplot(samples[:, 1], samples[:,3], kind = 'kde', space = 0)
-        plt.show()
-
+        chosen_idxs = np.random.choice(len(samples), size = 1e5, replace=False)
+        seaborn.jointplot(samples[chosen_idxs, 1], samples[chosen_idxs,3], kind = 'kde', space = 0)#, joint_kws={'alpha': .002})
+        plt.savefig(dirname + '%s_%d_scatter.png'%(id, N))
+        plt.clf()
+        plt.close()
+    '''
     for i in xrange(ndim):
         nRows = ndim/3+(not ndim%3==0)
         plt.subplot(nRows, 3,i+1)
@@ -224,18 +227,16 @@ def mcmcFit(image, N, n_walkers = 2000, dirname = None, id = None, chain = False
 
     #error used in the liklihood. Its value does not seem to change the results much.
     #Represents the std of the error, which is assumed Gaussian
-    inv_sigma2 = pow(1, 0)
+    inv_sigma2 = pow(1, -2)
 
     #parameters for the emcee sampler.
-    #TODO Change
     ndim = N*NPARAM #1 Amplitude and 3 Radial dimentions
-    nsteps = 1000 #Sample more for larger models
+    nsteps = 400 #Sample more for larger models
     nburn = int(nsteps*.25)
 
     #initial guess
     pos = []
     imageMax = image.max()
-    #TODO Change
     for walk in xrange(n_walkers):
         row = np.zeros(ndim)
 
