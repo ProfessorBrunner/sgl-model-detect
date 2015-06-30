@@ -91,8 +91,9 @@ def lnprior(theta, imageSize):
     #TODO make centerStd tunable and make an option for a uniform distrbution
     #if not movingCenter:
     #    return lnp
-    centerStd = (imageSize[0]+imageSize[1])/8 #Average size divided by 2 (~65% of the time center is within this distance of the image center)
-    return sum(imageSize)*N/2-sum(Xs+Ys)/(2*centerStd) #logNormal for the centers
+    centerStd = .1#spread of the distribution
+    muX, muY = Xs[0], Ys[0]
+    return  -(sum((Xs-muX)**2)+ sum((Ys-muY)**2))/(2*centerStd**2) #Normal for the centers
 
 def lnlike(theta, image, xx,yy,inv_sigma2):
 
@@ -224,7 +225,6 @@ def mcmcFit(image, N, n_walkers = 2000, dirname = None, id = None, chain = False
     t0 = time()
     #numpy arrays of the indicies, used in the calculations
     yy, xx = np.indices(image.shape)
-
     #error used in the liklihood. Its value does not seem to change the results much.
     #Represents the std of the error, which is assumed Gaussian
     inv_sigma2 = pow(1, -2)
@@ -276,7 +276,6 @@ def mcmcFit(image, N, n_walkers = 2000, dirname = None, id = None, chain = False
     sampler = mc.EnsembleSampler(n_walkers, ndim, lnprob, args = args,threads = cpu_count())
     #run the sampler. Longest running line in the code
     sampler.run_mcmc(pos, nsteps)
-
     samples = sampler.chain[:,nburn:,:].reshape((-1, ndim))
     sampler.pool.terminate()#there's a bug in emcee that creates daemon threads. This kills them.
     del(sampler)

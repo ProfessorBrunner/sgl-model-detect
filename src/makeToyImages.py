@@ -25,24 +25,26 @@ sns.set()
 
 def printTheta(N, theta):
     'Helper function that prints the model produced by the sampler.'
+    lines = []
     if N == 1:
-        print '1 Gaussian Model\n'
+        lines.append('1 Gaussian Model\n')
     else:
-        print '%d Gaussians Model\n'%N
+        lines.append('%d Gaussians Model\n'%N)
 
     Xs, Ys, As, VarXs, VarYs, Corrs = parseTheta(theta)
     for i, (x, y, a, vx, vy, p) in enumerate(izip(Xs, Ys, As, VarXs, VarYs, Corrs)):
         j = i+1
-        print 'Gaussian %d:'%j
-        print 'Center %d:\t (%.2f, %.2f)'%(j,x,y)
-        print 'Amplitude %d:\t%.3f\nVarX %d:\t%.3f\nVarY %d:\t%.3f\nCorr %d:\t%.3f'%(j, a,j, vx, j, vy, j, p)
-        print
-    print'\n'+'--'*20
+        lines.append('Gaussian %d:'%j)
+        lines.append('Center %d:\t (%.2f, %.2f)'%(j,x,y))
+        lines.append('Amplitude %d:\t%.3f\nVarX %d:\t%.3f\nVarY %d:\t%.3f\nCorr %d:\t%.3f\n'%(j, a,j, vx, j, vy, j, p) )
+    lines.append('\n'+'--'*20)
+    return '\n'.join(lines)
 
 np.random.seed(int(time()))
 
 #The true number of Gaussians for each model
 nGaussians = poisson.rvs(2, size = args.N)
+nGaussians = np.where(nGaussians == 0, 1, nGaussians) #assign 0 selectiosn to 1
 size = (30,30)
 imageMax = 400
 darkCurrent = 20 #parametrized value
@@ -65,8 +67,15 @@ for nImage, n in enumerate(nGaussians):
                 j = 0
             mean = size[j]/2
             x = -1
-            while x<0 or x>size[j]:
-                x = size[j]/2+(np.random.rand()-.5)*size[j]/2
+            if i==0 or i == n:
+                while x<0 or x>size[j]:
+                    x = size[j]/2+(np.random.rand()-.5)*size[j]/2
+            else:
+                while x< 0 or x>size[j]:
+                    k = n if j == 0 else 0
+                    x = 2*np.random.randn()+trueTheta[k]
+
+                print trueTheta[k], x
             trueTheta[i] = x
 
         elif i < 3*n: #amp
@@ -74,13 +83,13 @@ for nImage, n in enumerate(nGaussians):
             #trueTheta[i] = np.random.lognormal(mean = np.log(imageMax/2), sigma = 1.0)#try logNormal near max
             x = -1
             while x<0:
-                x = np.random.randn()*100+imageMax/2
+                x = np.random.randn()*50+imageMax/4
             trueTheta[i] = x
             #TODO add negative in guess, or just let it explore that way?
         elif i<5*n: #var
             x = -1
             while x <0:
-                x = np.random.randn()*10+15
+                x = np.random.randn()*6+10
             trueTheta[i] = x
             #trueTheta[i] = 10**(8*np.random.rand()-4)
         else: #corr
@@ -94,7 +103,8 @@ for nImage, n in enumerate(nGaussians):
 
     yy, xx = np.indices(size)
 
-    printTheta(n,trueTheta)
+    output= printTheta(n,trueTheta)
+    print output
 
     image = sum(gaussian(xx,yy,c_x, c_y, a, varX, varY, corr) for c_x, c_y, a, varX, varY, corr in izip(*parseTheta(trueTheta)))
 
@@ -105,16 +115,15 @@ for nImage, n in enumerate(nGaussians):
             continue
         fluxError[i] = poisson.rvs(int(pixel))
 
-    image = fluxError.reshape(size)
+    #image = fluxError.reshape(size)
     '''
     im = plt.imshow(image, cmap = chosen_cmap)
     plt.colorbar(im)
     plt.show()
     '''
-    whiteNoiseMean = np.random.randn()*np.sqrt(30)+30
-    print whiteNoiseMean
+    whiteNoiseMean = np.random.randn()*np.sqrt(10)+10
 
-    image += np.random.randn(*size)*np.sqrt(whiteNoiseMean)+whiteNoiseMean #white Noise
+    #image += np.random.randn(*size)*np.sqrt(whiteNoiseMean)+whiteNoiseMean #white Noise
     '''
     im = plt.imshow(image, cmap = chosen_cmap)
     plt.colorbar(im)
@@ -123,9 +132,10 @@ for nImage, n in enumerate(nGaussians):
 
     #Dark Current
     darkCurrentError = poisson.rvs(darkCurrent, size = size[0]*size[1]).reshape(size)-darkCurrent
-    image+=darkCurrentError
+    #image+=darkCurrentError
 
     im = plt.imshow(image, cmap = chosen_cmap)
+    im.set_clim(0, image.max())
     plt.colorbar(im)
     plt.show()
 
@@ -137,7 +147,9 @@ for nImage, n in enumerate(nGaussians):
 	    os.remove('%s.fits'%filename)
 
     hdu.writeto('%s.fits'%filename)
-    np.savetxt(filename+'_theta', trueTheta, delimiter = ',')
+    #np.savetxt(filename+'_theta', trueTheta, delimiter = ',')
+    with open(filename+'_theta', 'w') as f:
+        f.write(output)
 
     centerLines.append(' '.join(['toy_image_%d'%nImage, str(15), str(15)]))
 
