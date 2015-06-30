@@ -43,8 +43,8 @@ if len(bands) > 2 or ',' in bands:
     from sys import exit
     exit(-1)
 
-if args.imageFormat not in ['C', 'S']:
-    print 'Invalid format entry; please select "C" or "S"'
+if args.imageFormat not in ['C', 'S', 'T']:
+    print 'Invalid format entry; please select "C","S" or "T"'
     from sys import exit
     exit(-1)
 
@@ -105,7 +105,7 @@ from matplotlib import pyplot as plt
 import seaborn
 seaborn.set()
 
-imageClassDict = {'C': imageClass.CFHTLS, 'S': imageClass.SDSS}
+imageClassDict = {'C': imageClass.CFHTLS, 'S': imageClass.SDSS, 'T': imageClass.Toy}
 #the appropriate formatting for these objects
 imgClass = imageClassDict[args.imageFormat]
 imageDict = {}

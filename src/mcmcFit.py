@@ -46,6 +46,13 @@ def gaussian(x,y, cx, cy, a, VarX, VarY, corr):
     expVal = (-(xDiff**2)/(2*VarX)-(yDiff**2)/(2*VarY)+corr*(xDiff*yDiff)/(sigXsigY))/(1-corr**2)
 
     return  a*np.exp(expVal)
+#TODO Make better and add more funcitons
+def parseTheta(theta):
+    'Helper function that splits theta into its components, for simplicity'
+    N = (len(theta)-2)/NPARAM
+    X, Y = theta[0], theta[1]
+    As, VarXs, VarYs, Corrs = [theta[i*N+2:(i+1)*N+2] for i in xrange(NPARAM)]
+    return X, Y, As, VarXs, VarYs, Corrs
 
 #theta contains the variables for the amplitude and width
 #theta = [A1,A2...An,VarX1, VarX1..., VarXN, VarY1, VarY2,...VarYN] add covs later,Cov1, Cov2,...CovN]
