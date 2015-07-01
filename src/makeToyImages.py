@@ -43,12 +43,13 @@ def printTheta(N, theta):
 np.random.seed(int(time()))
 
 #The true number of Gaussians for each model
-nGaussians = poisson.rvs(2, size = args.N)
+nGaussians = np.ones(args.N) #poisson.rvs(2, size = args.N)
 nGaussians = np.where(nGaussians == 0, 1, nGaussians) #assign 0 selectiosn to 1
 size = (30,30)
-imageMax = 400
+imageMax = 500
 darkCurrent = 20 #parametrized value
 chosen_cmap = 'gnuplot2'
+NOISE = True
 
 centerLines = []
 
@@ -56,7 +57,7 @@ for nImage, n in enumerate(nGaussians):
     if n == 0:
         continue
 
-    ndim = n*NPARAM+2
+    ndim = int(n*NPARAM+2)
     trueTheta = np.zeros(ndim)
     for i in xrange(ndim):
 
@@ -77,7 +78,7 @@ for nImage, n in enumerate(nGaussians):
             #trueTheta[i] = np.random.lognormal(mean = np.log(imageMax/2), sigma = 1.0)#try logNormal near max
             x = -1
             while x<0:
-                x = np.random.randn()*50+imageMax/4
+                x = np.random.randn()*50+imageMax/(2*(i-1))
             trueTheta[i] = x
             #TODO add negative in guess, or just let it explore that way?
         elif i<3*n+2: #var
@@ -108,8 +109,9 @@ for nImage, n in enumerate(nGaussians):
         if pixel<1:
             continue
         fluxError[i] = poisson.rvs(int(pixel))
+    if NOISE:
+        image = fluxError.reshape(size)
 
-    #image = fluxError.reshape(size)
     '''
     im = plt.imshow(image, cmap = chosen_cmap)
     plt.colorbar(im)
@@ -117,7 +119,8 @@ for nImage, n in enumerate(nGaussians):
     '''
     whiteNoiseMean = np.random.randn()*np.sqrt(10)+10
 
-    #image += np.random.randn(*size)*np.sqrt(whiteNoiseMean)+whiteNoiseMean #white Noise
+    if NOISE:
+        image += np.random.randn(*size)*np.sqrt(whiteNoiseMean)+whiteNoiseMean #white Noise
     '''
     im = plt.imshow(image, cmap = chosen_cmap)
     plt.colorbar(im)
@@ -126,13 +129,17 @@ for nImage, n in enumerate(nGaussians):
 
     #Dark Current
     darkCurrentError = poisson.rvs(darkCurrent, size = size[0]*size[1]).reshape(size)-darkCurrent
-    #image+=darkCurrentError
+    if NOISE:
+        image+=darkCurrentError
+
+    if np.any(image<=0):
+        image-=image.min()*1.01 #ensure no negative or zero values
+        #image+=.001
 
     im = plt.imshow(image, cmap = chosen_cmap)
     im.set_clim(0, image.max())
     plt.colorbar(im)
     plt.show()
-
 
     hdu = pyfits.PrimaryHDU(image)
     filename = args.dirname+'toy_image_%d'%nImage

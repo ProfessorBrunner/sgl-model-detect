@@ -96,6 +96,7 @@ else:
     galaxyDict = None
 
 from mcmcFit import mcmcFit
+from nlsqFit import nlsqFit
 from residualID import residualID
 import imageClass
 import numpy as np
@@ -104,6 +105,8 @@ import matplotlib as mpl
 from matplotlib import pyplot as plt
 import seaborn
 seaborn.set()
+
+fitter = nlsqFit#mcmcFit
 
 imageClassDict = {'C': imageClass.CFHTLS, 'S': imageClass.SDSS, 'T': imageClass.Toy}
 #the appropriate formatting for these objects
@@ -176,7 +179,7 @@ for imageObj in imageDict.values():
     #Then, use to charecterize max number of parameters
     c_x, c_y = imageObj.center
     print 'Fitting now'
-    prim_fit,theta, be  = mcmcFit(imageObj[primaryBand], 1, c_x, c_y, not args.fixedCenters, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
+    prim_fit,theta, be  = fitter(imageObj[primaryBand], 1, c_x, c_y, not args.fixedCenters, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
     print 'Gaussian #1'
     if not args.fixedCenters:
         print '(x,y):\t(%.3f, %.3f)'%(theta[0], theta[1])
@@ -245,7 +248,7 @@ for imageObj in imageDict.values():
     #TODO delete
     #maxGaussians = 4
     for n in xrange(2,maxGaussians+1):
-        prim_fit, theta, be = mcmcFit(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
+        prim_fit, theta, be = fitter(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
 
         print 'Gaussian #%d'%n
         if not args.fixedCenters:
@@ -292,7 +295,7 @@ for imageObj in imageDict.values():
 
 
         print 'Diff: %.3f\t Old: %.3f\t New: %.3f'%(BEs[-1]-BEs[-2], BEs[-1], BEs[-2])
-        if BEs[-1] < BEs[-2]: #new Model is worse!
+        if BEs[-1] < BEs[-2] or np.any(np.isnan(x) for x in BEs): #new Model is worse!
         #NOTE Double-check that this is right and not supposed to be backwards
             break
             #pass

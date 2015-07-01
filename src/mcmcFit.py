@@ -115,8 +115,8 @@ def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2, movingCenter):
     #basic log normal liklihood
     #assume Gaussian errors
     #Adding Poisson weights
-    #return -.5*(np.sum(((diff)**2)*-np.log(inv_sigma2)))
-    return -.5*(np.sum( (diff**2)/image-2*np.log(image)))
+    return -.5*(np.sum(((diff)**2)*inv_sigma2 - np.log(inv_sigma2)))
+    #return  -.5*(np.sum( (diff**2)/image-2*np.log(image)))
 
 #note if movingCenter is true, the c_x, c_y here are overwritten immeadiately. However, if fixedCenter is true they are needed.
 def lnprob(theta, image, xx, yy, c_x, c_y, inv_sigma2, movingCenter):
@@ -183,7 +183,7 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
 
     #error used in the liklihood. Its value does not seem to change the results much.
     #Represents the std of the error, which is assumed Gaussian
-    inv_sigma2 = pow(1, 0)
+    inv_sigma2 = pow(10, 0)
 
     #parameters for the emcee sampler.
     ndim = N*NPARAM #1 Amplitude and 3 Radial dimentions
