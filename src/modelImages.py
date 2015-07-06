@@ -212,7 +212,7 @@ else:
 
 
 
-fitter = nlsqFit#mcmcFit
+fitter = mcmcFit#nlsqFit#mcmcFit
 
 imageClassDict = {'C': imageClass.CFHTLS, 'S': imageClass.SDSS, 'T': imageClass.Toy}
 #the appropriate formatting for these objects
@@ -328,5 +328,5 @@ for imageObj in imageDict.values():
     goodnessOfFit(prim_fit, imageObj[primaryBand], 4*(bestArg+1)+2*(not args.fixedCenters), 1)
     #TODO take advantage of calculated center
     c_y, c_x = imageObj.center
-    lens = residualID(calc_img, c_x, c_y)
-    print 'The image %s represents a lens: %s'%(imageObj.imageID, str(lens))
+    #lens = residualID(calc_img, c_x, c_y)
+    #print 'The image %s represents a lens: %s'%(imageObj.imageID, str(lens))
