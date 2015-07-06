@@ -209,10 +209,9 @@ def plotChain(calc_vals,samples, n_bins, modes, means, medians, dirname, id, sho
         offset = movingCenter*2
 
         if i==0 and movingCenter:
-            plt.title('X %d: %.3f'%(i+1, calc_X[i]))
+            plt.title('X : %.3f'%(calc_X))
         elif i == 1 and movingCenter:
-            j = i - N
-            plt.title('Y %d: %.3f'%(j+1, calc_Y[j]))
+            plt.title('Y : %.3f'%(calc_Y))
         elif i < N+offset:
             j = i-offset
             plt.title("Amplitude %d: %.3f"%(j+1, calc_as[j]))
