@@ -21,11 +21,11 @@ python mcmcFit.py filename 2 100 100
 
 with optional n_walkers and saveFile
 '''
+import matplotlib as mpl
+#mpl.use('Agg')
 import numpy as np
 import emcee as mc
 from time import time
-import matplotlib as mpl
-#mpl.use('Agg')
 from matplotlib import pyplot as plt
 from scipy.stats import mode, gaussian_kde
 from multiprocessing import cpu_count, Pool
@@ -47,12 +47,18 @@ def gaussian(x,y, cx, cy, a, VarX, VarY, corr):
 
     return  a*np.exp(expVal)
 #TODO Make better and add more funcitons
-def parseTheta(theta):
+def parseTheta(theta, movingCenter = True):
     'Helper function that splits theta into its components, for simplicity'
-    N = (len(theta)-2)/NPARAM
-    X, Y = theta[0], theta[1]
-    As, VarXs, VarYs, Corrs = [theta[i*N+2:(i+1)*N+2] for i in xrange(NPARAM)]
-    return X, Y, As, VarXs, VarYs, Corrs
+    if movingCenter:
+        N = (len(theta)-2)/NPARAM
+        X, Y = theta[0], theta[1]
+        As, VarXs, VarYs, Corrs = [theta[i*N+2:(i+1)*N+2] for i in xrange(NPARAM)]
+        return X, Y, As, VarXs, VarYs, Corrs
+    else:
+        N = len(theta)/NPARAM
+        As, VarXs, VarYs, Corrs = [theta[i*N:(i+1)*N] for i in xrange(NPARAM)]
+        return As, VarXs, VarYs, Corrs
+
 
 #theta contains the variables for the amplitude and width
 #theta = [A1,A2...An,VarX1, VarX1..., VarXN, VarY1, VarY2,...VarYN] add covs later,Cov1, Cov2,...CovN]
@@ -60,13 +66,13 @@ def parseTheta(theta):
 def lnprior(theta, movingCenter, imageSize):
     #log uniform priors
 
+    pt = parseTheta(theta, movingCenter= movingCenter)
     if movingCenter:
         N = (len(theta)-2)/NPARAM
-        c_x, c_y = theta[0], theta[1]
-        amps, varXs, varYs, corrs = [theta[2+i*N:2+(i+1)*N] for i in xrange(NPARAM)]
+        c_x, c_y, amps, varXs, varYs, corrs = pt
     else:
         N = len(theta)/NPARAM #save us from having to put N in the global scope
-        amps, varXs, varYs, corrs = [theta[i*N:(i+1)*N] for i in xrange(NPARAM)]
+        amps, varXs, varYs, corrs = pt
 
     if movingCenter and any(c< 0 or c>maxC for c, maxC in izip((c_x, c_y), imageSize)):
         return -np.inf
@@ -100,13 +106,12 @@ def lnprior(theta, movingCenter, imageSize):
 
 def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2, movingCenter):
 
+    pt = parseTheta(theta, movingCenter)
+
     if movingCenter:
-        N = (len(theta)-2)/NPARAM
-        c_x, c_y = theta[0], theta[1] #overwrite passed in ones.
-        amps, varXs, varYs, corrs = [theta[2+i*N:2+(i+1)*N] for i in xrange(NPARAM)]
+        c_x, c_y, amps, varXs, varYs, corrs = pt
     else:
-        N = len(theta)/NPARAM #save us from having to put N in the global scope
-        amps, varXs, varYs, corrs = [theta[i*N:(i+1)*N] for i in xrange(NPARAM)]
+        amps, varXs, varYs, corrs = pt
 
     model = sum(gaussian(xx,yy,c_x,c_y,a,varX, varY, corr) for a, varX, varY, corr in izip(amps, varXs, varYs, corrs))
 
@@ -171,6 +176,68 @@ def BayesianEvidence(samples, args):
     #BE = np.median(allBEs)
     print 'BE Calculation time: %.6f Seconds'%(time()-t0)
     return BE
+
+def plotChain(calc_vals,samples, n_bins, modes, means, medians, dirname, id, show = False, movingCenter = True):
+    'Plot the chain of the distribution'
+    fig = plt.figure(figsize = (30,15))
+    fig.canvas.set_window_title('Samples %s'%id)
+
+    ndim = len(calc_vals)
+
+    pt = parseTheta(calc_vals, movingCenter)
+
+    if movingCenter:
+        calc_X, calc_Y, calc_as, calc_varXs, calc_varYs, calc_corrs = pt
+        N = (ndim-2)/NPARAM
+    else:
+        calc_as, calc_varXs, calc_varYs, calc_corrs = pt
+        N = ndim/NPARAM
+
+    '''
+    if N == 2: #BONUS ROUND
+        chosen_idxs = np.random.choice(len(samples), size = 1e5, replace=False)
+        seaborn.jointplot(samples[chosen_idxs, 1], samples[chosen_idxs,3], kind = 'kde', space = 0)#, joint_kws={'alpha': .002})
+        plt.savefig(dirname + '%s_%d_scatter.png'%(id, N))
+        plt.clf()
+        plt.close()
+    '''
+    for i in xrange(ndim):
+        nRows = ndim/3+(not ndim%3==0)
+        plt.subplot(nRows, 3,i+1)
+
+        offset = movingCenter*2
+
+        if i==0 and movingCenter:
+            plt.title('X %d: %.3f'%(i+1, calc_X[i]))
+        elif i == 1 and movingCenter:
+            j = i - N
+            plt.title('Y %d: %.3f'%(j+1, calc_Y[j]))
+        elif i < N+offset:
+            j = i-offset
+            plt.title("Amplitude %d: %.3f"%(j+1, calc_as[j]))
+        elif i < 2*N+offset:
+            j = i-N-offset
+            plt.title("$\sigma^2_X$ %d: %.3f"%(j+1, calc_varXs[j]))
+        elif i < 3*N+offset:
+            j = i-2*N-offset
+            plt.title("$\sigma^2_Y$ %d: %.3f"%(j+1, calc_varYs[j]))
+        else:
+            j = i-3*N-offset
+            plt.title('$\\rho$ %d: %.3f'%(j+1, calc_corrs[j]))
+
+        plt.hist(samples[:, i], bins = n_bins)
+        plt.vlines(modes[i],0,5e3, colors = ['r'], label = 'mode')
+        plt.vlines(means[i],0,5e3, colors = ['g'], label = 'mean')
+        plt.vlines(medians[i],0,5e3, colors = ['m'],label = 'median')
+        plt.legend()
+
+    if dirname is not None and id is not None:
+        plt.savefig(dirname + '_%s_%d_chain.png'%(id,N))
+    if show:
+        plt.show()
+    else:
+        plt.clf()
+        plt.close(fig)
 
 #Centers should still be needed for initial guess
 #TODO change the order of these parameters around, it doesn't make intuitive sense anymore. Make sure to change nlsq, too!
@@ -267,72 +334,14 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
     calc_vals = calc_medians
     #calc_modes = calc_vals
 
+    plotChain(calc_vals,samples, n_bins, calc_modes, calc_means, calc_medians, dirname, id, show = True, movingCenter = movingCenters)
+
     if movingCenters:
-        calc_cx, calc_cy = calc_vals[0:2]
+        cx, cy, calc_as, calc_varXs, calc_varYs, calc_corrs = parseTheta(calc_vals, movingCenter= movingCenters)
     else:
-        calc_cx, calc_cy = c_x, c_y
+        calc_as, calc_varXs, calc_varYs, calc_corrs = parseTheta(calc_vals, movingCenter= movingCenters)
 
-    calc_as, calc_varXs, calc_varYs, calc_corrs = [calc_vals[i*N+2*(movingCenters):(i+1)*N+2*(movingCenters)] for i in xrange(NPARAM)]
-
-    fig = plt.figure(figsize = (30,15))
-    fig.canvas.set_window_title('Samples %s'%id)
-    for i in xrange(ndim):
-        nRows = ndim/3+(not ndim%3==0)
-        plt.subplot(nRows, 3,i+1)
-        if movingCenters:
-            if i<2:
-                plt.title('Center %d: %.3f'%(i+1, calc_vals[i]))
-            elif i < N+2:
-                #plt.title("Amplitude %d: %.3f"%(i+1-2, calc_vals[i]))
-                plt.title("Amplitude %d: %.3f"%(i+1-2, calc_vals[i]))
-            elif i < ndim-N:
-                #plt.title("Radial %d: %.3f"%(i-N+1-2, calc_vals[i]))
-                plt.title("Radial %d: %.3f"%(i-N+1-2, calc_vals[i]))
-            else:
-                plt.title('Corr %d: %.3f'%(i-ndim+N+1, calc_vals[i]))
-
-            #if 1<i<ndim-N:
-            #    plt.subplot(211)
-            #    plt.hist(np.log10(samples[:,i]), bins = n_bins)
-            #    plt.vlines(np.log10(calc_modes[i]),0,2000,colors = ['r'])
-            #    plt.vlines(np.log10(calc_means[i]),0,2000,colors = ['g'])
-            #    plt.vlines(np.log10(calc_medians[i]),0,2000,colors = ['m'])
-
-            #    plt.subplot(212)
-            #else:
-            #    plt.hist(samples[:, i], bins = n_bins)
-
-
-        else:
-            if i < N:
-                plt.title("Amplitude %d: %.3f"%(i+1, calc_vals[i]))
-
-            elif i < ndim-N:
-                plt.title("Radial %d: %.3f"%(i-N+1, calc_vals[i]))
-            else:
-                plt.title('Corr %d: %.3f'%(i-ndim+N+1, calc_vals[i]))
-
-            #if i<ndim-N:
-            #    plt.hist(np.log10(samples[:,i]), bins = n_bins)
-            #    plt.vlines(np.log10(calc_vals[i]),0,1500,colors = ['r'])
-            #else:
-            #    plt.hist(samples[:, i], bins = n_bins)
-
-            #plt.hist(samples[:, i], bins = n_bins)
-            #plt.vlines(calc_vals[i],0,2000, colors = ['r'])
-
-        plt.hist(samples[:, i], bins = n_bins)
-        plt.vlines(calc_modes[i],0,5e3, colors = ['r'], label = 'mode')
-        plt.vlines(calc_means[i],0,5e3, colors = ['g'], label = 'mean')
-        plt.vlines(calc_medians[i],0,5e3, colors = ['m'],label = 'median')
-        plt.legend()
-    if dirname is not None and id is not None:
-        plt.savefig(dirname + '_%s_%d_chain.png'%(id,N))
-    plt.show()
-    #plt.clf()
-    #plt.close(fig)
-
-    calc_img = sum(gaussian(xx,yy,calc_cx,calc_cy,a,varX, varY, corr) for a, varX, varY, corr in izip(calc_as, calc_varXs, calc_varYs, calc_corrs))
+    calc_img = sum(gaussian(xx,yy,cx,cy,a,varX, varY, corr) for cx, cy, a, varX, varY, corr in izip(calc_as, calc_varXs, calc_varYs, calc_corrs))
 
     #Calculate the evidence for this model
     print 'Fitting Time: %.4f Seconds'%(time()-t0)
