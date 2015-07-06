@@ -36,7 +36,7 @@ parser.add_argument('--subtractionData', dest = 'subtractionData', action = 'sto
 args = parser.parse_args()
 
 import matplotlib as mpl
-#mpl.use('Agg')
+mpl.use('Agg')
 from mcmcFit import mcmcFit, parseTheta
 from nlsqFit import nlsqFit
 from residualID import residualID
@@ -49,7 +49,7 @@ import os
 from goodnessOfFit import goodnessOfFit
 from itertools import izip
 
-SHOW_IMAGES = True
+SHOW_IMAGES = False 
 chosen_cmap = 'gnuplot2'
 
 def plotSingleImage(imageObj, bands, chosen_cmap, outputdir, name, show = False, models = None):
@@ -119,7 +119,7 @@ def printTheta(N, theta, movingCenters = True):
 
     if movingCenters:
         X, Y, As, VarXs, VarYs, Corrs = parseTheta(theta)
-        print 'Center %d:\t (%.2f, %.2f)\n'%(j,X,Y)
+        print 'Center:\t (%.2f, %.2f)\n'%(X,Y)
     else:
         As, VarXs, VarYs, Corrs = parseTheta(theta)
 

@@ -22,7 +22,7 @@ python mcmcFit.py filename 2 100 100
 with optional n_walkers and saveFile
 '''
 import matplotlib as mpl
-#mpl.use('Agg')
+mpl.use('Agg')
 import numpy as np
 import emcee as mc
 from time import time
@@ -335,7 +335,7 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
     calc_vals = calc_medians
     #calc_modes = calc_vals
 
-    plotChain(calc_vals,samples, n_bins, calc_modes, calc_means, calc_medians, dirname, id, show = True, movingCenter = movingCenters)
+    plotChain(calc_vals,samples, n_bins, calc_modes, calc_means, calc_medians, dirname, id, show = False, movingCenter = movingCenters)
 
     if movingCenters:
         cx, cy, calc_as, calc_varXs, calc_varYs, calc_corrs = parseTheta(calc_vals, movingCenter= movingCenters)
