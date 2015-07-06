@@ -33,6 +33,7 @@ from itertools import izip
 import seaborn
 seaborn.set()
 
+
 #the number of parameters per Gaussian
 NPARAM = 4
 
