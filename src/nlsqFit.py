@@ -13,8 +13,11 @@ from itertools import izip
 
 NPARAM = 4
 
+imageShape = (30,30)
+
 def f(x,*args):
-    x = x.reshape((30,30,2))
+    global imageShape
+    x = x.reshape((imageShape[0],imageShape[1],2))
     xx, yy = x[:,:,0], x[:,:,1]
 
     c_x, c_y = args[0], args[1]
@@ -26,6 +29,8 @@ def nlsqFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
     #note that n_walkers and chain will not be used at all by this function. Just to comply with the other API
 
     yy, xx = np.indices(image.shape)
+    global imageShape
+    imageShape = image.shape
 
     ydata = image.flatten() #curve_fit takes only flat arrays. The functions I write will reshape.
     xdata = np.dstack((xx,yy)).flatten()
@@ -37,34 +42,7 @@ def nlsqFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
     #initial guess
     pos = np.zeros(ndim)
     imageMax = image.max()
-    '''
-    if movingCenters:
-        for i in xrange(2):
-            mean = image.shape[i]/2
-            x = -1
-            while x<0 or x>image.shape[i]:
-                #x = mean*np.random.randn()+mean
-                x = np.random.rand()*image.shape[i]
-            pos[i] = x
 
-    for i in xrange(2*movingCenters,ndim):
-        if i < 2*movingCenters+N: #amp
-            #pos[i] = 10**(8*np.random.rand()-4)
-            pos[i] = np.random.lognormal(mean = np.log(imageMax/2), sigma = 1.0)#try logNormal near max
-            #TODO add negative in guess, or just let it explore that way?
-        elif i<ndim-N: #var
-            #TODO fix not fitting other Gaussians
-            pos[i] = 10**(2*np.random.rand()-1)
-            #pos[i] = 10**(8*np.random.rand()-4)
-        else: #corr
-            #pos[i] = 2*np.random.rand()-1
-            #Trying a normal dist. rather and a uniform.
-            #The assumption being Galaxies are more likely to be spherical than very elliptical
-            x = -2
-            while abs(x) > 1:
-                x = np.random.randn()
-            pos[i] = x
-    '''
     #Try deterministic initial guess
     if movingCenters:
         pos[0] = 15
@@ -74,11 +52,15 @@ def nlsqFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
             pos[i] = imageMax/N
         elif i<ndim-N: #var
             j = i-2*movingCenters-N if i<2*movingCenters+2*N else i-2*movingCenters-2*N
-            pos[i] = 15/((j+1)*N)
+            pos[i] = 15/((j+1)*N)+1
         else: #corr
             pos[i] = 0
 
-    popt, pcov = curve_fit(f,xdata, ydata, p0 = pos, maxfev = int(1e6) )
+    try:
+        popt, pcov = curve_fit(f,xdata, ydata, p0 = pos, maxfev = int(1e5) )
+    except RuntimeError: #exceeded maxfev
+        print 'Max Evals exceeded for %d Gaussians'%N
+        return np.zeros(image.shape), np.zeros(ndim), np.NaN
 
     c_x, c_y = popt[0], popt[1]
     calc_img = sum(gaussian(xx,yy, c_x, c_y, a, varX, varY, corr) for a, varX, varY, corr in izip(*(parseTheta(popt)[2:])))

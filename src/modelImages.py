@@ -55,18 +55,13 @@ from itertools import izip
 SHOW_IMAGES = True
 chosen_cmap = 'gnuplot2'
 
-def plotSingleImage(imageObj, bands, chosen_cmap, outputdir, name, show = False, models = None):
+def plotSingleImage(imageDict, bands, chosen_cmap, outputdir, name, show = False):
 
     for band in bands:
         fig = plt.figure()
-        image = imageObj.images[band]
-        if models is not None:
-            image-=models[band]
-        im = plt.imshow(image, cmap = chosen_cmap)
+        plImg = imageDict[band]
+        im = plt.imshow(plImg, cmap = chosen_cmap)
         plt.colorbar(im)
-
-        c_x, c_y = imageObj.center
-        plt.scatter(c_x, c_y, color = 'k')
 
         plt.savefig(outputdir+imageObj.imageID+'_%s_%s.png'%(band, name))
         if show:
@@ -229,7 +224,19 @@ else:
 
 for imageObj in imageDict.values():
     #savefile name for sample chain
+    print '-'*30
+    print '*'*30
+    print '_'*30
     print 'Image ID : %s'%imageObj.imageID
+
+    #make a folder for all outputs
+    #All outputs for this object will go in the same folder!
+    imOutputDir = outputdir+imageObj.imageID+'/'
+    if os.path.isdir(imOutputDir):
+        for f in os.listdir(imOutputDir):
+            os.remove(imOutputDir+f)
+    else:
+        os.mkdir(imOutputDir)
 
     if isCoordinates:
         coords = (c_x, c_y)
@@ -246,11 +253,11 @@ for imageObj in imageDict.values():
 
     #Plot the Requested Cutout
     if args.cutout:
-        plotSingleImage(imageObj, bands, chosen_cmap, outputdir, 'cutout', show = SHOW_IMAGES)
+        plotSingleImage(imageObj.images, bands, chosen_cmap, imOutputDir, 'cutout', show = SHOW_IMAGES)
 
     if args.cutoutData:
         for band in bands:
-            np.savetxt(outputdir+imageObj.imageID+'_'+band+'_cutoutData', imageObj.images[band])
+            np.savetxt(imOutputDir+imageObj.imageID+'_'+band+'_cutoutData', imageObj.images[band])
 
     stats = []
     prim_fits = []
@@ -258,37 +265,38 @@ for imageObj in imageDict.values():
     #Then, use to charecterize max number of parameters
     c_x, c_y = imageObj.center
     print 'Fitting now'
-    prim_fit,theta, stat  = fitter(imageObj[primaryBand], 1, c_x, c_y, not args.fixedCenters, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
+    prim_fit,theta, stat  = fitter(imageObj[primaryBand], 1, c_x, c_y, not args.fixedCenters, dirname = imOutputDir, id = imageObj.imageID, chain = args.chain)
     printTheta(1, theta, movingCenters= not args.fixedCenters)
 
     stats.append(stat)
     prim_fits.append(prim_fit)
 
-    plotFullModel(imageObj[primaryBand], prim_fit, 1, imageObj.imageID, outputdir, chosen_cmap, show = SHOW_IMAGES)
+    plotFullModel(imageObj[primaryBand], prim_fit, 1, imageObj.imageID, imOutputDir, chosen_cmap, show = SHOW_IMAGES)
 
     maxGaussians = caculateMaxGaussians(theta)
 
     #TODO delete
     #maxGaussians = 4
     for n in xrange(2,maxGaussians+1):
-        prim_fit, theta, stat = fitter(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
+        prim_fit, theta, stat = fitter(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, dirname = imOutputDir, id = imageObj.imageID, chain = args.chain)
 
         printTheta(2, theta, movingCenters= not args.fixedCenters)
+
+        if np.isnan(stat):
+            print 'NaN raised for Gaussian %d'%n
+            break
+
         stats.append(stat)
         prim_fits.append(prim_fit)
 
-        plotFullModel(imageObj[primaryBand], prim_fit, n, imageObj.imageID, outputdir, chosen_cmap, show = SHOW_IMAGES)
+        plotFullModel(imageObj[primaryBand], prim_fit, n, imageObj.imageID, imOutputDir, chosen_cmap, show = SHOW_IMAGES)
 
-        print ' Old: %.3f\t New: %.3f'%(stats[-1], stats[-2])
+        print ' Old: %.3f\t New: %.3f'%(stats[-2], stats[-1])
 
-        if any(np.isnan(x) for x in stats):
-            print 'NaN raised for Gaussian %d'%n
-            break
 
         if args.nlsq:
             #do a chi2 test
             test = abs(stats[-1]-1)> abs(stats[-2]-1)
-            print test
         else:
             test = stats[-1]<stats[-2] #equivalent to BF < 1
 
@@ -302,6 +310,7 @@ for imageObj in imageDict.values():
         bestArg = np.argmin(np.abs(np.array(stats)-1))
     else:
         bestArg = np.argmax(np.array(stats))
+
     prim_fit = prim_fits[bestArg]
     calcImgDict = {}
     calc_img = imageObj[primaryBand] - prim_fit
@@ -314,10 +323,10 @@ for imageObj in imageDict.values():
         calcImgDict[secondaryBand] = calc_img
 
     if args.subtraction:
-        plotSingleImage(imageObj, bands, chosen_cmap, outputdir, 'subtraction', show = SHOW_IMAGES, models = calcImgDict)
+        plotSingleImage(calcImgDict, bands, chosen_cmap, imOutputDir, 'subtraction', show = SHOW_IMAGES)
 
     if args.subtractionData:
-        np.savetxt(outputdir+imageObj.imageID+'_'+band+'_residualData', calc_img)
+        np.savetxt(imOutputDir+imageObj.imageID+'_'+band+'_residualData', calc_img)
 
     #TODO Plotting functionality here
     #TODO Have this flagged on/off. We don't need to check for lenses on all of em.
