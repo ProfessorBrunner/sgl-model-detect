@@ -137,7 +137,7 @@ def caculateMaxGaussians(theta, movingCenters = True):
     #area enclosed within nSigma
     pixelsPerParam = 10
     nSigma = 2
-    varX, varY = theta[1+2*movingCenters:3+2(movingCenters)]
+    varX, varY = theta[1+2*movingCenters:3+2*movingCenters]
     #area of an ellipse
     area = np.pi*np.power(nSigma, 2)*np.sqrt(varX*varY)
     #MaxGaussians is sometimes <=2, which means only one sample is run. There should be a minimum max Gaussians.
