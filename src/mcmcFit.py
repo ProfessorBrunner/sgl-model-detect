@@ -341,7 +341,7 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
     else:
         calc_as, calc_varXs, calc_varYs, calc_corrs = parseTheta(calc_vals, movingCenter= movingCenters)
 
-    calc_img = sum(gaussian(xx,yy,cx,cy,a,varX, varY, corr) for cx, cy, a, varX, varY, corr in izip(calc_as, calc_varXs, calc_varYs, calc_corrs))
+    calc_img = sum(gaussian(xx,yy,cx,cy,a,varX, varY, corr) for a, varX, varY, corr in izip(calc_as, calc_varXs, calc_varYs, calc_corrs))
 
     #Calculate the evidence for this model
     print 'Fitting Time: %.4f Seconds'%(time()-t0)
