@@ -36,6 +36,7 @@ args = parser.parse_args()
 #import matplotlib as mpl
 #mpl.use('Agg')
 from mcmcFit import mcmcFit, parseTheta
+from nlsqFit import nlsqFit
 from residualID import residualID
 import imageClass
 import numpy as np
@@ -201,6 +202,9 @@ else:
 imageClassDict = {'C': imageClass.CFHTLS, 'S': imageClass.SDSS, 'T': imageClass.Toy}
 #the appropriate formatting for these objects
 imgClass = imageClassDict[args.imageFormat]
+
+fitter = nlsqFit#mcmcFit#nlsqFit
+
 imageDict = {}
 
 #load in filenames from directory
@@ -259,7 +263,7 @@ for imageObj in imageDict.values():
     #Then, use to charecterize max number of parameters
     c_x, c_y = imageObj.center
     print 'Fitting now'
-    prim_fit,theta, be  = mcmcFit(imageObj[primaryBand], 1, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
+    prim_fit,theta, be  = fitter(imageObj[primaryBand], 1, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
 
     printTheta(1, theta)
 
@@ -273,7 +277,7 @@ for imageObj in imageDict.values():
     #iterate until we reach our limit or BE decreases
     #maxGaussians = 4
     for N in xrange(2,maxGaussians+1):
-        prim_fit, theta, be = mcmcFit(imageObj[primaryBand], N, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
+        prim_fit, theta, be = fitter(imageObj[primaryBand], N, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
         printTheta(2, theta)
 
         BEs.append(be)
@@ -293,6 +297,8 @@ for imageObj in imageDict.values():
     calcImgDict = {}
     calc_img = imageObj[primaryBand] - prim_fit
     calcImgDict[primaryBand] = calc_img
+
+    c = (imageObj.center[1], imageObj.center[0])
     print 'Best model N = %d'%(bestArg+1)
     if secondaryBand is not None:
         prim_fit_scaled = prim_fit*imageObj[secondaryBand][c]/imageObj[primaryBand][c]

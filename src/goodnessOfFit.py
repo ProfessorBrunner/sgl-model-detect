@@ -21,6 +21,7 @@ def goodnessOfFit(model, data,k, sigma):
     chi2Statistic = np.sum( i**2 for i in errImage.reshape((-1)))
     chi2dof = chi2Statistic/dof
     print chi2dof
+    return chi2dof
 
     rv = chi2(dof)
     x = np.linspace(0, 2*dof, num = 500)

@@ -43,10 +43,12 @@ np.random.seed(int(time()))
 
 #The true number of Gaussians for each model
 nGaussians = poisson.rvs(2, size = args.N)
+nGaussians = np.where(nGaussians==0 , 1, nGaussians)#Assign any drawn 0's to 1
 size = (30,30)
-imageMax = 400
+imageMax = 500
 darkCurrent = 20 #parametrized value
 chosen_cmap = 'gnuplot2'
+NOISE = True
 
 centerLines = []
 
@@ -105,16 +107,17 @@ for nImage, n in enumerate(nGaussians):
             continue
         fluxError[i] = poisson.rvs(int(pixel))
 
-    image = fluxError.reshape(size)
+    if NOISE:
+        image = fluxError.reshape(size)
     '''
     im = plt.imshow(image, cmap = chosen_cmap)
     plt.colorbar(im)
     plt.show()
     '''
     whiteNoiseMean = np.random.randn()*np.sqrt(30)+30
-    print whiteNoiseMean
 
-    image += np.random.randn(*size)*np.sqrt(whiteNoiseMean)+whiteNoiseMean #white Noise
+    if NOISE:
+        image += np.random.randn(*size)*np.sqrt(whiteNoiseMean)+whiteNoiseMean #white Noise
     '''
     im = plt.imshow(image, cmap = chosen_cmap)
     plt.colorbar(im)
@@ -123,12 +126,16 @@ for nImage, n in enumerate(nGaussians):
 
     #Dark Current
     darkCurrentError = poisson.rvs(darkCurrent, size = size[0]*size[1]).reshape(size)-darkCurrent
-    image+=darkCurrentError
+    if NOISE:
+        image+=darkCurrentError
+
+    if np.any(image<=0):
+        image-=image.min()*1.01#ensure no negatuve values
+        image+= 1e-3 #ensure no 0 values
 
     im = plt.imshow(image, cmap = chosen_cmap)
     plt.colorbar(im)
     plt.show()
-
 
     hdu = pyfits.PrimaryHDU(image)
     filename = args.dirname+'toy_image_%d'%nImage
