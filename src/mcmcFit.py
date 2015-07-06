@@ -22,7 +22,7 @@ python mcmcFit.py filename 2 100 100
 with optional n_walkers and saveFile
 '''
 import matplotlib as mpl
-mpl.use('Agg')
+#mpl.use('Agg')
 import numpy as np
 import emcee as mc
 from time import time
@@ -60,6 +60,25 @@ def parseTheta(theta, movingCenter = True):
         As, VarXs, VarYs, Corrs = [theta[i*N:(i+1)*N] for i in xrange(NPARAM)]
         return As, VarXs, VarYs, Corrs
 
+def printTheta(N, theta, movingCenters = True):
+    'Helper function that prints the model produced by the sampler.'
+    if N == 1:
+        print '1 Gaussian Model\n'
+    else:
+        print '%d Gaussians Model\n'%N
+
+    if movingCenters:
+        X, Y, As, VarXs, VarYs, Corrs = parseTheta(theta)
+        print 'Center:\t (%.2f, %.2f)\n'%(X,Y)
+    else:
+        As, VarXs, VarYs, Corrs = parseTheta(theta)
+
+    for i, (a, vx, vy, p) in enumerate(izip(As, VarXs, VarYs, Corrs)):
+        j = i+1
+        print 'Gaussian %d:'%j
+        print 'Amplitude %d:\t%.3f\nVarX %d:\t%.3f\nVarY %d:\t%.3f\nCorr %d:\t%.3f'%(j, a,j, vx, j, vy, j, p)
+        print
+    print'\n'+'--'*20
 
 #theta contains the variables for the amplitude and width
 #theta = [A1,A2...An,VarX1, VarX1..., VarXN, VarY1, VarY2,...VarYN] add covs later,Cov1, Cov2,...CovN]

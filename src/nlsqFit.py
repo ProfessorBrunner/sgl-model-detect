@@ -6,7 +6,7 @@ in this context). It performs a non-linear least squares fit to the data. It wil
 '''
 
 from scipy.optimize import curve_fit
-from mcmcFit import gaussian, parseTheta
+from mcmcFit import gaussian, parseTheta, printTheta
 import numpy as np
 from goodnessOfFit import goodnessOfFit
 from itertools import izip
@@ -37,7 +37,7 @@ def nlsqFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
     #initial guess
     pos = np.zeros(ndim)
     imageMax = image.max()
-
+    '''
     if movingCenters:
         for i in xrange(2):
             mean = image.shape[i]/2
@@ -51,7 +51,6 @@ def nlsqFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
         if i < 2*movingCenters+N: #amp
             #pos[i] = 10**(8*np.random.rand()-4)
             pos[i] = np.random.lognormal(mean = np.log(imageMax/2), sigma = 1.0)#try logNormal near max
-            print pos[i]
             #TODO add negative in guess, or just let it explore that way?
         elif i<ndim-N: #var
             #TODO fix not fitting other Gaussians
@@ -65,6 +64,19 @@ def nlsqFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
             while abs(x) > 1:
                 x = np.random.randn()
             pos[i] = x
+    '''
+    #Try deterministic initial guess
+    if movingCenters:
+        pos[0] = 15
+        pos[1] = 15
+    for i in xrange(2*movingCenters, ndim):
+        if i<2*movingCenters+N:#amp
+            pos[i] = imageMax/N
+        elif i<ndim-N: #var
+            j = i-2*movingCenters-N if i<2*movingCenters+2*N else i-2*movingCenters-2*N
+            pos[i] = 15/((j+1)*N)
+        else: #corr
+            pos[i] = 0
 
     popt, pcov = curve_fit(f,xdata, ydata, p0 = pos, maxfev = int(1e6) )
 

@@ -20,6 +20,9 @@ parser.add_argument('centers', metavar = 'centers', type = str, help = \
 
 parser.add_argument('--fixedCenters', dest = 'fixedCenters', action = 'store_const', const = True, default = False,\
                      help = 'Use the given centers as fixed values. Otherwise, they will be treated as initial guesses')
+#TODO should this be an input argument instead of what I've got here?
+parser.add_argument('--nlsq', dest = 'nlsq', action = 'store_const', const = True, default = False,\
+                    help = 'Instead of the standard MCMC, use a NLSQ method to fit a MOG to the image.')
 parser.add_argument('--cutout', dest = 'cutout', action = 'store_const', const = True, default = False,\
                      help = 'Save a .png of the original cutout to file.')
 parser.add_argument('--cutoutData', dest = 'cutoutData', action = 'store_const', const = True, default = False,\
@@ -35,9 +38,9 @@ parser.add_argument('--subtractionData', dest = 'subtractionData', action = 'sto
 
 args = parser.parse_args()
 
-import matplotlib as mpl
-mpl.use('Agg')
-from mcmcFit import mcmcFit, parseTheta
+#import matplotlib as mpl
+#mpl.use('Agg')
+from mcmcFit import mcmcFit, parseTheta, printTheta
 from nlsqFit import nlsqFit
 from residualID import residualID
 import imageClass
@@ -49,7 +52,7 @@ import os
 from goodnessOfFit import goodnessOfFit
 from itertools import izip
 
-SHOW_IMAGES = False 
+SHOW_IMAGES = True
 chosen_cmap = 'gnuplot2'
 
 def plotSingleImage(imageObj, bands, chosen_cmap, outputdir, name, show = False, models = None):
@@ -108,27 +111,6 @@ def plotFullModel(rawImage, model, N, id, outputdir, chosen_cmap, show = False )
     else:
         plt.clf()
         plt.close(fig)
-
-#TODO Think of moving to mcmcFit
-def printTheta(N, theta, movingCenters = True):
-    'Helper function that prints the model produced by the sampler.'
-    if N == 1:
-        print '1 Gaussian Model\n'
-    else:
-        print '%d Gaussians Model\n'%N
-
-    if movingCenters:
-        X, Y, As, VarXs, VarYs, Corrs = parseTheta(theta)
-        print 'Center:\t (%.2f, %.2f)\n'%(X,Y)
-    else:
-        As, VarXs, VarYs, Corrs = parseTheta(theta)
-
-    for i, (a, vx, vy, p) in enumerate(izip(As, VarXs, VarYs, Corrs)):
-        j = i+1
-        print 'Gaussian %d:'%j
-        print 'Amplitude %d:\t%.3f\nVarX %d:\t%.3f\nVarY %d:\t%.3f\nCorr %d:\t%.3f'%(j, a,j, vx, j, vy, j, p)
-        print
-    print'\n'+'--'*20
 
 def caculateMaxGaussians(theta, movingCenters = True):
     'From the 1 G fit calculate the maximum number of Gaussians to prevent overfitting'
@@ -210,9 +192,10 @@ if not (useFindCenters or isCoordinates) :
 else:
     galaxyDict = None
 
-
-
 fitter = mcmcFit#nlsqFit#mcmcFit
+
+if args.nlsq:
+    fitter = nlsqFit
 
 imageClassDict = {'C': imageClass.CFHTLS, 'S': imageClass.SDSS, 'T': imageClass.Toy}
 #the appropriate formatting for these objects
@@ -269,17 +252,16 @@ for imageObj in imageDict.values():
         for band in bands:
             np.savetxt(outputdir+imageObj.imageID+'_'+band+'_cutoutData', imageObj.images[band])
 
-    BEs = []
+    stats = []
     prim_fits = []
     #perform first fit with 1 Gaussian
     #Then, use to charecterize max number of parameters
     c_x, c_y = imageObj.center
     print 'Fitting now'
-    prim_fit,theta, be  = fitter(imageObj[primaryBand], 1, c_x, c_y, not args.fixedCenters, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
-
+    prim_fit,theta, stat  = fitter(imageObj[primaryBand], 1, c_x, c_y, not args.fixedCenters, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
     printTheta(1, theta, movingCenters= not args.fixedCenters)
 
-    BEs.append(be)
+    stats.append(stat)
     prim_fits.append(prim_fit)
 
     plotFullModel(imageObj[primaryBand], prim_fit, 1, imageObj.imageID, outputdir, chosen_cmap, show = SHOW_IMAGES)
@@ -289,29 +271,44 @@ for imageObj in imageDict.values():
     #TODO delete
     #maxGaussians = 4
     for n in xrange(2,maxGaussians+1):
-        prim_fit, theta, be = fitter(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
+        prim_fit, theta, stat = fitter(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, dirname = outputdir, id = imageObj.imageID, chain = args.chain)
 
         printTheta(2, theta, movingCenters= not args.fixedCenters)
-
-        BEs.append(be)
+        stats.append(stat)
         prim_fits.append(prim_fit)
 
         plotFullModel(imageObj[primaryBand], prim_fit, n, imageObj.imageID, outputdir, chosen_cmap, show = SHOW_IMAGES)
 
-        print 'Diff: %.3f\t Old: %.3f\t New: %.3f'%(BEs[-1]-BEs[-2], BEs[-1], BEs[-2])
-        if BEs[-1] < BEs[-2] or np.any(np.isnan(x) for x in BEs): #new Model is worse!
+        print ' Old: %.3f\t New: %.3f'%(stats[-1], stats[-2])
+
+        if any(np.isnan(x) for x in stats):
+            print 'NaN raised for Gaussian %d'%n
+            break
+
+        if args.nlsq:
+            #do a chi2 test
+            test = abs(stats[-1]-1)> abs(stats[-2]-1)
+            print test
+        else:
+            test = stats[-1]<stats[-2] #equivalent to BF < 1
+
+        if test: #new Model is worse!
         #NOTE Double-check that this is right and not supposed to be backwards
             break
             #pass
 
     #TODO fix scaling so it uses the calculated center rather than the image's center
-    bestArg = np.argmax(np.array(BEs))
+    if args.nlsq:
+        bestArg = np.argmin(np.abs(np.array(stats)-1))
+    else:
+        bestArg = np.argmax(np.array(stats))
     prim_fit = prim_fits[bestArg]
     calcImgDict = {}
     calc_img = imageObj[primaryBand] - prim_fit
     calcImgDict[primaryBand] = calc_img
     print 'Best model N = %d'%(bestArg+1)
     if secondaryBand is not None:
+        c = (imageObj.center[1], imageObj.center[0])
         prim_fit_scaled = prim_fit*imageObj[secondaryBand][c]/imageObj[primaryBand][c]
         calc_img = imageObj[secondaryBand] - prim_fit_scaled
         calcImgDict[secondaryBand] = calc_img
