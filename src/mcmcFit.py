@@ -309,7 +309,9 @@ def mcmcFit(image, N, n_walkers = 2000, dirname = None, id = None, chain = False
         max_idx = np.argmax(hist)
         calc_modes[i] = (bin_edges[max_idx]+bin_edges[max_idx+1])/2
 
+    #calc_vals = np.concatenate((calc_modes[:N*2], calc_medians[N*2:]), axis = 1)#use modes for positions
     calc_vals = calc_medians
+
     plotChain(calc_vals,samples, n_bins, calc_modes, calc_means, calc_medians, dirname, id, show = True)
 
     calc_Xs, calc_Ys, calc_as, calc_varXs, calc_varYs, calc_corrs = parseTheta(calc_vals)

@@ -203,7 +203,7 @@ imageClassDict = {'C': imageClass.CFHTLS, 'S': imageClass.SDSS, 'T': imageClass.
 #the appropriate formatting for these objects
 imgClass = imageClassDict[args.imageFormat]
 
-fitter = nlsqFit#mcmcFit#nlsqFit
+fitter = mcmcFit#nlsqFit
 
 imageDict = {}
 
