@@ -51,6 +51,7 @@ seaborn.set()
 import os
 from goodnessOfFit import goodnessOfFit
 from itertools import izip
+from time import time
 
 SHOW_IMAGES = True
 chosen_cmap = 'gnuplot2'
@@ -223,6 +224,7 @@ else:
     obj.getOtherBand(bands)
 
 for imageObj in imageDict.values():
+    t0 = time()
     #savefile name for sample chain
     print '-'*30
     print '*'*30
@@ -261,6 +263,7 @@ for imageObj in imageDict.values():
 
     stats = []
     prim_fits = []
+    thetas = []
     #perform first fit with 1 Gaussian
     #Then, use to charecterize max number of parameters
     c_x, c_y = imageObj.center
@@ -270,6 +273,7 @@ for imageObj in imageDict.values():
 
     stats.append(stat)
     prim_fits.append(prim_fit)
+    thetas.append(theta)
 
     plotFullModel(imageObj[primaryBand], prim_fit, 1, imageObj.imageID, imOutputDir, chosen_cmap, show = SHOW_IMAGES)
 
@@ -288,6 +292,7 @@ for imageObj in imageDict.values():
 
         stats.append(stat)
         prim_fits.append(prim_fit)
+        thetas.append(theta)
 
         plotFullModel(imageObj[primaryBand], prim_fit, n, imageObj.imageID, imOutputDir, chosen_cmap, show = SHOW_IMAGES)
 
@@ -311,6 +316,9 @@ for imageObj in imageDict.values():
     else:
         bestArg = np.argmax(np.array(stats))
 
+    bestTheta = thetas[bestArg]
+    np.savetxt(imOutputDir+imageObj.imageID+'_'+primaryBand+'_theta', bestTheta, delimiter=',')
+
     prim_fit = prim_fits[bestArg]
     calcImgDict = {}
     calc_img = imageObj[primaryBand] - prim_fit
@@ -326,13 +334,15 @@ for imageObj in imageDict.values():
         plotSingleImage(calcImgDict, bands, chosen_cmap, imOutputDir, 'subtraction', show = SHOW_IMAGES)
 
     if args.subtractionData:
-        np.savetxt(imOutputDir+imageObj.imageID+'_'+band+'_residualData', calc_img)
+        np.savetxt(imOutputDir+imageObj.imageID+'_'+primaryBand+'_residualData', calc_img)
 
     #TODO Plotting functionality here
     #TODO Have this flagged on/off. We don't need to check for lenses on all of em.
     #check for lens properties
     goodnessOfFit(prim_fit, imageObj[primaryBand], 4*(bestArg+1)+2*(not args.fixedCenters), 1)
+    totalTime = time()-t0
+    np.savetxt(imOutputDir+imageObj.imageID+'_'+primaryBand+'_time', [totalTime], delimiter=',')
     #TODO take advantage of calculated center
-    c_y, c_x = imageObj.center
+    #c_y, c_x = imageObj.center
     #lens = residualID(calc_img, c_x, c_y)
     #print 'The image %s represents a lens: %s'%(imageObj.imageID, str(lens))

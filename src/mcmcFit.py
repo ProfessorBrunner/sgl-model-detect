@@ -251,7 +251,7 @@ def plotChain(calc_vals,samples, n_bins, modes, means, medians, dirname, id, sho
         plt.legend()
 
     if dirname is not None and id is not None:
-        plt.savefig(dirname + '_%s_%d_chain.png'%(id,N))
+        plt.savefig(dirname + '%s_%d_chain.png'%(id,N))
     if show:
         plt.show()
     else:
@@ -353,7 +353,7 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
     calc_vals = calc_medians
     #calc_modes = calc_vals
 
-    plotChain(calc_vals,samples, n_bins, calc_modes, calc_means, calc_medians, dirname, id, show = False, movingCenter = movingCenters)
+    plotChain(calc_vals,samples, n_bins, calc_modes, calc_means, calc_medians, dirname, id, show = True, movingCenter = movingCenters)
 
     if movingCenters:
         cx, cy, calc_as, calc_varXs, calc_varYs, calc_corrs = parseTheta(calc_vals, movingCenter= movingCenters)
