@@ -124,6 +124,7 @@ def lnprior(theta, movingCenter, imageSize):
     #centerStd = (imageSize[0]+imageSize[1])/2 #Average size divided by 2 (~65% of the time center is within this distance of the image center)
     #return lnp - (sum(imageSize)/2-(c_x+c_y))/(2*centerStd) #logNormal for the centers
 
+
 def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2, movingCenter):
 
     pt = parseTheta(theta, movingCenter)
