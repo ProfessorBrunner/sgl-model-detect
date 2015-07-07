@@ -11,6 +11,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 def goodnessOfFit(model, data,k, sigma):
+    SSR = np.sum(p**2 for p in (data-model).flatten())
+    print 'SSR = %e'%SSR
     errImage = (data-model)/np.sqrt(model) #Poisson noise, sigma = sqrt(mu)
     N =1
     for dim in errImage.shape:

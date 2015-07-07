@@ -142,6 +142,8 @@ def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2, movingCenter):
     #Adding Poisson weights
     return -.5*(np.sum(((diff)**2)*inv_sigma2 - np.log(inv_sigma2)))
     #return  -.5*(np.sum( (diff**2)/image-2*np.log(image)))
+    #return  -.5*(np.sum( (diff**2)*image+2*np.log(image)))
+
 
 #note if movingCenter is true, the c_x, c_y here are overwritten immeadiately. However, if fixedCenter is true they are needed.
 def lnprob(theta, image, xx, yy, c_x, c_y, inv_sigma2, movingCenter):

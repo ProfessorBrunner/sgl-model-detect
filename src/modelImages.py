@@ -271,6 +271,8 @@ for imageObj in imageDict.values():
     prim_fit,theta, stat  = fitter(imageObj[primaryBand], 1, c_x, c_y, not args.fixedCenters, dirname = imOutputDir, id = imageObj.imageID, chain = args.chain)
     printTheta(1, theta, movingCenters= not args.fixedCenters)
 
+    goodnessOfFit(prim_fit, imageObj[primaryBand], 4+2, 1)
+
     stats.append(stat)
     prim_fits.append(prim_fit)
     thetas.append(theta)
@@ -285,6 +287,8 @@ for imageObj in imageDict.values():
         prim_fit, theta, stat = fitter(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, dirname = imOutputDir, id = imageObj.imageID, chain = args.chain)
 
         printTheta(2, theta, movingCenters= not args.fixedCenters)
+
+        goodnessOfFit(prim_fit, imageObj[primaryBand], n*4+2, 1)
 
         if np.isnan(stat):
             print 'NaN raised for Gaussian %d'%n
