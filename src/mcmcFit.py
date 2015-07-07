@@ -268,8 +268,9 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
     yy, xx = np.indices(image.shape)
 
     #error used in the liklihood. Its value does not seem to change the results much.
+    #TODO Will change resutls depending on iamge scale!
     #Represents the std of the error, which is assumed Gaussian
-    inv_sigma2 = pow(10, 0)
+    inv_sigma2 = pow(10, 3)
 
     #parameters for the emcee sampler.
     ndim = N*NPARAM #1 Amplitude and 3 Radial dimentions
