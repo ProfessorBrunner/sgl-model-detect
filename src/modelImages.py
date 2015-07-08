@@ -38,7 +38,7 @@ parser.add_argument('--subtractionData', dest = 'subtractionData', action = 'sto
 
 args = parser.parse_args()
 
-#import matplotlib as mpl
+import matplotlib as mpl
 #mpl.use('Agg')
 from mcmcFit import mcmcFit, parseTheta, printTheta
 from nlsqFit import nlsqFit
@@ -269,7 +269,7 @@ for imageObj in imageDict.values():
     c_x, c_y = imageObj.center
     print 'Fitting now'
     prim_fit,theta, stat  = fitter(imageObj[primaryBand], 1, c_x, c_y, not args.fixedCenters, dirname = imOutputDir, id = imageObj.imageID, chain = args.chain)
-    printTheta(1, theta, movingCenters= not args.fixedCenters)
+    printTheta(theta, 1, movingCenters= not args.fixedCenters)
 
     goodnessOfFit(prim_fit, imageObj[primaryBand], 4+2, 1)
 
@@ -286,7 +286,7 @@ for imageObj in imageDict.values():
     for n in xrange(2,maxGaussians+1):
         prim_fit, theta, stat = fitter(imageObj[primaryBand], n, c_x, c_y,not args.fixedCenters, dirname = imOutputDir, id = imageObj.imageID, chain = args.chain)
 
-        printTheta(2, theta, movingCenters= not args.fixedCenters)
+        printTheta(theta,2, movingCenters= not args.fixedCenters)
 
         goodnessOfFit(prim_fit, imageObj[primaryBand], n*4+2, 1)
 
@@ -311,8 +311,8 @@ for imageObj in imageDict.values():
 
         if test: #new Model is worse!
         #NOTE Double-check that this is right and not supposed to be backwards
-            break
-            #pass
+            #break
+            pass
 
     #TODO fix scaling so it uses the calculated center rather than the image's center
     if args.nlsq:
