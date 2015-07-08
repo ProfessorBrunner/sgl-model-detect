@@ -48,28 +48,19 @@ def gaussian(x,y, cx, cy, a, VarX, VarY, corr):
 
     return  a*np.exp(expVal)
 #TODO Make better and add more funcitons
-def parseTheta(theta, N,  movingCenter = True, nuisance = False):
+def parseTheta(theta, movingCenter = True):
     'Helper function that splits theta into its components, for simplicity'
-
     if movingCenter:
+        N = (len(theta)-2)/NPARAM
         X, Y = theta[0], theta[1]
         As, VarXs, VarYs, Corrs = [theta[i*N+2:(i+1)*N+2] for i in xrange(NPARAM)]
-
-        nModelDim = N*NPARAM+2
-
-        output =  X, Y, As, VarXs, VarYs, Corrs
+        return X, Y, As, VarXs, VarYs, Corrs
     else:
+        N = len(theta)/NPARAM
         As, VarXs, VarYs, Corrs = [theta[i*N:(i+1)*N] for i in xrange(NPARAM)]
-        output = As, VarXs, VarYs, Corrs
-        nModelDim = N*NPARAM
-    if not nuisance:
-        return output
+        return As, VarXs, VarYs, Corrs
 
-    #return the nuisance parameters too
-    mu_b, V_b, V_m, p_b = theta[nModelDim:]
-    return output, (mu_b, V_b, V_m, p_b)
-
-def printTheta(theta, N, movingCenters = True):
+def printTheta(N, theta, movingCenters = True):
     'Helper function that prints the model produced by the sampler.'
     if N == 1:
         print '1 Gaussian Model\n'
@@ -77,10 +68,10 @@ def printTheta(theta, N, movingCenters = True):
         print '%d Gaussians Model\n'%N
 
     if movingCenters:
-        X, Y, As, VarXs, VarYs, Corrs = parseTheta(theta, N)
+        X, Y, As, VarXs, VarYs, Corrs = parseTheta(theta)
         print 'Center:\t (%.2f, %.2f)\n'%(X,Y)
     else:
-        As, VarXs, VarYs, Corrs = parseTheta(theta, N)
+        As, VarXs, VarYs, Corrs = parseTheta(theta)
 
     for i, (a, vx, vy, p) in enumerate(izip(As, VarXs, VarYs, Corrs)):
         j = i+1
@@ -92,13 +83,15 @@ def printTheta(theta, N, movingCenters = True):
 #theta contains the variables for the amplitude and width
 #theta = [A1,A2...An,VarX1, VarX1..., VarXN, VarY1, VarY2,...VarYN] add covs later,Cov1, Cov2,...CovN]
 #if fixedCenter is false, theta has c_x, and c_y prepended.
-def lnprior(theta,N, movingCenter, imageSize):
+def lnprior(theta, movingCenter, imageSize):
     #log uniform priors
 
-    pt, nuisance = parseTheta(theta,N, movingCenter= movingCenter, nuisance= True)
+    pt = parseTheta(theta, movingCenter= movingCenter)
     if movingCenter:
+        N = (len(theta)-2)/NPARAM
         c_x, c_y, amps, varXs, varYs, corrs = pt
     else:
+        N = len(theta)/NPARAM #save us from having to put N in the global scope
         amps, varXs, varYs, corrs = pt
 
     if movingCenter and any(c< 0 or c>maxC for c, maxC in izip((c_x, c_y), imageSize)):
@@ -121,21 +114,6 @@ def lnprior(theta,N, movingCenter, imageSize):
 
     if any(corr<-1 or corr>1 for corr in corrs):
         return -np.inf
-
-    mu_b, V_b, V_m, p_b = nuisance
-
-    if mu_b < 0 or mu_b > amps[0]: #background can't be greater than the signal!
-        return - np.inf
-
-    if V_b < 0 or V_b > 20:
-        return -np.inf
-
-    if V_m < 0 or V_m > 1:
-        return -np.inf
-
-    if p_b<0 or p_b>1:
-        return -np.inf
-
     #Uniform prior
     return 1
     #log-uniform
@@ -147,9 +125,9 @@ def lnprior(theta,N, movingCenter, imageSize):
     #return lnp - (sum(imageSize)/2-(c_x+c_y))/(2*centerStd) #logNormal for the centers
 
 
-def lnlike(theta, image, N, xx,yy,c_x, c_y, movingCenter):
+def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2, movingCenter):
 
-    pt, nuisance = parseTheta(theta,N, movingCenter, nuisance= True)
+    pt = parseTheta(theta, movingCenter)
 
     if movingCenter:
         c_x, c_y, amps, varXs, varYs, corrs = pt
@@ -158,24 +136,21 @@ def lnlike(theta, image, N, xx,yy,c_x, c_y, movingCenter):
 
     model = sum(gaussian(xx,yy,c_x,c_y,a,varX, varY, corr) for a, varX, varY, corr in izip(amps, varXs, varYs, corrs))
 
-    diff = (image-model)**2
+    diff = image-model
 
-    mu_b, V_b, V_m, p_b = nuisance
-
-    V_m = .01
-
-    backDiff = (image-mu_b)**2
-    #Outlier detection!
-    out = np.log( p_b*np.exp(-diff/(2*V_m))/np.sqrt(V_m)+(1-p_b)*np.exp(-backDiff/(2*(V_b+V_m)))/(np.sqrt(V_b+V_m)) )
-    print np.sum(out)
-    return np.sum(np.log( p_b*np.exp(-diff/(2*V_m))/np.sqrt(V_m)+(1-p_b)*np.exp(-backDiff/(2*(V_b+V_m)))/(np.sqrt(V_b+V_m)) ))
+    #basic log normal liklihood
+    #assume Gaussian errors
+    #Adding Poisson weights
+    return -.5*(np.sum(((diff)**2)*inv_sigma2 - np.log(inv_sigma2)))
+    #return  -.5*(np.sum( (diff**2)/image-2*np.log(image)))
+    #return  -.5*(np.sum( (diff**2)*image+2*np.log(image)))
 
 
 #note if movingCenter is true, the c_x, c_y here are overwritten immeadiately. However, if fixedCenter is true they are needed.
-def lnprob(theta, image,N,xx, yy, c_x, c_y, movingCenter):
-    lp = lnprior(theta, N, movingCenter, image.shape)
+def lnprob(theta, image, xx, yy, c_x, c_y, inv_sigma2, movingCenter):
+    lp = lnprior(theta, movingCenter, image.shape)
     if np.isfinite(lp):
-        return lp+lnlike(theta, image,N, xx, yy, c_x, c_y, movingCenter)
+        return lp+lnlike(theta, image, xx, yy, c_x, c_y, inv_sigma2, movingCenter)
     return -np.inf
 
 def beHelper(sample):
@@ -193,22 +168,21 @@ beHelper.N = None
 def BayesianEvidence(samples, args):
     #technique taken form the code in astroML to calculate Bayesian odds. Be sure to cite
     #They use a simler method than what I employ here
-    #Prohibitively slow for this many params; find something better
     from time import time
     t0 = time()
     nCores = cpu_count()
     N,D = samples.shape
-    print 'Making KDE'
+
     beHelper.kde = gaussian_kde(samples.T)
     beHelper.args = args
     beHelper.N = N
 
-    nSamples = 500 if N >= 500 else N
+    nSamples = 500
     #normalized liklihood?
     #All samples takes too long. Do a small selection
     randSamplesIdx = np.random.choice(xrange(len(samples)), size = nSamples, replace = False)
     randSamples = samples[randSamplesIdx]
-    print 'Calculating Evidence'
+
     p = Pool(nCores)
     try:
         allBEs = p.map(beHelper, randSamples)
@@ -218,7 +192,7 @@ def BayesianEvidence(samples, args):
     finally:
         p.close()
         p.terminate()
-    print 'Done'
+
     p25, p50, p75 = np.percentile(allBEs, [25, 50, 75])
     BE, dBE =  p50, 0.7413 * (p75 - p25)
     print 'BE: %f\tdBE/BE: %f'%(BE, -dBE/BE)
@@ -226,22 +200,21 @@ def BayesianEvidence(samples, args):
     print 'BE Calculation time: %.6f Seconds'%(time()-t0)
     return BE
 
-def plotChain(calc_vals, N, samples, n_bins, modes, means, medians, dirname, id, show = False, movingCenter = True, nuisance = False):
+def plotChain(calc_vals,samples, n_bins, modes, means, medians, dirname, id, show = False, movingCenter = True):
     'Plot the chain of the distribution'
     fig = plt.figure(figsize = (30,15))
     fig.canvas.set_window_title('Samples %s'%id)
 
-    ndim = N*NPARAM+2*movingCenter
+    ndim = len(calc_vals)
 
-    pt = parseTheta(calc_vals, N,  movingCenter, nuisance)
-
-    if nuisance:
-        pt, npt = pt #unpack nuisance params
+    pt = parseTheta(calc_vals, movingCenter)
 
     if movingCenter:
         calc_X, calc_Y, calc_as, calc_varXs, calc_varYs, calc_corrs = pt
+        N = (ndim-2)/NPARAM
     else:
         calc_as, calc_varXs, calc_varYs, calc_corrs = pt
+        N = ndim/NPARAM
 
     '''
     if N == 2: #BONUS ROUND
@@ -288,27 +261,6 @@ def plotChain(calc_vals, N, samples, n_bins, modes, means, medians, dirname, id,
         plt.clf()
         plt.close(fig)
 
-    if nuisance:
-        for i in xrange(4):
-            plt.subplot(2,2,i+1)
-
-            if i ==0: #mu_b
-                plt.title("$\mu_b$ : %.3f"%npt[0])
-            elif i == 1: #V_b
-                plt.title('$\sigma^2_b$ : %.3f'%npt[1])
-            elif i == 2:
-                plt.title('$\sigma^2_m$ : %.3f'%npt[2])
-            else:
-                plt.title('$p_b$ : %.3f'%npt[3])
-            j = i + N*NPARAM+2*movingCenter
-            plt.hist(samples[:,j ], bins = n_bins)
-            plt.vlines(modes[j],0,5e3, colors = ['r'], label = 'mode')
-            plt.vlines(means[j],0,5e3, colors = ['g'], label = 'mean')
-            plt.vlines(medians[j],0,5e3, colors = ['m'],label = 'median')
-            plt.legend()
-
-        plt.show()
-
 #Centers should still be needed for initial guess
 #TODO change the order of these parameters around, it doesn't make intuitive sense anymore. Make sure to change nlsq, too!
 def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None, id = None, chain = False):
@@ -327,11 +279,7 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
     ndim = N*NPARAM #1 Amplitude and 3 Radial dimentions
     if movingCenters:
         ndim+=2
-
-    ndim+=3 #mu_b, V_b, V_m
-    ndim += 1 #p_b for each pixel
-
-    nsteps = 100 #Sample more for larger models
+    nsteps = 400 #Sample more for larger models
     nburn = int(nsteps*.25)
 
     #initial guess
@@ -354,11 +302,11 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
                 #row[i] = 10**(8*np.random.rand()-4)
                 row[i] = np.random.lognormal(mean = np.log(imageMax/2), sigma = 1.0)#try logNormal near max
                 #TODO add negative in guess, or just let it explore that way?
-            elif i<2*movingCenters+3*N: #var
+            elif i<ndim-N: #var
                 #TODO fix not fitting other Gaussians
                 row[i] = 10**(2*np.random.rand()-1)
                 #row[i] = 10**(8*np.random.rand()-4)
-            elif i<2*movingCenters+4*N: #corr
+            else: #corr
                 #row[i] = 2*np.random.rand()-1
                 #Trying a normal dist. rather and a uniform.
                 #The assumption being Galaxies are more likely to be spherical than very elliptical
@@ -366,17 +314,9 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
                 while abs(x) > 1:
                     x = np.random.randn()
                 row[i] = x
-            elif i<2*movingCenters+4*N+1:#mu_b
-                row[i] = image.mean()+np.random.randn()*image.std()
-            elif i< 2* movingCenters+4*N+2:
-                row[i] = np.random.randn()*2+5
-            elif i< 2*movingCenters+4*N+3: #V_b and V_m
-                row[i] = np.random.rand()
-            else:#p_b
-                row[i]= np.random.rand()
         pos.append(row)
 
-    args = (image, N, xx, yy, c_x, c_y, movingCenters)
+    args = (image, xx, yy, c_x, c_y, inv_sigma2, movingCenters)
     sampler = mc.EnsembleSampler(n_walkers, ndim, lnprob, args = args,threads = cpu_count())
     #run the sampler. Longest running line in the code
     sampler.run_mcmc(pos, nsteps)
@@ -417,12 +357,12 @@ def mcmcFit(image, N, c_x, c_y, movingCenters, n_walkers = 2000, dirname = None,
     calc_vals = calc_medians
     #calc_modes = calc_vals
 
-    plotChain(calc_vals,N, samples, n_bins, calc_modes, calc_means, calc_medians, dirname, id, show = True, movingCenter = movingCenters, nuisance= True)
+    plotChain(calc_vals,samples, n_bins, calc_modes, calc_means, calc_medians, dirname, id, show = True, movingCenter = movingCenters)
 
     if movingCenters:
-        cx, cy, calc_as, calc_varXs, calc_varYs, calc_corrs = parseTheta(calc_vals, N, movingCenter= movingCenters)
+        cx, cy, calc_as, calc_varXs, calc_varYs, calc_corrs = parseTheta(calc_vals, movingCenter= movingCenters)
     else:
-        calc_as, calc_varXs, calc_varYs, calc_corrs = parseTheta(calc_vals,N, movingCenter= movingCenters)
+        calc_as, calc_varXs, calc_varYs, calc_corrs = parseTheta(calc_vals, movingCenter= movingCenters)
 
     calc_img = sum(gaussian(xx,yy,cx,cy,a,varX, varY, corr) for a, varX, varY, corr in izip(calc_as, calc_varXs, calc_varYs, calc_corrs))
 
