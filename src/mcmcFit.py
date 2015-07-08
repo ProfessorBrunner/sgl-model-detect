@@ -60,7 +60,7 @@ def parseTheta(theta, movingCenter = True):
         As, VarXs, VarYs, Corrs = [theta[i*N:(i+1)*N] for i in xrange(NPARAM)]
         return As, VarXs, VarYs, Corrs
 
-def printTheta(N, theta, movingCenters = True):
+def printTheta(theta,N, movingCenters = True):
     'Helper function that prints the model produced by the sampler.'
     if N == 1:
         print '1 Gaussian Model\n'

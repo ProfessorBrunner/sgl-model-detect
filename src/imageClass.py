@@ -37,7 +37,6 @@ class Image(object):
         #Is there a way I should make use of the multiple images?
         if coords is not None and galaxyDict is not None:
             print 'Warning: Two sources are being passed into calculateCenter; not clear which to use.'
-
         if coords is not None:
             c_x, c_y = coords
         elif galaxyDict is not None:
@@ -46,14 +45,8 @@ class Image(object):
             except KeyError: #image doesn't have a defined center
                 raise
         else:
+            print 'Warning: No source passed into calculateCenter; using brightest spot in image.'
             c_y, c_x = np.unravel_index(image.argmax(), image.shape) #center is just the brightest spot
-
-        #sometimes the center is not exactly accurate. This part finds the maximum in the region around the center.
-        '''
-        dy, dx = np.unravel_index(image[c_y-2:c_y+3, c_x-2:c_x+3].argmax(), (5,5))
-        dy,dx = dy-2, dx-2 #so if c_x c_y is the max dx, dy will be 0,0
-        c_y, c_x = c_y+dy, c_x+dx
-        '''
 
         self.center = (c_x, c_y)
 
