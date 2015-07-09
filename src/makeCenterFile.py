@@ -11,8 +11,8 @@ parser = argparse.ArgumentParser(description = desc)
 parser.add_argument('dirname', metavar = 'dirname', type = str, help = 'Directory from which to read the .fits files and to write the output file.')
 parser.add_argument('catalog', metavar = 'catalog', type = str, help = 'File where the informatoin regarding the .fits images is located. ')
 parser.add_argument('centerFilename', metavar = 'centerFilename', type = str, help ='File to write the output to.')
-parser.add_argument('ra_idx', metavar = 'ra_idx', type = int, default= 2, help = 'Index of the ra in the catalog along a line. Assumed to be followed by dec.', nargs = '?')
-parser.add_argument('run_idx', metavar = 'run_idx', type = int, default = 14, help= 'Index of the run in the catalog along a line. Assumed to be followed by rerun, camcol, and field.', nargs = '?')
+parser.add_argument('ra_idx', metavar = 'ra_idx', type = int, default= 2, help = 'Index of the ra in the catalog along a line. Assumed to be followed by dec. Default is 2.', nargs = '?')
+parser.add_argument('run_idx', metavar = 'run_idx', type = int, default = 14, help= 'Index of the run in the catalog along a line. Assumed to be followed by rerun, camcol, and field. Default is 14.', nargs = '?')
 
 args = parser.parse_args()
 
@@ -31,7 +31,7 @@ with open(args.catalog) as f:
             continue
         splitLine = line.split()
 
-        #Grad important atriubtes
+        #Grab important atriubtes
         ra, dec = splitLine[args.ra_idx:args.ra_idx+2]
         run, rerun, camcol, field = splitLine[args.run_idx:args.run_idx+4]
         for var in (ra, dec, run, rerun, camcol, field):

@@ -1,7 +1,11 @@
 #! /usr/bin/env python
 #@Author Sean McLaughlin
 
-#from gooey import Gooey, GooeyParser
+gooeyON = False #Wheter or not to use the Gooey module or stick with standard CLI
+#In addition to setting as True, make sure to uncomment the decorator in line 11!
+
+if gooeyON:
+    from gooey import Gooey, GooeyParser
 
 #Gooey doesn't seem to let the columns change...
 #@Gooey( required_cols= 3)
@@ -10,29 +14,42 @@ def main():
     This program models the light profile of a galaxy in a fits image using a Mixture-of-Gaussian model. It can use either MCMC or non-linear least squares.
     '''
     #Uncomment for a GUI-less version!
-    from argparse import ArgumentParser
-    parser = ArgumentParser(description = desc)
-    #parser = GooeyParser(description = desc)
+    if gooeyON:
+        parser = GooeyParser(description = desc)
+    else:
+        from argparse import ArgumentParser
+        parser = ArgumentParser(description = desc)
 
-    #NOTE if GUI is on, you can add widget =FileChooser or DirChooser as an option!
-    parser.add_argument('filename', metavar = 'filename',  type = str,help = \
-                                    'Either a fits filename or a directory of files.\n NOTE: The GUI will not allow you to choose a directory. Choose a file and edit the text.')
+    if gooeyON:#very similar to the segment below, only difference is in the GUI it adds file choosers.
+        parser.add_argument('filename', metavar = 'filename', widget = 'FileChooser', type = str,help = \
+                                        'Either a fits filename or a directory of files.\n NOTE: The GUI will not allow you to choose a directory. Choose a file and edit the text.')
 
-    parser.add_argument('centers', metavar = 'centers', type = str,help = \
-                                    'Either a filename or a comma separate pair of coordinates for x,y.')
+        parser.add_argument('centers', metavar = 'centers', widget = 'FileChooser',type = str,help = \
+                                        'Either a filename or a comma separate pair of coordinates for x,y.')
 
-    parser.add_argument('output', metavar = 'output',  type = str, help = \
-                                    'Location to store the programs output.')
+        parser.add_argument('output', metavar = 'output', widget = 'DirChooser',  type = str, help = \
+                                        'Location to store the programs output.')
+
+    else:
+
+        parser.add_argument('filename', metavar = 'filename',  type = str,help = \
+                                        'Either a fits filename or a directory of files.\n NOTE: The GUI will not allow you to choose a directory. Choose a file and edit the text.')
+
+        parser.add_argument('centers', metavar = 'centers', type = str,help = \
+                                        'Either a filename or a comma separate pair of coordinates for x,y.')
+
+        parser.add_argument('output', metavar = 'output',  type = str, help = \
+                                        'Location to store the programs output.')
 
     parser.add_argument('modeler', metavar = 'modeler', type = str, choices = ['MCMC', 'NLSQ'], help = \
                                     'Modeler used to perform fit. Either MCMC or NLSQ.')
 
     walkersChoices = xrange(0,4500,500)
     #GUI requires strings, CLI requires ints
-    #walkersChoices = [ str(i) for i in walkersChoices]
+    if gooeyON:
+        walkersChoices = [ str(i) for i in walkersChoices]
     parser.add_argument('n_walkers', metavar = 'n_walkers', choices = walkersChoices, type = int, help =\
                                     'Number of walkers to use in the MCMC sampler. If NLSQ is chosen choice does not matter. Multiples of 500 up to 4000 allowed.')
-
 
     parser.add_argument('format', metavar = 'format', type = str, choices = ['CFHTLS', 'SDSS', 'Toy'], help = \
                                     'The format of images to use. Choice of CFHTLS, SDSS or Toy')
@@ -346,7 +363,7 @@ def main():
             if args.fixedCenters:
                 c = (imageObj.center[1], imageObj.center[0])
             else:
-                c = bestTheta[1], bestTheta[0]
+                c = int(bestTheta[1]), int(bestTheta[0])
 
             prim_fit_scaled = prim_fit*imageObj[secondaryBand][c]/imageObj[primaryBand][c]
             calc_img = imageObj[secondaryBand] - prim_fit_scaled

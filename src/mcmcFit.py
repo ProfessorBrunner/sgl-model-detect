@@ -132,7 +132,7 @@ def lnprior(theta, movingCenter, imageSize):
 def lnlike(theta, image, xx,yy,c_x, c_y,inv_sigma2, movingCenter):
     'Liklihood of this model given the data in image'
 
-    model = mixtureOfGaussians(xx,yy,c_x, c_y, theta)
+    model = mixtureOfGaussians(xx,yy,c_x, c_y, theta, movingCenter)
 
     diff = image-model
 
