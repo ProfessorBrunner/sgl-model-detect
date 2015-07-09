@@ -1,7 +1,9 @@
 #! /usr/bin/env python
 #@Author Sean McLaughlin
-#This file contains the Image class, which contains all the details of loading in fits images
-#It will also include a few subclasses depending on filename syntax
+'''
+This file contains the Image class, which contains all the details of loading in fits images
+It will also include a few subclasses depending on filename syntax
+'''
 
 import pyfits
 

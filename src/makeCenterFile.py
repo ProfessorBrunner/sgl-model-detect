@@ -22,7 +22,6 @@ from os import listdir
 from fnmatch import fnmatch
 import astropy.io.fits as fits
 import astropy.wcs as wcs
-import numpy as np
 
 filenames = listdir(args.dirname)
 with open(args.catalog) as f:
@@ -31,8 +30,8 @@ with open(args.catalog) as f:
         if line[0] == '#':
             continue
         splitLine = line.split()
-        #Files sometimes have undefined splits between entries. This removes them dilligently.
 
+        #Grad important atriubtes
         ra, dec = splitLine[args.ra_idx:args.ra_idx+2]
         run, rerun, camcol, field = splitLine[args.run_idx:args.run_idx+4]
         for var in (ra, dec, run, rerun, camcol, field):
@@ -42,6 +41,7 @@ with open(args.catalog) as f:
         if id in raDecDict: #alrady got this same image
             continue
 
+        #identify the file that matches it
         for file in filenames:
             if fnmatch(file, '*'+id+'.fits'):
                 raDecDict[file] = (id, ra,dec)
@@ -52,6 +52,7 @@ for filename, (id, ra, dec) in raDecDict.iteritems():
     hdulist = fits.open(args.dirname+filename)
     w = wcs.WCS(hdulist[0].header, hdulist)
     hdulist.close()
+    #Convert Ra, Dec to pixel
     x,y = w.wcs_world2pix(float(ra), float(dec), 1)
     toWrite.append(' '.join([id, '%.3f'%x, '%.3f'%y]))
 

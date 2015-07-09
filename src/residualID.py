@@ -2,15 +2,8 @@
 #@Author Sean Mclaughlin
 
 desc='''
-This module analyzes the residuals left in the image. It clusters them
-and attempts to ID if the object likely represents a lens. 
+This module analyzes the residuals left in the image. It clusters them and attempts to ID if the object likely represents a lens.
 The function residualID can be imported.
-
-residualID(image, c_x, c_y)
-image: numpy array of the residuals
-c_x, c_y: the center of the image.
-
-Cannot currently be run as main for test cases.
 '''
 
 import numpy as np

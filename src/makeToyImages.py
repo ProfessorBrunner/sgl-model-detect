@@ -9,47 +9,29 @@ import argparse
 parser = argparse.ArgumentParser(description = desc)
 parser.add_argument('dirname', metavar = 'dirname', type = str, help = 'Directory to save the produces images to.')
 parser.add_argument('N', metavar = 'N', type = int, help = 'Number of images to create.')
+parser.add_argument('--noNoise', dest = 'noNoise', action = 'store_true', help =\
+                                    'Save images with no noise. ')
 
 args = parser.parse_args()
 
 import numpy as np
-from scipy.stats import poisson, uniform
+from scipy.stats import poisson
 from itertools import izip
-from mcmcFit import gaussian, parseTheta, NPARAM
+from mcmcFit import mixtureOfGaussians, parseTheta, NPARAM, printTheta
 import pyfits
 from matplotlib import pyplot as plt
-from time import time
 import os
 import seaborn as sns
 sns.set()
 
-def printTheta(N, theta):
-    'Helper function that prints the model produced by the sampler.'
-    lines = []
-    if N == 1:
-        lines.append('1 Gaussian Model\n')
-    else:
-        lines.append('%d Gaussians Model\n'%N)
-
-    X, Y, As, VarXs, VarYs, Corrs = parseTheta(theta)
-    for i, (a, vx, vy, p) in enumerate(izip(As, VarXs, VarYs, Corrs)):
-        j = i+1
-        lines.append('Gaussian %d:'%j)
-        lines.append('Center %d:\t (%.2f, %.2f)'%(j,X,Y))
-        lines.append('Amplitude %d:\t%.3f\nVarX %d:\t%.3f\nVarY %d:\t%.3f\nCorr %d:\t%.3f\n'%(j, a,j, vx, j, vy, j, p) )
-    lines.append('\n'+'--'*20)
-    return '\n'.join(lines)
-
-np.random.seed(int(time()))
-
 #The true number of Gaussians for each model
-nGaussians = np.ones(args.N) #poisson.rvs(2, size = args.N)
+nGaussians = poisson.rvs(2, size = args.N)
 nGaussians = np.where(nGaussians == 0, 1, nGaussians) #assign 0 selectiosn to 1
 size = (30,30)
 imageMax = 500
 darkCurrent = 20 #parametrized value
 chosen_cmap = 'gnuplot2'
-NOISE = True
+NOISE = not args.noNoise
 
 centerLines = []
 
@@ -57,6 +39,7 @@ for nImage, n in enumerate(nGaussians):
     if n == 0:
         continue
 
+    #Make True Parameter Values
     ndim = int(n*NPARAM+2)
     trueTheta = np.zeros(ndim)
     for i in xrange(ndim):
@@ -74,23 +57,16 @@ for nImage, n in enumerate(nGaussians):
             trueTheta[i] = x
 
         elif i < n+2: #amp
-            #trueTheta[i] = 10**(8*np.random.rand()-4)
-            #trueTheta[i] = np.random.lognormal(mean = np.log(imageMax/2), sigma = 1.0)#try logNormal near max
             x = -1
             while x<0:
                 x = np.random.randn()*50+imageMax/(2*(i-1))
             trueTheta[i] = x
-            #TODO add negative in guess, or just let it explore that way?
         elif i<3*n+2: #var
             x = -1
             while x <0:
                 x = np.random.randn()*6+10
             trueTheta[i] = x
-            #trueTheta[i] = 10**(8*np.random.rand()-4)
         else: #corr
-            #trueTheta[i] = 2*np.random.rand()-1
-            #Trying a normal dist. rather and a uniform.
-            #The assumption being Galaxies are more likely to be spherical than very elliptical
             x = -2
             while abs(x) > 1:
                 x = np.random.randn()*.1
@@ -98,10 +74,10 @@ for nImage, n in enumerate(nGaussians):
 
     yy, xx = np.indices(size)
 
-    output= printTheta(n,trueTheta)
-    print output
-    c_x, c_y = trueTheta[0], trueTheta[1]
-    image = sum(gaussian(xx,yy, c_x, c_y, a, varX, varY, corr) for a, varX, varY, corr in izip(*(parseTheta(trueTheta)[2:])))
+    output = printTheta(n,trueTheta, string = True)
+
+    #Note that c_x and c_y aren't used in this model (so 15,15 is overwritten)
+    image = mixtureOfGaussians(xx,yy,15,15, trueTheta, True)
 
     fluxError = np.zeros(size).reshape((-1))
 
@@ -112,20 +88,10 @@ for nImage, n in enumerate(nGaussians):
     if NOISE:
         image = fluxError.reshape(size)
 
-    '''
-    im = plt.imshow(image, cmap = chosen_cmap)
-    plt.colorbar(im)
-    plt.show()
-    '''
     whiteNoiseMean = np.random.randn()*np.sqrt(10)+10
 
     if NOISE:
         image += np.random.randn(*size)*np.sqrt(whiteNoiseMean)+whiteNoiseMean #white Noise
-    '''
-    im = plt.imshow(image, cmap = chosen_cmap)
-    plt.colorbar(im)
-    plt.show()
-    '''
 
     #Dark Current
     darkCurrentError = poisson.rvs(darkCurrent, size = size[0]*size[1]).reshape(size)-darkCurrent
@@ -134,7 +100,7 @@ for nImage, n in enumerate(nGaussians):
 
     if np.any(image<=0):
         image-=image.min()*1.01 #ensure no negative or zero values
-        #image+=.001
+        image+=.0001
 
     im = plt.imshow(image, cmap = chosen_cmap)
     im.set_clim(0, image.max())
@@ -145,7 +111,7 @@ for nImage, n in enumerate(nGaussians):
     filename = args.dirname+'toy_image_%d'%nImage
 
     if 'toy_image_%d.fits'%nImage in os.listdir(args.dirname):
-	    os.remove('%s.fits'%filename)
+	    os.remove('%s.fits'%filename) #delete previous one.
 
     hdu.writeto('%s.fits'%filename)
     #np.savetxt(filename+'_theta', trueTheta, delimiter = ',')
