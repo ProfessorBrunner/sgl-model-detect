@@ -45,10 +45,12 @@ def main():
                                     'Modeler used to perform fit. Either MCMC or NLSQ.')
 
     walkersChoices = xrange(0,4500,500)
+    t = int
     #GUI requires strings, CLI requires ints
     if gooeyON:
+        t = str
         walkersChoices = [ str(i) for i in walkersChoices]
-    parser.add_argument('n_walkers', metavar = 'n_walkers', choices = walkersChoices, type = int, help =\
+    parser.add_argument('n_walkers', metavar = 'n_walkers', choices = walkersChoices, type = t, help =\
                                     'Number of walkers to use in the MCMC sampler. If NLSQ is chosen choice does not matter. Multiples of 500 up to 4000 allowed.')
 
     parser.add_argument('format', metavar = 'format', type = str, choices = ['CFHTLS', 'SDSS', 'Toy'], help = \
@@ -303,7 +305,7 @@ def main():
         #Then, use to charecterize max number of parameters
         c_x, c_y = imageObj.center #Note that this will have changed after the crop
         print 'Fitting now'
-        prim_fit,theta, stat  = fitter(imageObj[primaryBand], 1, c_x, c_y, not args.fixedCenters,n_walkers = args.n_walkers, dirname = imOutputDir, id = imageObj.imageID, chain = args.chain)
+        prim_fit,theta, stat  = fitter(imageObj[primaryBand], 1, c_x, c_y, not args.fixedCenters,n_walkers = int(args.n_walkers), dirname = imOutputDir, id = imageObj.imageID, chain = args.chain)
 
         printTheta(theta, 1, movingCenters= not args.fixedCenters)
 
