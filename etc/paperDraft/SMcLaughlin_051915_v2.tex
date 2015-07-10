@@ -1,0 +1,175 @@
+%TODO go through this header and see what's actually necessary
+\documentclass[authoryear, 12pt, 5p, times]{elsarticle}
+\usepackage{natbib} 
+\usepackage{hyperref} 
+
+%\usepackage[letterpaper,margin=0.65in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts} % Typical maths resource packages
+\usepackage{graphics}                 % Packages to allow inclusion of graphics
+\usepackage{color}                    % For creating coloured text and background
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{url}
+
+\newcommand{\eg}{{e.g., }}
+\newcommand{\ie}{{i.e., }}
+%Working title; not sure if Lensing will be included or not. 
+%Add NCSA Affiliation?
+%\author[S. W. McLaughlin et al.]{S. ~W. ~McLaughlin$^{1}$, R.~J.~Brunner$^{2,3}$\\
+%$^1$Department of Physics, University of Illinois, Urbana, IL 61801, USA\\
+%$^2$Department of Astronomy, University of Illinois, Urbana, IL 61801, USA\\
+%$^3$Department of Statistics, University of Illinois, Urbana, IL, 61801, USA}
+
+\begin{document}
+\begin{frontmatter}
+\date{Draft: \today}
+
+\title{Statistical Computing for Galaxy Modeling and Gravitational Lens Detection}
+\author[uip]{Sean W. McLaughlin}
+\ead{swmclau2@illinois.edu}
+\author[ui]{Robert J. Brunner\corref{cor1}}
+\ead{bigdog@illinois.edu}
+\cortext[cor1]{Principal Corresponding author}
+\address[uip]{Department of Physics, University of Illinois, Urbana, IL 61801}
+\address[ui]{Department of Astronomy, University of Illinois, Urbana, IL 61801}
+
+
+\begin{abstract}
+Here goes the abstract!
+\end{abstract}
+
+\begin{keyword}
+EXCELSIOR
+\end{keyword}
+
+\end{frontmatter}
+
+\section{Introduction}\label{intro}
+
+\section{Modeling Technique}\label{modeling}
+
+%This header and the preceding subsection contain a lot of seemingly obvious information. I'm not going to remove it now because I was told when in doubt, include it.
+
+A program utilizing Markov Chain Monte Carlo (MCMC) techniques was developed to fit a Mixture of Gaussians (MoG) to galaxy light profiles. It was developed in Python version 2.7.6. Python is the \textit{lingua franca} in scientific programming due to its versatility and ease of use. Multiple third party applications were employed such as numpy and scipy to achieve sdesired efficiencies. 
+
+\subsection{Data Cleaning}
+
+For most astronomical images, large sectors of sky have to be cropped down to a few objects of interest. The Python module pyfits allows for easy loading and manipulation of FITS image files. This implementation was designed to target one galaxy at a time. In the training data used for this program, the positions of the galaxies of interest were given. In this case, data cleaning was as simple as slicing a 30x30 pixel block around the given image coordinates. For the possible case object location is not given, a simple algorithm was employed to find the image's dominant object. The algorithm iteratively calculates the first moment of the light distribution over smaller subsets of the image. After this center is calculated, a 30x30 pixel slice is removed for analysis. 
+
+\subsection{Model Design}
+
+The program attempts to fit an MoG model to the light distribution of the galaxy. The Gaussian used in the model is a slight modification of a standard bivariate Gaussian:
+
+\begin{equation}
+I(\boldsymbol{x} | A,\boldsymbol{\Sigma}, \boldsymbol{\mu}) = A \: \exp[-\frac{1}{2}(\boldsymbol{x}-\boldsymbol{\mu})^T \boldsymbol{\Sigma}^{-1} (\boldsymbol{x}-\boldsymbol{\mu})]
+\end{equation}
+
+This Gaussian function is modified such that it is no longer normalized. Normalizing the function requires a coupling between the covariance matrix and the scale constant, which complicates fitting. Additionally, we are only interested in the Gaussian for its functional form and not its probabilistic properties, so the lack of normalization doesn't affect our model. An arbitrary number of these Gaussians are summed to form the full model:
+
+%Don't know if this needs to be simplified, notation-wise
+\begin{equation}
+I(\boldsymbol{x} |\{A\}_N,\{\boldsymbol{\Sigma}\}_N,\boldsymbol{\mu}) = \sum_{i = 1}^{N} A_i \: \exp[-\frac{1}{2}(\boldsymbol{x}-\boldsymbol{\mu})^T \boldsymbol{\Sigma}_{i}^{-1} (\boldsymbol{x}-\boldsymbol{\mu})]
+\end{equation}
+
+Which corresponds to a parameter vector of length $4N+2$ to be optimized by the MCMC:
+
+\begin{equation}
+\boldsymbol{\Theta} = [\mu_x, \mu_y, A_1, \ldots A_N,\sigma^2_{xx_1} \ldots  \sigma^2_{yy_1} \ldots \rho_{xy_1} \ldots \rho_{xy_N} ]
+\end{equation}
+
+Note that the center of the model $(\mu_x, \mu_y)$ is the same for all $N$ Gaussians in the model. The covariance matrix $\Sigma$ is defined by:
+
+\begin{equation}
+\boldsymbol{\Sigma} = \left( \begin{array}{cc}
+\sigma^2_{xx} & \rho_{xy}\sigma_{xx}\sigma_{yy} \\
+\rho_{xy}\sigma_{xx}\sigma_{yy} & \sigma^2_{yy}  \end{array} \right)
+\end{equation}
+
+\subsection{MCMC Implementation}
+
+In the implementation of MCMC, prior probabilities of parameters as well as likelihoods given data must be functionally defined. The prior distributions for the parameters were defined as follows:
+%TODO update these values to their most recent value
+%TODO perhaps mention how they were chosen
+\begin{center}
+\begin{enumerate}
+	\renewcommand{\theenumi}{\Roman{enumi}:}
+    \item $\mu_x, \mu_y \: \sim \: Uniform(0, 30)$
+	\item $A_i \: \sim \: Log-Uniform(10^{0}, 10^{5})$
+	\item $\sigma^2_{xx_i}, \sigma^2_{yy_i} \: \sim \: Log-Uniform(10^{-1}, 10^{3})$
+	\item $\rho_{xy_i} \: \sim \: Uniform(-1, 1)$
+\end{enumerate}
+\end{center}
+
+These distributions were chosen so as to be the least informative as possible, while bounding the parameters to reasonable values. The bounds on amplitude and variance were established empirically as reasonable cutoffs. A log-uniform distribution was chosen to make the parameters invariant to scaling. 
+
+%TODO how to link to discussion properly
+Additionally, a constraint was placed on the amplitude parameters that they be in descending order in magnitude; this removed degeneracy with multiple Gaussians. For further explanation of these challenges, see the Discussion below. The likelihood was defined as a simple difference between the model and the true image, assuming Gaussian noise. In practice, log-prior and log-likelihood functions were defined so as to prevent underflow errors. Additionally, MCMC does not require the distributions to be normalized, so for simplicity ours were not. 
+%In-text citation required here
+Various MCMC algorithms were explored for use in this work. The affine invariant ensemble sampler (AIES) implemented in the emcee package was chosen to be the most favorable (\cite{emcee}). The full details of the algorithm are explained in \cite{GandW}. Simply put, it is very effective at exploring the whole parameter space, while also efficient and scalable to implement. 
+
+After the sampler has created the chain, the best parameters need to be selected from the it. This process is non-trivial, and the term "best" needs to be precisely defined. The Maximum a Posteriori (MAP) estimator is simply the mean of the chain. In practice, this estimator is strongly influenced by outliers in the sample. The mode of the distribution represents the most likely value, and is a more robust estimator in practice. In order to caculate the mode, a histogram is made of the chain. There isn't an established number of bins to use in such a histogram, but a good choice is the square root of the number of samples divided by a small integer. In this case, $N_{bins} = \sqrt{N}/4$. The mode is then the highest bin in the histogram. Since the variance and amplitude parameters are log-uniformly distributed, it is better to take a histogram of the logarithm of the values of the chain rather than the values themselves. 
+%TODO explain how we calculate N_max.
+
+This algorithm can find the best model given a number of Gaussians $N$. However, it is not capable of directly selecting which number of Gaussians best fits the data. So, a model must be fit for values of $N$ from 1 to some threshold $N_{max}$. $N_{max}$ is calculated from the raw image directly, by estimating the number of pixels of signal and dividing by a constant number of signal pixels per parameter. The number of pixels is estimated as being those enclosed with 2 standard deviations of the mean of a 1-Gaussian fit. This step prevents overfitting by selecting too large a value of $N$. 
+
+For each model, the Bayesian Evidence is calculated. The Bayesian Evidence (BE) is estimated via the following formula from \cite{astroMLText}:
+
+\begin{equation}
+BE = \frac{pN}{\rho}
+\end{equation}
+%TODO Cite astroML code or is this enough
+Where $\rho$ is calculated via a Kernal Density Estimator (KDE) of the posterior. A KDE places a kernel function (in this case a Gaussian) at each point in the sample, and adds them all together. This creates a smooth approximation of the distribution of points. This approximation holds for each point in the sample, so there are $N$ estimators of the BE. In practice, about 500 are taken and the median chosen as the most likely estimator for the BE. 
+
+The ratio of the Bayesian Evidences of 2 models gives the Bayes Factor, a Bayesian method for comparing models. The larger the Bayesian Evidence, the more likely that model is. These BE's are used to find which number of Gaussians offers the best model for the data. 
+
+\section{Modeling Results}\label{results}
+
+%This part doesn't seem very strong now that I've written it out. 
+\section{Strong Lens Detection}\label{detection}
+Applications of this technique toward the detection of strong gravitational lenses were explored; the algorithm is as follows. The lens is modeled in the i-band with the above method. Then, a scaled version of that model is subtracted from the g-band. The model is scaled by multiplying the value of all pixels by the ratio of the maximum values of the g and i bands, respectively. This technique works because The red lens (typically an LRG) dominates in the i-band, while the generally blue source dominates in g. The residuals from that subtraction are sent through an analysis pipeline. 
+
+A simple strong lens detection pipeline was employed to scan residuals for lens-like properties. First, only pixels above a 1 $\sigma$ noise floor were analyzed. Those pixels were clustered via a density-based clustering algorithm (DBSCAN) to find distinct clumps. For each clump, the moments of its light distribution were calculated. If every clump of pixels is of a comparable distance from the center of the lens, and all oriented in a similar direction around it, the residual is deemed a lens candidate. 
+
+%TODO Images showing what I've done. 
+%TODO talk about how well it works/ quantify it
+
+\section{Discussion}\label{disc}
+We believe that this technique shows promise as an alternative to standard modeling schemes. MCMC is a powerful tool that has a variety of potential uses in astronomy; it has been shown that it can be made practical and efficient in astronomical applications. Bayesian statistical techniques have several advantages over frequentest techniques. MCMC relies on very few assumptions, and can calculate a posterior to any degree of precision, given enough computation time. MCMC is also extremely flexible; the likelihood and prior can be tuned to use the fewest assumptions, or tune the model fit in a particular way. The MCMC implementation used in this work, emcee, is implemented very efficiently. Since it samples in parallel, the entire program will scale to the size of the computing resource. 
+
+%TODO How does fitting to a Sersic and how many free parameters are there?
+%TODO There are other advantages to an MOG
+Similarly, MoGs are a practical alternative to S\'{e}rsic functions for modeling galaxies. [I NEED SOME INFO ON HOW FITTING A SERSIC WORKS, INCLUDING THE NUMBER OF FREE PARAMETERS.] The efficiency of Gaussians as modeling functions has been demonstrated in \cite{mog}. This work demonstrates this efficiency is more than just theoretical and can be exploited practically. MoGs will not likely replace other functions in high signal-to-noise regimes or in detailed focused modeling. However, we believe they have a place in survey pipelines, either for rapid, direct modeling or for deblending. In addition to their versatility in modeling, MoGs have other computational advantages over other models. One of the greatest advantages of the Gaussian function is its universality; the sum,  product, and convolution of Gaussians are all also Gaussian. So, for example, if the PSF is modeled by a MoG, and the galaxy of interest is also modeled with an MoG, their convolutions analytic and therefore computationally cheap. 
+
+%TODO Above detour worth embellishing, or just cite Hogg et al?
+
+%TODO How does this compare to other work?
+
+%TODO make this sound less like we were lazy and didn't try. Also "properly vectorized"
+Before large scale implementation, some improvements should be made to our technique, and other options explored. Every attempt was made to make the program as efficient as possible, but there is still room for improvement. The running the MCMC sampler is far and away the most time-intensive portion of the program. The AIES algorithm is embarrassingly parallel, so simply increasing the computation scale will dramatically improve computation time. However, less expensive improvements are obviously more favorable. An increase in the pastoralization and vectorization of some of the calculations would also yield a significant improvement in efficiency. Another option is to rewrite the program in a lower level language like C++ or Fortran. This will be quite involved, and may involve writing a new AIES sampler package specifically for that implementation. 
+
+Another possible area for improvement is using a new MCMC sampling algorithm. Much effort was put into testing alternative algorithms, but not all had accessible, open-source python implementations. In particular, Reverse Jump MCMC (RJMCMC) may be especially well suited for this problem. No open source implementation of RJMCMC in python exists, so a new one would have to developed from scratch. RJMCMC is unique in that it allows the length of the parameter vector to change while sampling. One of the most costly portions of the current implementation is that it cannot directly fit to the number of Gaussians. Instead, a model must be calculated for each number then they are all compared afterward. FItting the number of Gaussians directly with the other paremeters would simplify and possibly speed up the program. RJMCMC is slow to converge, so it is possible it may not have so dramatic an effect. 
+
+An unexpected difficulty with parameter selection was the degeneracy of multiple Gaussians. With a mixture of Gaussians, the final model is the same regardless of the order of the individual functions. So, each model of $N$ Gaussians has $N!$ degeneracy. This would cause complications in the convergence of the sample chain. In the ideal case, the sample chain for each parameter would converge to one distribution for that parameter. With this degeneracy, the chains for each family of parameters (Amplitudes, Variances, Correlations) would have the same distribution that was the sum of the individual distributions. This made parameter selection a more complex problem than the modeling itself! Enforcing that the values for a certain family of parameter (in our case, Amplitude) remain in sorted order solves this problem, and the chains come out as expected. This effectively partitions the parameter space into a smaller region with no degeneracy, so there is no effect on the statistical rigor of the sampler. 
+
+There was also a challenge with the sampler for large numbers of Gaussians. The sampler chain converges reasonably for small numbers (less than $N = 4$) but greater values would begin to fail. We concluded that this was a problem of overfitting, and the low signal-to-noise images we used for training did not contain enough signal to fit more than 20 or so parameters to. A simple scheme was developed to estimate the amount of signal in a given image. After the fit for $N=1$ is completed, the number of pixels enclosed within $ 2 \sigma$ is counted. Then, that number of pixels is used along with a constant "pixels per parameter" to give a maximum value to $N$.
+
+\section{Conclusions and Future Work}\label{conc}
+%TODO This should talk about Modeling first, then lensing second. 
+Strong gravitational lenses are a directly observable consequence of general relativity that are useful cosmological laboratories. Of the ~10 000 strong lenses predicted to be visible from Earth, only a few hundred are currently known. A program was developed that combines Markov Chain Monte Carlo sampling with Mixture of Gaussian models to find strong lenses in large survey data. The program models the lensing galaxy and subtracts it from the original image, then analyses the residuals for lens-like properties. The program was also designed to be scalable and efficient. [RESULTS, WHATEVER THEY ARE.] There are still steps to be taken before full-scale implementation, but we believe that we have shown that this technique is a viable strong lens detection technique, as well as a general rapid galaxy modeler. 
+
+There is future work we'd like to explore on this project. This project utilized emcee, which implements an Affine Invariant Ensemble Sampler algorithm. This algorithm was powerful, and convenient since an open source implementation was available. There are other MCMC algorithms that may be better suited. For example, Reverse Jump MCMC (RJMCMC) allows for the number of parameters to vary during the sampling. This would allow for the number of Gaussians to be a free parameter as well, and the Bayesian Odds test could be removed. However, very few open source implementations exist, and none in python. Writing one from the ground up would be required. 
+
+We also believe that there are more applications of our modeling approach than strong lens finding. [LIKE WHAT?]
+
+\section*{Acknowledgments}
+The authors would like to thank Matias Carrasco-Kind for his many fruitful conversations on this topic. I’d also like to thank Anupreeta More for providing training data for this project. The authors gratefully acknowledge the use of the parallel computing resource provided by the Computational Science and Engineering Program at the University of Illinois. The CSE computing resource, provided as part of the Taub cluster, is devoted to high performance computing in engineering and science. This work also used resources from the Extreme Science and Engineering Discovery Environment (XSEDE), which is supported by National Science Foundation grant number OCI-1053575. Funding for the SDSS and SDSS-II has been provided by the Alfred P. Sloan Foundation, the Participating Institutions, the National Science Foundation, the U.S. Department of Energy, the National Aeronautics and Space Administration, the Japanese Monbukagakusho, the Max Planck Society, and the Higher Education Funding Council for England. The SDSS Web Site is http://www.sdss.org/. This research was supported, in part, by a grant from the Office of Undergraduate Research and from the Campus Honors Program. This work made use of the Open Science Data Cloud (OSDC) which is an Open Cloud Consortium (OCC)-sponsored project. This work was supported in part by grants from Gordon and Betty Moore Foundation and the National Science Foundation and major contributions from OCC members like the University of Chicago. Sean W. McLaughlin was supported for this work with a grant from the University of Illinois Office of Undergraduate Research and Campus Honors Program. The authors acknowledge sci-kit learn, emcee, seaborne, matplotlib, numpy and scipy for the use of their software in this research.
+
+%TODO
+
+\bibliographystyle{elsarticle-harv}
+\bibliography{bibSMcLaughlin2015}
+
+%\bsp
+\label{lastpage}
+
+\end{document}
